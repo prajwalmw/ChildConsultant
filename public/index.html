@@ -285,6 +285,26 @@
     </div>
   </div>
 </div>
+<!-- Professional Inquiry Form Section -->
+<!-- Centered Inquiry Form Section -->
+<section id="contact-form">
+  <div class="form-container">
+    <h3>Get in Touch</h3>
+    <form id="inquiryForm">
+      <div class="form-group">
+        <input type="text" id="nameInput" class="form-control" placeholder="Your Name" required>
+      </div>
+      <div class="form-group">
+        <input type="tel" id="mobileInput" class="form-control" placeholder="Mobile Number" pattern="[0-9]{10}" required>
+      </div>
+      <div class="form-group">
+        <input type="email" id="emailInput" class="form-control" placeholder="Email Address" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+</section>
+
 <div class="footer space-medium">
   <div class="container">
     <div class="row">
@@ -351,6 +371,59 @@
 <script type="text/javascript" src="js/animsition.js"></script> 
 <script type="text/javascript" src="js/animsition-script.js"></script> 
 <!-- Back to top script --> 
-<script src="js/back-to-top.js" type="text/javascript"></script>
+ <script src="js/back-to-top.js" type="text/javascript"></script>
+
+<!-- Firebase: Save Inquiry Form to Firestore -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "child-consultant.firebaseapp.com",
+  projectId: "child-consultant",
+  storageBucket: "child-consultant.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const inquiryForm = document.getElementById("inquiryForm");
+
+inquiryForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("nameInput").value.trim();
+  const mobile = document.getElementById("mobileInput").value.trim();
+  const email = document.getElementById("emailInput").value.trim();
+
+  if (!name || !mobile || !email) {
+    alert("Please fill in all fields!");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "inquiries"), {
+      name,
+      mobile,
+      email,
+      timestamp: new Date()
+    });
+    alert("✅ Thank you! We’ll contact you soon.");
+    inquiryForm.reset();
+  } catch (error) {
+    console.error("Error adding inquiry:", error);
+    alert("⚠️ Error submitting form. Please try again later.");
+  }
+});
+</script>
+
+
 </body>
 </html>
+
+<!-- <script src="js/back-to-top.js" type="text/javascript"></script>
+</body>
+</html> -->
