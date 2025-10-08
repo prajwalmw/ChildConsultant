@@ -103,57 +103,62 @@ function drawTimeChart(submissions) {
   submissions.forEach(sub => {
     const dateObj = parseDate(sub.timestamp);
     if (dateObj) {
-      const day = dateObj.toISOString().split("T")[0]; // YYYY-MM-DD
-      timeCounts[day] = (timeCounts[day] || 0) + 1;
+      // Get date in user's local timezone (e.g., India UTC+5:30)
+      const localDate = dateObj.toLocaleDateString("en-CA"); 
+      // "en-CA" gives YYYY-MM-DD format in local time (e.g., 2025-10-09)
+      timeCounts[localDate] = (timeCounts[localDate] || 0) + 1;
     }
   });
 
   const sortedDates = Object.keys(timeCounts).sort();
   const counts = sortedDates.map(date => timeCounts[date]);
 
-  const ctx = document.getElementById("timeChart").getContext("2d");
+  const ctx = document.getElementById('timeChart').getContext('2d');
   new Chart(ctx, {
-    type: "line",
+    type: 'line',
     data: {
       labels: sortedDates,
       datasets: [{
-        label: "Inquiries per Day",
+        label: 'Inquiries per Day',
         data: counts,
-        borderColor: "rgba(255, 99, 132, 1)",
-        backgroundColor: "rgba(255, 99, 132, 0.2)",
+        borderColor: 'rgba(255, 99, 132, 1)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
         fill: true,
         tension: 0.3
       }]
     },
     options: {
-  responsive: true,
-  interaction: {
-    mode: 'index',     // show tooltip for all datasets on same index
-    intersect: false   // allow hover even when not exactly on a point
-  },
-  plugins: {
-    tooltip: {
-      enabled: true,
-      mode: 'nearest',
-      intersect: false,
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      titleColor: '#fff',
-      bodyColor: '#fff',
-      titleFont: { weight: 'bold' },
-      padding: 10
-    },
-    legend: {
-      labels: { font: { size: 13 } }
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            title: (items) => {
+              const date = new Date(items[0].label);
+              return date.toLocaleDateString("en-IN", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              });
+            }
+          },
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: '#fff',
+          bodyColor: '#fff'
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Date' } },
+        y: { beginAtZero: true, title: { display: true, text: 'Inquiries Count' } }
+      }
     }
-  },
-  scales: {
-    y: { beginAtZero: true, title: { display: true, text: "Inquiries Count" } },
-    x: { title: { display: true, text: "Date" } }
-  }
-}
-
   });
 }
+
 
 // Initialize dashboard
 async function initDashboard() {
