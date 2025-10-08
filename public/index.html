@@ -460,7 +460,6 @@ try {
 // const db = getFirestore(app);
 
 // Form handling
-const inquiryForm = document.getElementById("inquiryForm");
 
 if (inquiryForm) {
   inquiryForm.addEventListener("submit", async (e) => {
@@ -506,12 +505,40 @@ if (inquiryForm) {
 }
 </script>
 
+<!-- EmailJS integration for inquiry notifications -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+  // Initialize EmailJS
+  (function() {
+    emailjs.init("dtuCgQmPCHjK7J9BA"); // e.g., "w5zTghXXXXXX"
+  })();
+
+  // Reference your form
+  const inquiryForm = document.getElementById("inquiryForm");
+
+  inquiryForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = {
+      name: document.getElementById("nameInput").value,
+      email: document.getElementById("emailInput").value,
+      phone: document.getElementById("mobileInput").value,
+      message: document.getElementById("reasonInput").value,
+    };
+
+    try {
+      // Send Email via EmailJS
+      await emailjs.send("service_frugd33", "template_yqstobb", formData);
+
+      console.log("✅ Email notification sent!");
+    } catch (err) {
+      console.error("❌ EmailJS error:", err);
+    }
+  });
+</script>
+
 
 
 </body>
 
 </html>
-
-<!-- <script src="js/back-to-top.js" type="text/javascript"></script>
-</body>
-</html> -->
