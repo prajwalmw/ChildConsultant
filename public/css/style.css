@@ -687,6 +687,15 @@ opacity: .5; }
   text-align: center;
 }
 
+#contact-form textarea {
+    height: 40%;          /* use a percentage of the form height */
+    max-height: 300px;    /* prevent it from getting too tall on big screens */
+    min-height: 100px;    /* ensure it’s not too small on small screens */
+    width: 100%;          /* full width of the container */
+    box-sizing: border-box; /* include padding in height/width */
+    resize: vertical;     /* allow user to adjust if needed */
+}
+
 #contact-form h3 {
   font-weight: 700;
   margin-bottom: 25px;
