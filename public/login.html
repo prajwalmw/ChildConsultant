@@ -1,0 +1,37 @@
+<div id="firebaseui-auth-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.js"></script>
+<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.css" />
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+    authDomain: "child-consultant.firebaseapp.com",
+    projectId: "child-consultant",
+    storageBucket: "child-consultant.appspot.com",
+    messagingSenderId: "985386588549",
+    appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  const uiConfig = {
+    callbacks: {
+      signInSuccessWithAuthResult: function(authResult) {
+        // Redirect to home page after successful login
+        window.location.href = 'index.html';
+        return false;
+      }
+    },
+    signInFlow: 'popup',
+    signInOptions: [
+      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+      { provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID, defaultCountry: 'IN' }
+    ]
+  };
+
+  const ui = new firebaseui.auth.AuthUI(auth);
+  ui.start('#firebaseui-auth-container', uiConfig);
+</script>

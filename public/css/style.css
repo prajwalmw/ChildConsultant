@@ -1,4 +1,55 @@
-@charset "UTF-8";
+/* Profile submenu styles */
+/* Remove down arrow for profile-menu */
+.profile-menu > a:before {
+  content: none !important;
+}
+/* Profile submenu styles */
+.profile-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 4px;
+}
+.profile-menu ul li {
+  padding: 10px 20px;
+  border-bottom: 1px solid #eee;
+}
+.profile-menu ul li:last-child {
+  border-bottom: none;
+}
+.profile-menu ul li a {
+  text-decoration: none;
+  display: block;
+  color: #333;
+}
+.profile-menu {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+.profile-menu #profile-img {
+  margin-top: 0;
+  margin-bottom: 0;
+  vertical-align: middle;
+  display: inline-block;
+  position: relative;
+  top: 10px;
+}
+
+/* Make navigation bar horizontal using flexbox */
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+.navbar-nav > li,
+.profile-menu {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* @charset "UTF-8"; */
 
 /* CSS Document */
 
@@ -755,4 +806,30 @@ canvas {
   z-index: 10; /* ensure hover works */
 }
 
+body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #firebaseui-auth-container {
+      display: inline-block;
+    }
+    .profile-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 4px;
+}
+.profile-menu ul li {
+  padding: 10px 20px;
+  border-bottom: 1px solid #eee;
+}
+.profile-menu ul li:last-child {
+  border-bottom: none;
+}
+.profile-menu ul li a {
+  text-decoration: none;
+  display: block;
+  color: #333;
+}
 
