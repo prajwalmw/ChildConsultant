@@ -1,37 +1,90 @@
-<div id="firebaseui-auth-container"></div>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.js"></script>
-<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.css" />
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Childcare Paediatric Services</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.css" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #00c3c9 0%, #6dd5ed 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'PT Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      padding: 40px 32px 32px 32px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    .login-logo {
+      width: 80px;
+      margin-bottom: 16px;
+    }
+    .login-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #00c3c9;
+      margin-bottom: 8px;
+    }
+    .login-desc {
+      color: #555;
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+    #firebaseui-auth-container {
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <img src="images/logo.png" alt="Childcare Logo" class="login-logo">
+    <div class="login-title">Welcome</div>
+    <div class="login-desc">Sign in to access your dashboard and services.</div>
+    <div id="firebaseui-auth-container"></div>
+  </div>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
-    authDomain: "child-consultant.firebaseapp.com",
-    projectId: "child-consultant",
-    storageBucket: "child-consultant.appspot.com",
-    messagingSenderId: "985386588549",
-    appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+      authDomain: "child-consultant.firebaseapp.com",
+      projectId: "child-consultant",
+      storageBucket: "child-consultant.appspot.com",
+      messagingSenderId: "985386588549",
+      appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-  const uiConfig = {
-    callbacks: {
-      signInSuccessWithAuthResult: function(authResult) {
-        // Redirect to home page after successful login
-        window.location.href = 'index.html';
-        return false;
-      }
-    },
-    signInFlow: 'popup',
-    signInOptions: [
-      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-      { provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID, defaultCountry: 'IN' }
-    ]
-  };
+    const uiConfig = {
+      callbacks: {
+        signInSuccessWithAuthResult: function(authResult) {
+          window.location.href = 'index.html';
+          return false;
+        }
+      },
+      signInFlow: 'popup',
+      signInOptions: [
+        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+        firebase.auth.EmailAuthProvider.PROVIDER_ID,
+        // { provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID, defaultCountry: 'IN' }
+      ]
+    };
 
-  const ui = new firebaseui.auth.AuthUI(auth);
-  ui.start('#firebaseui-auth-container', uiConfig);
-</script>
+    const ui = new firebaseui.auth.AuthUI(auth);
+    ui.start('#firebaseui-auth-container', uiConfig);
+  </script>
+</body>
+</html>
