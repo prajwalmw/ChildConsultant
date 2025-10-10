@@ -2,85 +2,28 @@
 <html lang="en">
 
 <head>
-  <!-- Font Awesome for profile icon -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <meta name="description"
     content="Pediatrician - provide the easy responsive free website templates. You can easily customize and make your own website for your startup business.">
   <meta name="keywords"
     content="bootstrap template, Responsive Template, Website Template, free website templates, free website template download ">
   <title>Nubee</title>
-  <!-- Bootstrap -->
   <link href="css/bootstrap.min.css" rel="stylesheet">
-  <!-- style CSS -->
   <link rel="stylesheet" href="css/style.css">
-  <!-- animsition css -->
   <link rel="stylesheet" type="text/css" href="css/animsition.min.css">
-  <!-- Font Awesome CSS -->
   <link href="css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="css/fontello.css">
-  <!-- font css -->
   <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
-  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-  <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-      <!-- FirebaseUI -->
-  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.css" />
-
-  <!-- ✅ Firebase v8 (Namespaced SDK - stable and compatible) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
-
-  <!-- ✅ FirebaseUI (compatible with v8) -->
-  <link type="text/css" rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.css" />
-  <script src="https://cdn.jsdelivr.net/npm/firebaseui@6.0.2/dist/firebaseui.js"></script>
-
-  <!-- ✅ Firebase Firestore v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-  <style>
-    /* body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
-    }
-    #firebaseui-auth-container {
-      display: inline-block;
-    }
-    .profile-menu ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-radius: 4px;
-}
-.profile-menu ul li {
-  padding: 10px 20px;
-  border-bottom: 1px solid #eee;
-}
-.profile-menu ul li:last-child {
-  border-bottom: none;
-}
-.profile-menu ul li a {
-  text-decoration: none;
-  display: block;
-  color: #333;
-} */
-  </style>
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
 
 <body class="animsition">
-
-  <!-- login-menu will be rendered by JS if needed -->
 
   <script>
     // ✅ Your Firebase Config
@@ -93,52 +36,32 @@
       appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     const auth = firebase.auth();
-
-    // FirebaseUI Config
-    const uiConfig = {
-      callbacks: {
-        signInSuccessWithAuthResult: function() {
-          window.location.href = 'index.html';
-          return false;
-        }
-      },
-      signInFlow: 'popup',
-      signInOptions: [
-        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        {
-          provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-          defaultCountry: 'IN'
-        }
-      ]
-    };
-
-    // Start FirebaseUI
-    const ui = new firebaseui.auth.AuthUI(auth);
+    const db = firebase.firestore(); // Firestore is correctly initialized here
 
     auth.onAuthStateChanged(user => {
+      var profileImg = document.getElementById('profile-img');
       if (!user) {
         // Not logged in → redirect to login page
         window.location.href = 'login.html';
       } else {
-        // Set profile image if available
-        var profileImg = document.getElementById('profile-img');
-        if (profileImg && user.photoURL) {
-          profileImg.src = user.photoURL;
-        } else if (profileImg) {
-          profileImg.src = 'images/default-profile.png'; // fallback image
+        // Logged in: Set profile image if available
+        if (profileImg) {
+            profileImg.src = user.photoURL || 'images/default-profile.png'; // Use a fallback image
         }
       }
     });
-</script>
+
+    // Logout and Profile Menu Display Logic (moved to end of body)
+  </script>
 
 
   <div class="hero-section">
-    <!-- navigation-transparent -->
     <div class="container">
       <div class="top-bar">
-        <!-- top-bar -->
         <div class="row">
           <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
             <p class="mail-text">Welcome to our clinic care website</p>
@@ -150,9 +73,7 @@
         </div>
       </div>
     </div>
-    <!-- /.top-bar -->
     <div class="header">
-      <!-- navigation -->
       <div class="container">
         <div class="row">
           <div class="col-md-3 col-sm-6 col-xs-6">
@@ -169,7 +90,6 @@
                     <li><a href="blog-single.html" title="Blog Single" class="animsition-link">Blog Single</a></li>
                   </ul>
                 </li>
-                <!-- Profile Icon with submenu -->
                 <li class="profile-menu" style="position:relative;">
                   <a href="#" id="profile-icon" style="padding:0 10px;">
                     <img id="profile-img" src="" alt="Profile" style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;">
@@ -188,14 +108,12 @@
       <div class="row">
         <div class="col-lg-5 col-md-6 col-sm-12 hidden-xs">
           <div class="hero-caption">
-            <!-- intro caption -->
             <h1 class="hero-title">We Will Take Care of <br>
               Your Child</h1>
             <h3 class="hero-text">From Childcare Specialist</h3>
             <a href="service-list.html" class="btn btn-white">View Services</a>
           </div>
-          <!-- /.intro caption -->
-        </div>
+          </div>
       </div>
     </div>
   </div>
@@ -430,8 +348,6 @@
       </div>
     </div>
   </div>
-  <!-- Professional Inquiry Form Section -->
-  <!-- Centered Inquiry Form Section -->
   <section id="contact-form">
     <div class="form-container">
       <h3>Get in Touch</h3>
@@ -511,159 +427,122 @@
       </div>
     </div>
   </div>
-  <!-- back to top icon -->
   <a href="#0" class="cd-top" title="Go to top">Top</a>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
   <script src="js/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="js/bootstrap.min.js"></script>
   <script src="js/menumaker.js"></script>
-  <!-- sticky header -->
   <script type="text/javascript" src="js/jquery.sticky.js"></script>
   <script type="text/javascript" src="js/sticky-header.js"></script>
-  <!-- animsition -->
   <script type="text/javascript" src="js/animsition.js"></script>
   <script type="text/javascript" src="js/animsition-script.js"></script>
-  <!-- Back to top script -->
   <script src="js/back-to-top.js" type="text/javascript"></script>
 
-  <!-- Firebase: Save Inquiry Form to Firestore -->
-  <!-- Firebase: Save Inquiry Form to Firestore -->
-</script>
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<script>
-  // Initialize EmailJS
-  (function() {
-    emailjs.init("dtuCgQmPCHjK7J9BA");
-  })();
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    // Initialize EmailJS
+    (function() {
+      emailjs.init("dtuCgQmPCHjK7J9BA");
+    })();
 
-  // Use Firebase v8 API for Firestore
-  // const db = firebase.firestore();
+    // Reference the form only once
+    const inquiryForm = document.getElementById("inquiryForm");
+    if (inquiryForm) {
+      inquiryForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-  // Reference the form only once
-  const inquiryForm = document.getElementById("inquiryForm");
-  if (inquiryForm) {
-    inquiryForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+        const name = document.getElementById("nameInput")?.value.trim() || "";
+        const mobile = document.getElementById("mobileInput")?.value.trim() || "";
+        const email = document.getElementById("emailInput")?.value.trim() || "";
+        const reason = document.getElementById("reasonInput")?.value.trim() || "";
 
-      const name = document.getElementById("nameInput")?.value.trim() || "";
-      const mobile = document.getElementById("mobileInput")?.value.trim() || "";
-      const email = document.getElementById("emailInput")?.value.trim() || "";
-      const reason = document.getElementById("reasonInput")?.value.trim() || "";
+        if (!name || !mobile || !email || !reason) {
+          alert("Please fill in all fields!");
+          return;
+        }
 
-      if (!name || !mobile || !email || !reason) {
-        alert("Please fill in all fields!");
-        return;
-      }
+        const submitBtn = inquiryForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Submitting...";
 
-      const submitBtn = inquiryForm.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Submitting...";
+        let firestoreSuccess = false;
+        let emailSuccess = false;
 
-      let firestoreSuccess = false;
-      let emailSuccess = false;
+        // Save to Firestore
+        try {
+          // Use the global db object initialized earlier
+          await db.collection("inquiries").add({
+            name,
+            mobile,
+            email,
+            reason,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          firestoreSuccess = true;
+        } catch (error) {
+          console.error("Error adding inquiry to Firestore:", error);
+        }
 
-      // Save to Firestore
-      try {
-        await firebase.firestore().collection("inquiries").add({
-          name,
-          mobile,
-          email,
-          reason,
-          timestamp: new Date()
-        });
-        firestoreSuccess = true;
-      } catch (error) {
-        console.error("Error adding inquiry to Firestore:", error);
-      }
+        // Send Email via EmailJS
+        try {
+          await emailjs.send("service_frugd33", "template_yqstobb", {
+            name,
+            email,
+            phone: mobile,
+            message: reason
+          });
+          emailSuccess = true;
+          console.log("✅ Email notification sent!");
+        } catch (err) {
+          console.error("❌ EmailJS error:", err);
+        }
 
-      // Send Email via EmailJS
-      try {
-        await emailjs.send("service_frugd33", "template_yqstobb", {
-          name,
-          email,
-          phone: mobile,
-          message: reason
-        });
-        emailSuccess = true;
-        console.log("✅ Email notification sent!");
-      } catch (err) {
-        console.error("❌ EmailJS error:", err);
-      }
-
-      if (firestoreSuccess && emailSuccess) {
-        inquiryForm.reset();
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Submit";
-        alert("✅ Thank you! We’ll contact you soon.");
-      } else {
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Submit";
-        alert("⚠️ Error submitting form. Please try again later.");
-      }
-    });
-  } else {
-    console.warn("inquiryForm not found on this page.");
-  }
-</script>
-</script>
-
-</div>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var profileIcon = document.getElementById('profile-icon');
-  var profileSubmenu = document.getElementById('profile-submenu');
-  if (profileIcon && profileSubmenu) {
-    profileIcon.addEventListener('click', function(e) {
-      e.preventDefault();
-      profileSubmenu.style.display = (profileSubmenu.style.display === 'block') ? 'none' : 'block';
-    });
-    document.addEventListener('click', function(e) {
-      if (!profileIcon.contains(e.target) && !profileSubmenu.contains(e.target)) {
-        profileSubmenu.style.display = 'none';
-      }
-    });
-  }
-  var logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      firebase.auth().signOut().then(function() {
-        window.location.href = 'login.html';
+        if (firestoreSuccess && emailSuccess) {
+          inquiryForm.reset();
+          submitBtn.disabled = false;
+          submitBtn.innerText = "Submit";
+          alert("✅ Thank you! We’ll contact you soon.");
+        } else {
+          submitBtn.disabled = false;
+          submitBtn.innerText = "Submit";
+          alert("⚠️ Error submitting form. Please try again later.");
+        }
       });
+    } else {
+      console.warn("inquiryForm not found on this page.");
+    }
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var profileIcon = document.getElementById('profile-icon');
+      var profileSubmenu = document.getElementById('profile-submenu');
+      if (profileIcon && profileSubmenu) {
+        profileIcon.addEventListener('click', function(e) {
+          e.preventDefault();
+          // Toggle display
+          profileSubmenu.style.display = (profileSubmenu.style.display === 'block') ? 'none' : 'block';
+        });
+        // Close menu if clicking outside
+        document.addEventListener('click', function(e) {
+          if (!profileIcon.contains(e.target) && !profileSubmenu.contains(e.target)) {
+            profileSubmenu.style.display = 'none';
+          }
+        });
+      }
+      var logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          firebase.auth().signOut().then(function() {
+            // Redirection is handled by the onAuthStateChanged listener at the top
+            // but we can add an explicit redirect here for faster response.
+            window.location.href = 'login.html';
+          }).catch(function(error) {
+             console.error("Logout Error:", error);
+             alert("Logout failed. Please try again.");
+          });
+        });
+      }
     });
-  }
-});
-</script>
-
+  </script>
 </body>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var profileIcon = document.getElementById('profile-icon');
-  var profileSubmenu = document.getElementById('profile-submenu');
-  if (profileIcon && profileSubmenu) {
-    profileIcon.addEventListener('click', function(e) {
-      e.preventDefault();
-      profileSubmenu.style.display = (profileSubmenu.style.display === 'block') ? 'none' : 'block';
-    });
-    document.addEventListener('click', function(e) {
-      if (!profileIcon.contains(e.target) && !profileSubmenu.contains(e.target)) {
-        profileSubmenu.style.display = 'none';
-      }
-    });
-  }
-  var logoutBtn = document.getElementById('logout-btn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      firebase.auth().signOut().then(function() {
-        window.location.href = 'login.html';
-      });
-    });
-  }
-});
-</script>
-
 </html>
