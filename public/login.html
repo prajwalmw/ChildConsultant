@@ -145,19 +145,19 @@
 
       try {
         if (isNewUser) {
-          // New user: create the document
-          userData.role = "parent"; // Default role
+          // New user: create the document with default role 'parent'
+          userData.role = "parent"; 
           userData.createdAt = timestamp;
           await userRef.set(userData);
         } else {
-          // Existing user: update the document
+          // Existing user: only update fields (we preserve the existing role)
           await userRef.update({ 
             lastLogin: timestamp,
             displayName: userData.displayName,
             photoURL: userData.photoURL
           });
         }
-        console.log("User profile updated/created successfully.");
+        console.log("User profile updated/created successfully. Role:", userData.role || 'existing role preserved');
         window.location.href = 'index.html';
       } catch (error) {
         console.error("Error managing user profile in Firestore:", error);

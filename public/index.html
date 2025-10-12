@@ -20,6 +20,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
 
@@ -40,93 +41,133 @@
       firebase.initializeApp(firebaseConfig);
     }
     const auth = firebase.auth();
-    const db = firebase.firestore(); // Firestore is correctly initialized here
+    const db = firebase.firestore();
 
     auth.onAuthStateChanged(user => {
       var profileImg = document.getElementById('profile-img');
+      var navigation = document.getElementById('navigation');
+      
       if (!user) {
         // Not logged in → redirect to login page
         window.location.href = 'login.html';
       } else {
-        // Logged in: Set profile image if available
+        // Logged in: Set profile image and fetch role
         if (profileImg) {
             profileImg.src = user.photoURL || 'images/default-profile.png'; // Use a fallback image
         }
+        
+        // --- 🔑 New Logic: Fetch User Role and Update Menu ---
+        db.collection('users').doc(user.uid).get()
+          .then(doc => {
+            let menuHtml = '';
+
+            if (doc.exists) {
+              const role = doc.data().role;
+              if (navigation && role) {
+                if (role === 'admin') {
+                  menuHtml = '<li><a href="admin/admin_dashboard.html" title="Admin Dashboard" class="animsition-link">Admin Dashboard</a></li>';
+                } else if (role === 'doctor') {
+                  menuHtml = '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
+                } else {
+                  // For 'parent' or default role
+                  menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
+                }
+              }
+            } else {
+                // Fallback to parent dashboard if user document is missing
+                menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
+            }
+            
+            // Find the position after "Home" (first <li>)
+            const homeMenuItem = navigation.querySelector('ul > li:first-child');
+            if (homeMenuItem) {
+                // Insert the new menu item right after Home
+                homeMenuItem.insertAdjacentHTML('afterend', menuHtml);
+            } 
+          })
+          .catch(error => {
+            console.error("Error fetching user role:", error);
+            // Fallback: If network fails, still try to show a basic dashboard link
+            const navigation = document.getElementById('navigation');
+            const homeMenuItem = navigation?.querySelector('ul > li:first-child');
+            if (homeMenuItem) {
+              homeMenuItem.insertAdjacentHTML('afterend', '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>');
+            }
+          });
+        // --- End New Logic ---
       }
     });
-
-    // Logout and Profile Menu Display Logic (moved to end of body)
   </script>
 
+  <div id="animsition-box" class="animsition-box">
 
-  <div class="hero-section">
-    <div class="container">
-      <div class="top-bar">
-        <div class="row">
-          <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-            <p class="mail-text">Welcome to our clinic care website</p>
-          </div>
-          <div class="col-lg-9 col-md-9 col-sm-6 text-right">
-            <div class="top-nav hidden-xs"><span>Make An Appointment </span> <span><a href="#"><i
-                    class="fa fa-search"></i></a></span> </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="header">
+    <div class="hero-section">
       <div class="container">
-        <div class="row">
-          <div class="col-md-3 col-sm-6 col-xs-6">
-            <div class="logo"> <a href="index.html"><img src="images/logo.png" alt=""></a> </div>
-          </div>
-          <div class="col-md-9 col-sm-12">
-            <div class="navigation pull-right" id="navigation">
-              <ul>
-                <li class="active"><a href="index.html" title="Home" class="animsition-link">Home</a></li>
-                <li><a href="dashboard/dashboard.html">Dashboard</a></li>
-                <li><a href="blog-default.html" title="Blog" class="animsition-link">Blog Default</a>
-                  <ul>
-                    <li><a href="blog-default.html" title="Blog" class="animsition-link">Blog Default</a></li>
-                    <li><a href="blog-single.html" title="Blog Single" class="animsition-link">Blog Single</a></li>
-                  </ul>
-                </li>
-                <li class="profile-menu" style="position:relative;">
-                  <a href="#" id="profile-icon" style="padding:0 10px;">
-                    <img id="profile-img" src="" alt="Profile" style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;">
-                  </a>
-                  <ul id="profile-submenu" style="display:none; position:absolute; right:0; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.15); min-width:120px; z-index:1000;">
-                    <li><a href="#" id="logout-btn" style="color:#333;">Logout</a></li>
-                  </ul>
-                </li>
-              </ul>
+        <div class="top-bar">
+          <div class="row">
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+              <p class="mail-text">Welcome to our clinic care website</p>
+            </div>
+            <div class="col-lg-9 col-md-9 col-sm-6 text-right">
+              <div class="top-nav hidden-xs"><span>Make An Appointment </span> <span><a href="#"><i
+                      class="fa fa-search"></i></a></span> </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-5 col-md-6 col-sm-12 hidden-xs">
-          <div class="hero-caption">
-            <h1 class="hero-title">We Will Take Care of <br>
-              Your Child</h1>
-            <h3 class="hero-text">From Childcare Specialist</h3>
-            <a href="service-list.html" class="btn btn-white">View Services</a>
-          </div>
-          </div>
-      </div>
-    </div>
-  </div>
-  <div class="space-medium">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-          <div class="section-title">
-            <h1>Childcare Speciality Services</h1>
+      <div class="header">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-3 col-sm-6 col-xs-6">
+              <div class="logo"> <a href="index.html"><img src="images/logo.png" alt=""></a> </div>
+            </div>
+            <div class="col-md-9 col-sm-12">
+              <div class="navigation pull-right" id="navigation">
+                <ul>
+                  <li class="active"><a href="index.html" title="Home" class="animsition-link">Home</a></li>
+                  <li><a href="blog-default.html" title="Blog" class="animsition-link">Blog Default</a>
+                    <ul>
+                      <li><a href="blog-default.html" title="Blog" class="animsition-link">Blog Default</a></li>
+                      <li><a href="blog-single.html" title="Blog Single" class="animsition-link">Blog Single</a></li>
+                    </ul>
+                  </li>
+                  <li class="profile-menu" style="position:relative;">
+                    <a href="#" id="profile-icon" style="padding:0 10px;">
+                      <img id="profile-img" src="" alt="Profile" style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;">
+                    </a>
+                    <ul id="profile-submenu" style="display:none; position:absolute; right:0; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.15); min-width:120px; z-index:1000;">
+                      <li><a href="#" id="logout-btn" style="color:#333;">Logout</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-5 col-md-6 col-sm-12 hidden-xs">
+            <div class="hero-caption">
+              <h1 class="hero-title">We Will Take Care of <br>
+                Your Child</h1>
+              <h3 class="hero-text">From Childcare Specialist</h3>
+              <a href="service-list.html" class="btn btn-white">View Services</a>
+            </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="space-medium">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="section-title">
+              <h1>Childcare Speciality Services</h1>
+            </div>
+          </div>
+        </div>
+        <div class="row">
         <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
           <div class="service-block mb30">
             <div class="service-img mb30"> <a href="service-list.html" class="imghover"><img src="images/service-1.jpg"
@@ -175,10 +216,10 @@
           </div>
         </div>
       </div>
+        </div>
     </div>
-  </div>
-  <div class="bg-light space-medium">
-    <div class="container">
+    <div class="space-medium bg-light">
+      <div class="container">
       <div class="row">
         <div class="col-lg-offset-2 col-lg-8 col-md-offset-2 col-md-8 col-sm-12 col-xs-12">
           <div class="lead italic mb40 text-center">
@@ -244,9 +285,9 @@
         </div>
       </div>
     </div>
-  </div>
-  <div class="space-medium">
-    <div class="container">
+      </div>
+    <div class="space-medium">
+      <div class="container">
       <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
           <div class="section-title text-center">
@@ -281,9 +322,9 @@
         </div>
       </div>
     </div>
-  </div>
-  <div class="space-medium bg-light">
-    <div class="container">
+      </div>
+    <div class="space-medium bg-light">
+      <div class="container">
       <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
           <div class="section-title text-center">
@@ -347,88 +388,89 @@
         </div>
       </div>
     </div>
-  </div>
-  <section id="contact-form">
-    <div class="form-container">
-      <h3>Get in Touch</h3>
-      <form id="inquiryForm">
-        <div class="form-group">
-          <input type="text" id="nameInput" class="form-control" placeholder="Your Name" required>
-        </div>
-        <div class="form-group">
-          <input type="tel" id="mobileInput" class="form-control" placeholder="Mobile Number" pattern="[0-9]{10}"
-            required>
-        </div>
-        <div class="form-group">
-          <input type="email" id="emailInput" class="form-control" placeholder="Email Address" required>
-        </div>
-        <div class="form-group">
-          <textarea id="reasonInput" class="form-control" rows="8" placeholder="Reason for Reaching Out"
-            required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-      </form>
-    </div>
-  </section>
+      </div>
+    <section id="contact-form">
+      <div class="form-container">
+        <h3>Get in Touch</h3>
+        <form id="inquiryForm">
+          <div class="form-group">
+            <input type="text" id="nameInput" class="form-control" placeholder="Your Name" required>
+          </div>
+          <div class="form-group">
+            <input type="tel" id="mobileInput" class="form-control" placeholder="Mobile Number" pattern="[0-9]{10}"
+              required>
+          </div>
+          <div class="form-group">
+            <input type="email" id="emailInput" class="form-control" placeholder="Email Address" required>
+          </div>
+          <div class="form-group">
+            <textarea id="reasonInput" class="form-control" rows="8" placeholder="Reason for Reaching Out"
+              required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+    </section>
 
-  <div class="footer space-medium">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-          <div class="footer-widget mb30">
-            <h3 class="footer-title">Specialist</h3>
-            <ul class="listnone">
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Adolescent Medicine</a></li>
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Child Abuse Pediatries</a></li>
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Allergy &amp;
-                  Immunology</a></li>
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Cardiology</a></li>
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Critical Care</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
-          <div class="footer-widget mb30">
-            <h3 class="footer-title">For Patients</h3>
-            <ul class="listnone">
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="index.html">Home</a></li>
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="service-list.html">Services</a></li>
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="blog-default.html">Blog</a></li>
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="contact.html">Contactus</a></li>
-              <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="testimonial.html">Testimonials</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-lg-offset-1 col-lg-6 col-md-offset-1 col-md-6 col-sm-12 col-xs-12">
-          <div class="footer-widget mb30">
-            <h3 class="footer-title">News Letter Sign Up</h3>
-            <p class="mb20">Enter your email address below to receive our monthely fun-filled newsletter.</p>
-            <div class="row">
-              <div class="col-md-8">
-                <input type="text" class="form-control" placeholder="Enter you email here">
-              </div>
-              <div class="col-md-4"> <a href="#" class="btn btn-primary">SUBSCRIBE</a></div>
+    <div class="footer space-medium">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="footer-widget mb30">
+              <h3 class="footer-title">Specialist</h3>
+              <ul class="listnone">
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Adolescent Medicine</a></li>
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Child Abuse Pediatries</a></li>
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Allergy &amp;
+                    Immunology</a></li>
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Cardiology</a></li>
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Critical Care</a></li>
+              </ul>
             </div>
           </div>
-          <div class="footer-social"> <a href="#"><i class="fa fa-twitter"></i></a> <a href="#" class="active"><i
-                class="fa fa-facebook"></i> </a> <a href="#"> <i class="fa fa-google-plus"></i> </a> <a href="#"> <i
-                class="fa fa-pinterest"></i> </a> <a href="#"> <i class="fa fa-envelope"></i> </a> </div>
+          <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
+            <div class="footer-widget mb30">
+              <h3 class="footer-title">For Patients</h3>
+              <ul class="listnone">
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="index.html">Home</a></li>
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="service-list.html">Services</a></li>
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="blog-default.html">Blog</a></li>
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="contact.html">Contactus</a></li>
+                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="testimonial.html">Testimonials</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-offset-1 col-lg-6 col-md-offset-1 col-md-6 col-sm-12 col-xs-12">
+            <div class="footer-widget mb30">
+              <h3 class="footer-title">News Letter Sign Up</h3>
+              <p class="mb20">Enter your email address below to receive our monthely fun-filled newsletter.</p>
+              <div class="row">
+                <div class="col-md-8">
+                  <input type="text" class="form-control" placeholder="Enter you email here">
+                </div>
+                <div class="col-md-4"> <a href="#" class="btn btn-primary">SUBSCRIBE</a></div>
+              </div>
+            </div>
+            <div class="footer-social"> <a href="#"><i class="fa fa-twitter"></i></a> <a href="#" class="active"><i
+                  class="fa fa-facebook"></i> </a> <a href="#"> <i class="fa fa-google-plus"></i> </a> <a href="#"> <i
+                  class="fa fa-pinterest"></i> </a> <a href="#"> <i class="fa fa-envelope"></i> </a> </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="tiny-footer">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-          <p>Copyrights@2017 | All Rights Reserve</p>
+    <div class="tiny-footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <p>Copyrights@2017 | All Rights Reserve</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <a href="#0" class="cd-top" title="Go to top">Top</a>
-  <script src="js/jquery.min.js"></script>
+    <a href="#0" class="cd-top" title="Go to top">Top</a>
+  
+  </div> <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
   <script src="js/menumaker.js"></script>
   <script type="text/javascript" src="js/jquery.sticky.js"></script>
@@ -534,7 +576,6 @@
           e.preventDefault();
           firebase.auth().signOut().then(function() {
             // Redirection is handled by the onAuthStateChanged listener at the top
-            // but we can add an explicit redirect here for faster response.
             window.location.href = 'login.html';
           }).catch(function(error) {
              console.error("Logout Error:", error);
