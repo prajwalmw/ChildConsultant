@@ -63,7 +63,8 @@
         let currentPatientId = null;
         let currentParentId = null; 
         let currentDoctorId = null;
-        let currentPatientName = 'Unknown'; // New global variable to store patient name
+        let currentPatientName = 'Unknown'; 
+        let currentParentName = 'Loading...';
 
         // Function to get query parameters from URL
         function getQueryVariable(variable) {
@@ -77,6 +78,23 @@
             }
             return (false);
         }
+        
+        // Helper function to sanitize name for use in a document ID
+        function slugifyName(text) {
+            return text.toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric (except spaces/hyphens)
+                .replace(/\s+/g, '-')       // Replace spaces with hyphens
+                .replace(/-+/g, '-');      // Collapse multiple hyphens
+        }
+        
+        // FIX: Create the unique, traceable Parent document key
+        function createParentKey(parentName, parentId) {
+            const nameSlug = slugifyName(parentName || 'unknown-parent');
+            // Format: ParentNameSlug_ParentID (e.g., akshyata-tamse_asdf12345)
+            return `${nameSlug}_${parentId}`;
+        }
+
 
         // --- Role-Based Access and Initialization ---
         auth.onAuthStateChanged(user => {
@@ -116,19 +134,21 @@
                 const doc = await db.collection('users').doc(currentParentId).get();
                 if (doc.exists) {
                     const parent = doc.data();
-                    const parentName = parent.name || parent.displayName || `ID: ${currentParentId}`;
-                    displayElement.textContent = parentName; 
+                    currentParentName = parent.name || parent.displayName || `ID: ${currentParentId}`;
+                    displayElement.textContent = currentParentName; 
                 } else {
-                    displayElement.textContent = `Parent Not Found (ID: ${currentParentId})`;
+                    currentParentName = `Parent Not Found (ID: ${currentParentId})`;
+                    displayElement.textContent = currentParentName;
                 }
             } catch (error) {
                 console.error("Error fetching parent name:", error);
-                displayElement.textContent = `Error Loading Parent (ID: ${currentParentId})`;
+                currentParentName = `Error Loading Parent (ID: ${currentParentId})`;
+                displayElement.textContent = currentParentName;
             }
         }
 
 
-        function initializeForm() {
+        async function initializeForm() {
             currentPatientId = getQueryVariable('patientId');
             currentParentId = getQueryVariable('parentId'); 
 
@@ -143,26 +163,25 @@
                 backLink.href = `child_selection.html?parentId=${currentParentId}`;
             }
             
-            // 1. Fetch and Display Parent Name
-            fetchParentName(); 
+            await fetchParentName(); 
+            const parentKey = createParentKey(currentParentName, currentParentId);
 
-            // 2. Fetch Patient Details
-            db.collection('patients').doc(currentPatientId).get()
+
+            // FIX: Fetch Patient Details from the nested location
+            db.collection('patients').doc(parentKey).collection('children').doc(currentPatientId).get()
                 .then(doc => {
                     if (!doc.exists) {
-                        alert('Error: Patient not found.');
+                        alert('Error: Patient not found under the specified parent.');
                         window.location.href = `child_selection.html?parentId=${currentParentId}`;
                         return;
                     }
                     const patient = doc.data();
                     
-                    // FIX: Store the patient name globally and display it
                     currentPatientName = patient.name || 'Unknown Patient';
                     
                     document.getElementById('patient-name-display').textContent = currentPatientName;
                     document.getElementById('patient-id-display').textContent = currentPatientId;
                     
-                    // 3. Set Default Values and Listen for Submission
                     document.getElementById('date-of-visit').value = getTodayDate();
                     document.getElementById('consultation-form').addEventListener('submit', handleFormSubmission);
                 })
@@ -181,16 +200,8 @@
             return `${year}-${month}-${day}`;
         }
         
-        // Helper function to sanitize name for use in a document ID
-        function slugifyName(text) {
-            return text.toLowerCase()
-                .trim()
-                .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric characters (except spaces and hyphens)
-                .replace(/\s+/g, '-')       // Replace spaces with hyphens
-                .replace(/-+/g, '-');      // Collapse multiple hyphens
-        }
 
-        // --- FIX: Generates Readable, UNIQUE ID using Name and Timestamp ---
+        // Generates Readable, UNIQUE ID using Name and Timestamp
         function generateConsultationId(patientName) {
             const nameSlug = slugifyName(patientName || 'patient');
             const now = new Date();
@@ -209,7 +220,6 @@
         async function handleFormSubmission(e) {
             e.preventDefault();
 
-            // --- Confirmation Dialog for SAVE ---
             if (!confirm('Are you sure you want to save these consultation notes?')) {
                 return; 
             }
@@ -219,8 +229,9 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
 
-            // Generate the unique ID using the global patient name
             const consultationId = generateConsultationId(currentPatientName); 
+            const parentKey = createParentKey(currentParentName, currentParentId);
+
 
             const consultationData = {
                 doctorId: currentDoctorId,
@@ -249,13 +260,13 @@
             };
 
             try {
-                // Use .doc(consultationId).set() to define the readable, unique ID
-                await db.collection('patients').doc(currentPatientId)
+                // FIX: Save consultation notes to the deepest sub-collection
+                await db.collection('patients').doc(parentKey)
+                        .collection('children').doc(currentPatientId)
                         .collection('consultations').doc(consultationId).set(consultationData);
 
                 alert(`Consultation notes saved successfully! Consultation ID: ${consultationId}`);
                 form.reset();
-                // Redirect back to the child selection page for the same parent
                 window.location.href = `child_selection.html?parentId=${currentParentId}`; 
             } catch (error) {
                 console.error("Error saving consultation:", error);

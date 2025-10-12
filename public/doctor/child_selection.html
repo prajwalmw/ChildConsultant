@@ -71,6 +71,23 @@
         }
 
         let currentParentId = getQueryVariable('parentId');
+        let currentParentName = 'Loading...'; // Global to hold the fetched name
+
+        // Helper function to sanitize name for use in a document ID
+        function slugifyName(text) {
+            return text.toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric (except spaces/hyphens)
+                .replace(/\s+/g, '-')       // Replace spaces with hyphens
+                .replace(/-+/g, '-');      // Collapse multiple hyphens
+        }
+        
+        // FIX: Create the unique, traceable Parent document key
+        function createParentKey(parentName, parentId) {
+            const nameSlug = slugifyName(parentName || 'unknown-parent');
+            // Format: ParentNameSlug_ParentID (e.g., akshyata-tamse_asdf12345)
+            return `${nameSlug}_${parentId}`;
+        }
 
         // --- Role-Based Access Check ---
         auth.onAuthStateChanged(user => {
@@ -109,20 +126,20 @@
                 const parentDoc = await db.collection('users').doc(currentParentId).get();
                 if (parentDoc.exists) {
                     const data = parentDoc.data();
-                    // Use 'name' or fallback to 'displayName' from user data
-                    parentName = data.name || data.displayName || `Parent ID: ${currentParentId}`;
+                    currentParentName = data.name || data.displayName || `Parent ID: ${currentParentId}`;
+                    parentName = currentParentName;
                 } else {
                     parentName = `Parent Not Found (ID: ${currentParentId})`;
+                    currentParentName = parentName; // Update global variable too
                 }
             } catch (error) {
                 console.error("Error fetching parent name:", error);
                 parentName = `Error loading parent name (ID: ${currentParentId})`;
+                currentParentName = parentName; // Update global variable too
             }
 
-            // Update the display text with the fetched name
             document.getElementById('parent-name-display').textContent = parentName;
             
-            // Proceed to fetch the children
             fetchChildren();
         }
 
@@ -130,8 +147,11 @@
             const childTableBody = document.getElementById('child-table-body');
             childTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Children...</td></tr>';
 
-            // Query patients linked to the currentParentId
-            db.collection('patients').where('parentId', '==', currentParentId).get()
+            // Generate the composite key now that we have the name
+            const parentKey = createParentKey(currentParentName, currentParentId);
+            
+            // FIX: Query the children sub-collection under the composite Parent Key document
+            db.collection('patients').doc(parentKey).collection('children').get()
                 .then(snapshot => {
                     childTableBody.innerHTML = '';
                     if (snapshot.empty) {
@@ -148,7 +168,6 @@
                         if (dob) {
                             const diff_ms = Date.now() - dob.getTime();
                             const age_dt = new Date(diff_ms);
-                            // Calculate age in years
                             ageDisplay = Math.abs(age_dt.getUTCFullYear() - 1970) + ' years';
                         }
                         

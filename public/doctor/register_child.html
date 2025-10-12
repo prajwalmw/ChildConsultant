@@ -58,7 +58,23 @@
         }
 
         let currentParentId = getQueryVariable('parentId');
-        let currentParentName = 'Loading...'; // Store the name globally for use in handleRegistration
+        let currentParentName = 'Loading...'; // Store the name globally
+
+        // Helper function to sanitize name for use in a document ID
+        function slugifyName(text) {
+            return text.toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric (except spaces/hyphens)
+                .replace(/\s+/g, '-')       // Replace spaces with hyphens
+                .replace(/-+/g, '-');      // Collapse multiple hyphens
+        }
+        
+        // FIX: Create the unique, traceable Parent document key
+        function createParentKey(parentName, parentId) {
+            const nameSlug = slugifyName(parentName || 'unknown-parent');
+            // Format: ParentNameSlug_ParentID (e.g., akshyata-tamse_asdf12345)
+            return `${nameSlug}_${parentId}`;
+        }
 
         // --- Fetch Parent Name Function ---
         async function fetchParentName() {
@@ -74,7 +90,6 @@
                 const doc = await db.collection('users').doc(currentParentId).get();
                 if (doc.exists) {
                     const parent = doc.data();
-                    // Store the name in the global variable
                     currentParentName = parent.name || parent.displayName || `Parent ID: ${currentParentId}`;
                     displayElement.textContent = currentParentName;
                 } else {
@@ -110,7 +125,6 @@
                         fetchParentName(); 
                         document.getElementById('register-child-form').addEventListener('submit', handleRegistration);
                         
-                        // Set the initial URL for the cancel button
                         const cancelBtn = document.getElementById('cancel-back-link');
                         cancelBtn.href = `child_selection.html?parentId=${currentParentId}`;
                         setupCancelButton(); 
@@ -125,7 +139,6 @@
         async function handleRegistration(e) {
             e.preventDefault();
             
-            // --- Confirmation Dialog for SAVE ---
             if (!confirm('Are you sure you want to register this new child? Double check the details before saving.')) {
                 return; 
             }
@@ -135,11 +148,14 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Registering...';
 
+            // Generate the composite Parent Key
+            const parentKey = createParentKey(currentParentName, currentParentId);
+
             const dobString = form['dob'].value;
             const childData = {
+                // We keep parentId and parentName *inside* the patient document for redundancy in queries
                 parentId: currentParentId, 
-                // FIX: Add parentName field for console traceability
-                parentName: currentParentName.startsWith('Error') || currentParentName.startsWith('Parent Not Found') ? 'N/A' : currentParentName, 
+                parentName: currentParentName, 
                 name: form['name'].value,
                 dob: dobString ? firebase.firestore.Timestamp.fromDate(new Date(dobString)) : null, 
                 gender: form['gender'].value,
@@ -150,7 +166,8 @@
             };
 
             try {
-                const docRef = await db.collection('patients').add(childData);
+                // FIX: Save the patient to the new nested location: patients/[ParentKey]/children/[New_Patient_ID]
+                const docRef = await db.collection('patients').doc(parentKey).collection('children').add(childData);
 
                 alert(`Child registered successfully! Patient ID: ${docRef.id}`);
                 window.location.href = `child_selection.html?parentId=${currentParentId}`;
