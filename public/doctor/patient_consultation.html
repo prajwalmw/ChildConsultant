@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Doctor Portal | Consultation Form</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .animsition-box {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+        .portal-container {
+            padding: 40px 0;
+        }
+        .section-separator {
+            border-top: 2px solid #ccc;
+            margin-top: 30px;
+            padding-top: 20px;
+            margin-bottom: 20px;
+        }
+        .form-control[rows="5"] {
+            min-height: 120px;
+        }
+        .form-title {
+            color: #00c3c9;
+            margin-bottom: 20px;
+        }
+        .patient-info {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        .patient-info strong {
+            color: #f7a83d;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+
+<body class="animsition">
+
+    <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+            authDomain: "child-consultant.firebaseapp.com",
+            projectId: "child-consultant",
+            storageBucket: "child-consultant.appspot.com",
+            messagingSenderId: "985386588549",
+            appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        let currentPatientId = null;
+        let currentParentId = null; 
+        let currentDoctorId = null;
+        let currentPatientName = 'Unknown'; // New global variable to store patient name
+
+        // Function to get query parameters from URL
+        function getQueryVariable(variable) {
+            const query = window.location.search.substring(1);
+            const vars = query.split("&");
+            for (let i = 0; i < vars.length; i++) {
+                const pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+            return (false);
+        }
+
+        // --- Role-Based Access and Initialization ---
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            currentDoctorId = user.uid;
+
+            db.collection('users').doc(user.uid).get()
+                .then(doc => {
+                    const role = doc.data()?.role;
+                    if (role !== 'admin' && role !== 'doctor') {
+                        alert('Access Denied. Doctors and Admins only.');
+                        window.location.href = '../index.html';
+                    } else {
+                        initializeForm();
+                        setupCancelButton(); 
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching role:", error);
+                    window.location.href = '../index.html';
+                });
+        });
+
+        async function fetchParentName() {
+            const displayElement = document.getElementById('parent-name-display');
+            displayElement.textContent = `Loading...`; 
+
+            if (!currentParentId) {
+                displayElement.textContent = 'Parent ID Missing';
+                return;
+            }
+
+            try {
+                const doc = await db.collection('users').doc(currentParentId).get();
+                if (doc.exists) {
+                    const parent = doc.data();
+                    const parentName = parent.name || parent.displayName || `ID: ${currentParentId}`;
+                    displayElement.textContent = parentName; 
+                } else {
+                    displayElement.textContent = `Parent Not Found (ID: ${currentParentId})`;
+                }
+            } catch (error) {
+                console.error("Error fetching parent name:", error);
+                displayElement.textContent = `Error Loading Parent (ID: ${currentParentId})`;
+            }
+        }
+
+
+        function initializeForm() {
+            currentPatientId = getQueryVariable('patientId');
+            currentParentId = getQueryVariable('parentId'); 
+
+            if (!currentPatientId || !currentParentId) {
+                alert('Error: Patient ID or Parent ID not provided. Redirecting to Parent List.');
+                window.location.href = 'doctor_portal.html';
+                return;
+            }
+
+            const backLink = document.getElementById('cancel-back-link');
+            if(backLink) {
+                backLink.href = `child_selection.html?parentId=${currentParentId}`;
+            }
+            
+            // 1. Fetch and Display Parent Name
+            fetchParentName(); 
+
+            // 2. Fetch Patient Details
+            db.collection('patients').doc(currentPatientId).get()
+                .then(doc => {
+                    if (!doc.exists) {
+                        alert('Error: Patient not found.');
+                        window.location.href = `child_selection.html?parentId=${currentParentId}`;
+                        return;
+                    }
+                    const patient = doc.data();
+                    
+                    // FIX: Store the patient name globally and display it
+                    currentPatientName = patient.name || 'Unknown Patient';
+                    
+                    document.getElementById('patient-name-display').textContent = currentPatientName;
+                    document.getElementById('patient-id-display').textContent = currentPatientId;
+                    
+                    // 3. Set Default Values and Listen for Submission
+                    document.getElementById('date-of-visit').value = getTodayDate();
+                    document.getElementById('consultation-form').addEventListener('submit', handleFormSubmission);
+                })
+                .catch(error => {
+                    console.error("Error fetching patient details:", error);
+                    alert('Could not load patient details.');
+                    window.location.href = `child_selection.html?parentId=${currentParentId}`;
+                });
+        }
+        
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Helper function to sanitize name for use in a document ID
+        function slugifyName(text) {
+            return text.toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric characters (except spaces and hyphens)
+                .replace(/\s+/g, '-')       // Replace spaces with hyphens
+                .replace(/-+/g, '-');      // Collapse multiple hyphens
+        }
+
+        // --- FIX: Generates Readable, UNIQUE ID using Name and Timestamp ---
+        function generateConsultationId(patientName) {
+            const nameSlug = slugifyName(patientName || 'patient');
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+
+            // Format: PatientNameSlug-YYYYMMDD-HHMMSS-MMM (Easily readable and unique)
+            return `${nameSlug}-${year}${month}${day}-${hours}${minutes}${seconds}-${milliseconds}`;
+        }
+
+        async function handleFormSubmission(e) {
+            e.preventDefault();
+
+            // --- Confirmation Dialog for SAVE ---
+            if (!confirm('Are you sure you want to save these consultation notes?')) {
+                return; 
+            }
+
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            // Generate the unique ID using the global patient name
+            const consultationId = generateConsultationId(currentPatientName); 
+
+            const consultationData = {
+                doctorId: currentDoctorId,
+                date: new Date(form['date-of-visit'].value),
+                type: form['consultation-type'].value,
+                
+                // Vitals
+                weight: parseFloat(form['weight'].value) || null,
+                height: parseFloat(form['height'].value) || null,
+                temperature: form['temperature'].value,
+                symptomDuration: form['symptom-duration'].value,
+                vitalsNotes: form['vitals-notes'].value,
+
+                // S.O.A.P.
+                subjective: form['subjective'].value,
+                objective: form['objective'].value,
+                assessment: form['assessment'].value,
+                plan: form['plan'].value,
+
+                // Action/Follow-up
+                prescriptionGiven: form['prescription-given'].checked,
+                followUpRequired: form['follow-up-required'].checked,
+                nextFollowUpDate: form['follow-up-required'].checked && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null,
+                
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                // Use .doc(consultationId).set() to define the readable, unique ID
+                await db.collection('patients').doc(currentPatientId)
+                        .collection('consultations').doc(consultationId).set(consultationData);
+
+                alert(`Consultation notes saved successfully! Consultation ID: ${consultationId}`);
+                form.reset();
+                // Redirect back to the child selection page for the same parent
+                window.location.href = `child_selection.html?parentId=${currentParentId}`; 
+            } catch (error) {
+                console.error("Error saving consultation:", error);
+                alert('Error saving consultation. Check the console for details.');
+                submitBtn.textContent = 'Save Consultation Notes';
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // --- Confirmation for Cancel Button ---
+        function setupCancelButton() {
+            const cancelBtn = document.getElementById('cancel-back-link');
+            const targetUrl = cancelBtn.href;
+
+            cancelBtn.href = "#";
+            cancelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to discard these notes and go back to the Child List? Any unsaved data will be lost.')) {
+                    window.location.href = targetUrl;
+                }
+            });
+        }
+    </script>
+
+    <div id="animsition-box" class="animsition-box">
+        <div class="header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 col-xs-6">
+                        <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container portal-container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <h1>Consultation Notes</h1>
+                    </div>
+                    
+                    <div class="patient-info">
+                        Patient Name: <strong><span id="patient-name-display">...</span></strong> (ID: <span id="patient-id-display">...</span>)
+                    </div>
+                    <div class="patient-info">
+                        Parent: <strong><span id="parent-name-display">Loading...</span></strong>
+                    </div>
+                    <hr>
+
+                    <form id="consultation-form">
+                        
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label for="date-of-visit">Date of Visit *</label>
+                                <input type="date" class="form-control" id="date-of-visit" required>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="consultation-type">Consultation Type *</label>
+                                <select class="form-control" id="consultation-type" required>
+                                    <option value="" disabled selected>Select Type</option>
+                                    <option value="Sick Visit">Sick Visit</option>
+                                    <option value="Routine Check-up">Routine Check-up / Well-Visit</option>
+                                    <option value="Follow-up">Follow-up</option>
+                                    <option value="Vaccination">Vaccination</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h3 class="form-title section-separator">Vitals & Assessment</h3>
+                        <div class="row">
+                            <div class="col-md-3 form-group">
+                                <label for="weight">Weight (kg)</label>
+                                <input type="number" step="0.1" class="form-control" id="weight">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label for="height">Height (cm)</label>
+                                <input type="number" step="0.1" class="form-control" id="height">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label for="temperature">Temperature (°C/°F)</label>
+                                <input type="text" class="form-control" id="temperature">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label for="symptom-duration">Symptom Duration</label>
+                                <input type="text" class="form-control" id="symptom-duration" placeholder="e.g., 3 days, since morning">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="vitals-notes">Vitals Notes / Quick Summary</label>
+                            <textarea class="form-control" id="vitals-notes" rows="2"></textarea>
+                        </div>
+
+
+                        <h3 class="form-title section-separator">S.O.A.P. Notes</h3>
+
+                        <div class="form-group">
+                            <label for="subjective">Subjective (S) - Parent/Patient Complaint *</label>
+                            <textarea class="form-control" id="subjective" rows="5" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="objective">Objective (O) - Physical Exam Findings</label>
+                            <textarea class="form-control" id="objective" rows="5"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="assessment">Assessment / Diagnosis (A) *</label>
+                            <textarea class="form-control" id="assessment" rows="5" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="plan">Plan / Treatment (P) *</label>
+                            <textarea class="form-control" id="plan" rows="5" required></textarea>
+                        </div>
+
+                        <h3 class="form-title section-separator">Action & Follow-up</h3>
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" id="prescription-given"> Prescription Given
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" id="follow-up-required"> Follow-up Required
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="next-follow-up-date">Next Follow-up Date</label>
+                                <input type="date" class="form-control" id="next-follow-up-date">
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">Save Consultation Notes</button>
+                            <a id="cancel-back-link" href="#" class="btn btn-default btn-lg animsition-link">Cancel / Back to Child List</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="tiny-footer">
+            <div class="container">
+                <p>Doctor Portal Access</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/animsition.js"></script>
+    <script type="text/javascript" src="../js/animsition-script.js"></script>
+</body>
+</html>

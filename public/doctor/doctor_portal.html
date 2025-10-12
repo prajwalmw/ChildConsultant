@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Doctor Portal | Select Parent</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .animsition-box {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+        .portal-container {
+            padding: 40px 0;
+        }
+        .parent-table th {
+            background-color: #00c3c9;
+            color: white;
+        }
+        .parent-table .btn-consult {
+            background-color: #f7a83d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        .parent-table .btn-consult:hover {
+            background-color: #e09633;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+
+<body class="animsition">
+
+    <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+            authDomain: "child-consultant.firebaseapp.com",
+            projectId: "child-consultant",
+            storageBucket: "child-consultant.appspot.com",
+            messagingSenderId: "985386588549",
+            appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // --- Role-Based Access Check ---
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            db.collection('users').doc(user.uid).get()
+                .then(doc => {
+                    const role = doc.data()?.role;
+                    if (role !== 'admin' && role !== 'doctor') {
+                        alert('Access Denied. Doctors and Admins only.');
+                        window.location.href = '../index.html';
+                    } else {
+                        fetchParents();
+                        setupCancelButton(); 
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching role:", error);
+                    window.location.href = '../index.html';
+                });
+        });
+
+        function fetchParents() {
+            const parentTableBody = document.getElementById('parent-table-body');
+            parentTableBody.innerHTML = '<tr><td colspan="4" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Parent Users...</td></tr>';
+
+            // Query only users where role is 'parent'
+            db.collection('users').where('role', '==', 'parent').get()
+                .then(snapshot => {
+                    parentTableBody.innerHTML = ''; 
+                    if (snapshot.empty) {
+                        parentTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No registered parent users found.</td></tr>';
+                        return;
+                    }
+
+                    snapshot.forEach(doc => {
+                        const parent = doc.data();
+                        const parentId = doc.id;
+                        
+                        // Use 'name' or fallback to 'displayName' from user data
+                        const parentName = parent.name || parent.displayName || 'N/A';
+                        
+                        const row = `
+                            <tr>
+                                <td>${parentName}</td>
+                                <td>${parent.email || 'N/A'}</td>
+                                <td>${parentId}</td>
+                                <td>
+                                    <a href="child_selection.html?parentId=${parentId}" class="btn btn-consult animsition-link">Select & View Children</a>
+                                </td>
+                            </tr>
+                        `;
+                        parentTableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching parents:", error);
+                    parentTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading parent data.</td></tr>';
+                });
+        }
+        
+        // --- Confirmation for Back Button ---
+        function setupCancelButton() {
+            const backBtn = document.getElementById('back-to-home-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to exit the Doctor Portal and go back to the Home page?')) {
+                        window.location.href = '../index.html';
+                    }
+                });
+            }
+        }
+    </script>
+
+    <div id="animsition-box" class="animsition-box">
+        <div class="header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                         <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container portal-container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <h1>Doctor Portal: Select Parent</h1>
+                        <p>Select the parent user account for today's consultation.</p>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered parent-table">
+                            <thead>
+                                <tr>
+                                    <th>Parent Name</th>
+                                    <th>Email</th>
+                                    <th>Parent ID</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="parent-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                    
+                    <a href="../index.html" class="btn btn-default animsition-link" id="back-to-home-btn">Back to Home</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tiny-footer">
+            <div class="container">
+                <p>Doctor Portal Access</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/animsition.js"></script>
+    <script type="text/javascript" src="../js/animsition-script.js"></script>
+</body>
+</html>

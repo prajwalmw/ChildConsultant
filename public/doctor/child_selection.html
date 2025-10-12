@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Doctor Portal | Select Child</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .animsition-box {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+        .portal-container {
+            padding: 40px 0;
+        }
+        .child-table th {
+            background-color: #00c3c9;
+            color: white;
+        }
+        .child-table .btn-consult {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .child-table .btn-consult:hover {
+            background-color: #45a049;
+        }
+        .parent-info-display {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #f7a83d;
+            margin-bottom: 20px;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+
+<body class="animsition">
+
+    <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+            authDomain: "child-consultant.firebaseapp.com",
+            projectId: "child-consultant",
+            storageBucket: "child-consultant.appspot.com",
+            messagingSenderId: "985386588549",
+            appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        function getQueryVariable(variable) {
+            const query = window.location.search.substring(1);
+            const vars = query.split("&");
+            for (let i = 0; i < vars.length; i++) {
+                const pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+            return (false);
+        }
+
+        let currentParentId = getQueryVariable('parentId');
+
+        // --- Role-Based Access Check ---
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            if (!currentParentId) {
+                alert('Parent ID missing. Redirecting to Parent List.');
+                window.location.href = 'doctor_portal.html';
+                return;
+            }
+
+            db.collection('users').doc(user.uid).get()
+                .then(doc => {
+                    const role = doc.data()?.role;
+                    if (role !== 'admin' && role !== 'doctor') {
+                        alert('Access Denied.');
+                        window.location.href = '../index.html';
+                    } else {
+                        fetchParentNameAndChildren(); 
+                        setupButtons();
+                        setupCancelButton(); 
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching role:", error);
+                    window.location.href = '../index.html';
+                });
+        });
+
+        // --- Fetch Parent Name and Children ---
+        async function fetchParentNameAndChildren() {
+            let parentName = 'Loading Parent Name...';
+            try {
+                const parentDoc = await db.collection('users').doc(currentParentId).get();
+                if (parentDoc.exists) {
+                    const data = parentDoc.data();
+                    // Use 'name' or fallback to 'displayName' from user data
+                    parentName = data.name || data.displayName || `Parent ID: ${currentParentId}`;
+                } else {
+                    parentName = `Parent Not Found (ID: ${currentParentId})`;
+                }
+            } catch (error) {
+                console.error("Error fetching parent name:", error);
+                parentName = `Error loading parent name (ID: ${currentParentId})`;
+            }
+
+            // Update the display text with the fetched name
+            document.getElementById('parent-name-display').textContent = parentName;
+            
+            // Proceed to fetch the children
+            fetchChildren();
+        }
+
+        function fetchChildren() {
+            const childTableBody = document.getElementById('child-table-body');
+            childTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Children...</td></tr>';
+
+            // Query patients linked to the currentParentId
+            db.collection('patients').where('parentId', '==', currentParentId).get()
+                .then(snapshot => {
+                    childTableBody.innerHTML = '';
+                    if (snapshot.empty) {
+                        childTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No children registered for this parent. Please register a new child.</td></tr>';
+                        return;
+                    }
+
+                    snapshot.forEach(doc => {
+                        const child = doc.data();
+                        const patientId = doc.id;
+                        const dob = child.dob ? new Date(child.dob.seconds * 1000) : null;
+                        
+                        let ageDisplay = 'N/A';
+                        if (dob) {
+                            const diff_ms = Date.now() - dob.getTime();
+                            const age_dt = new Date(diff_ms);
+                            // Calculate age in years
+                            ageDisplay = Math.abs(age_dt.getUTCFullYear() - 1970) + ' years';
+                        }
+                        
+                        const row = `
+                            <tr>
+                                <td>${child.name || 'N/A'}</td>
+                                <td>${patientId}</td>
+                                <td>${dob ? dob.toLocaleDateString() : 'N/A'}</td>
+                                <td>${ageDisplay}</td>
+                                <td>
+                                    <a href="patient_consultation.html?patientId=${patientId}&parentId=${currentParentId}" class="btn btn-consult animsition-link">Start Consultation</a>
+                                </td>
+                            </tr>
+                        `;
+                        childTableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching children:", error);
+                    childTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading child data.</td></tr>';
+                });
+        }
+        
+        function setupButtons() {
+            document.getElementById('register-new-child-btn').href = `register_child.html?parentId=${currentParentId}`;
+        }
+
+        // --- Confirmation for Back Button ---
+        function setupCancelButton() {
+            const backBtn = document.getElementById('back-to-parent-list-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to go back to the Parent List?')) {
+                        window.location.href = 'doctor_portal.html';
+                    }
+                });
+            }
+        }
+    </script>
+
+    <div id="animsition-box" class="animsition-box">
+        <div class="header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                         <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container portal-container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <h1>Child Selection</h1>
+                        <p>Select an existing child or register a new one for today's visit.</p>
+                        <div class="parent-info-display">
+                            Parent: <span id="parent-name-display">Loading...</span>
+                        </div>
+                    </div>
+
+                    <a id="register-new-child-btn" href="#" class="btn btn-primary animsition-link mb30">
+                        <i class="fa fa-plus"></i> Register New Child
+                    </a>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered child-table">
+                            <thead>
+                                <tr>
+                                    <th>Child Name</th>
+                                    <th>Patient ID</th>
+                                    <th>Date of Birth</th>
+                                    <th>Age</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="child-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                    
+                    <a href="doctor_portal.html" class="btn btn-default animsition-link" id="back-to-parent-list-btn">Back to Parent List</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tiny-footer">
+            <div class="container">
+                <p>Doctor Portal Access</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/animsition.js"></script>
+    <script type="text/javascript" src="../js/animsition-script.js"></script>
+</body>
+</html>
