@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Doctor Portal | View Consultations</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .animsition-box {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+        .portal-container {
+            padding: 40px 0;
+        }
+        .info-header {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 5px solid #00c3c9;
+        }
+        .info-header h2 {
+            margin-top: 0;
+            color: #00c3c9;
+        }
+        .info-header p {
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+        .consult-table th {
+            background-color: #00c3c9;
+            color: white;
+        }
+        .upcoming-table th {
+            background-color: #f7a83d;
+            color: white;
+        }
+        .table-section {
+            margin-bottom: 50px;
+        }
+        .btn-view-details {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-view-details:hover {
+            background-color: #45a049;
+        }
+        .date-past {
+            color: #d9534f; /* Danger color for past dates */
+            font-weight: 700;
+        }
+        .date-upcoming {
+            color: #5cb85c; /* Success color for future dates */
+            font-weight: 700;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+
+<body class="animsition">
+
+    <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+            authDomain: "child-consultant.firebaseapp.com",
+            projectId: "child-consultant",
+            storageBucket: "child-consultant.appspot.com",
+            messagingSenderId: "985386588549",
+            appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentPatientId = null;
+        let currentParentId = null; 
+        let currentPatientName = 'Loading...';
+        let currentParentName = 'Loading...';
+        let parentKey = null;
+
+        function getQueryVariable(variable) {
+            const query = window.location.search.substring(1);
+            const vars = query.split("&");
+            for (let i = 0; i < vars.length; i++) {
+                const pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+            return (false);
+        }
+
+        // Helper function to sanitize name for use in a document ID
+        function slugifyName(text) {
+            return text.toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '') 
+                .replace(/\s+/g, '-')       
+                .replace(/-+/g, '-');      
+        }
+        
+        // Create the unique, traceable Parent document key
+        function createParentKey(parentName, parentId) {
+            const nameSlug = slugifyName(parentName || 'unknown-parent');
+            return `${nameSlug}_${parentId}`;
+        }
+        
+        function formatFirestoreTimestamp(timestamp) {
+            if (!timestamp || !timestamp.toDate) return 'N/A';
+            return timestamp.toDate().toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+        }
+        
+        function getPatientDetails() {
+            currentPatientId = getQueryVariable('patientId');
+            currentParentId = getQueryVariable('parentId'); 
+            currentPatientName = decodeURIComponent(getQueryVariable('patientName') || 'Unknown Patient');
+
+            if (!currentPatientId || !currentParentId) {
+                alert('Error: Patient ID or Parent ID not provided.');
+                window.location.href = 'doctor_portal.html';
+                return;
+            }
+
+            // Set up back link and initial patient info
+            const backLink = document.getElementById('back-to-child-selection');
+            if(backLink) backLink.href = `child_selection.html?parentId=${currentParentId}`;
+
+            document.getElementById('patient-name-display').textContent = currentPatientName;
+            document.getElementById('patient-id-display').textContent = currentPatientId;
+            
+            fetchParentNameAndConsultations();
+        }
+
+        async function fetchParentNameAndConsultations() {
+            try {
+                const parentDoc = await db.collection('users').doc(currentParentId).get();
+                if (parentDoc.exists) {
+                    const data = parentDoc.data();
+                    currentParentName = data.name || data.displayName || `ID: ${currentParentId}`;
+                } else {
+                    currentParentName = `Parent Not Found (ID: ${currentParentId})`;
+                }
+                document.getElementById('parent-name-display-info').textContent = currentParentName;
+
+                parentKey = createParentKey(currentParentName, currentParentId);
+                fetchConsultations();
+
+            } catch (error) {
+                console.error("Error fetching parent name:", error);
+                document.getElementById('parent-name-display-info').textContent = 'Error Loading Parent';
+                document.getElementById('past-consultations-body').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error initializing data.</td></tr>';
+            }
+        }
+
+        function fetchConsultations() {
+            const pastTableBody = document.getElementById('past-consultations-body');
+            const upcomingTableBody = document.getElementById('upcoming-followups-body');
+            pastTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Records...</td></tr>';
+            upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming follow-ups found.</td></tr>'; // Default for upcoming
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalize time to midnight
+
+            db.collection('patients').doc(parentKey)
+              .collection('children').doc(currentPatientId)
+              .collection('consultations')
+              .orderBy('date', 'desc') // Order by consultation date
+              .get()
+              .then(snapshot => {
+                  pastTableBody.innerHTML = '';
+                  let pastConsultsCount = 0;
+                  let upcomingFollowupsCount = 0;
+
+                  snapshot.forEach(doc => {
+                      const consult = doc.data();
+                      const consultId = doc.id;
+                      
+                      // Check for Past Consultations (based on consultation date)
+                      const consultDate = consult.date ? consult.date.toDate() : new Date(0);
+                      const consultDateDisplay = formatFirestoreTimestamp(consult.date);
+                      
+                      const row = `
+                          <tr>
+                              <td>${consultDateDisplay}</td>
+                              <td>${consult.type || 'N/A'}</td>
+                              <td>${consult.assessment ? consult.assessment.substring(0, 70) + '...' : 'N/A'}</td>
+                              <td>${consult.doctorId || 'N/A'}</td>
+                              <td>
+                                  <a href="consultation_details.html?patientId=${currentPatientId}&parentId=${currentParentId}&consultationId=${consultId}" class="btn btn-view-details btn-sm animsition-link">View Details</a>
+                              </td>
+                          </tr>
+                      `;
+
+                      // Add to Past Consultations table
+                      pastTableBody.innerHTML += row;
+                      pastConsultsCount++;
+
+                      // Check for Upcoming Follow-ups
+                      const followUpDate = consult.nextFollowUpDate ? consult.nextFollowUpDate.toDate() : null;
+
+                      if (consult.followUpRequired && followUpDate && followUpDate > today) {
+                          const followUpRow = `
+                              <tr>
+                                  <td class="date-upcoming">${formatFirestoreTimestamp(consult.nextFollowUpDate)}</td>
+                                  <td>${consult.type || 'N/A'}</td>
+                                  <td>
+                                      <a href="consultation_details.html?patientId=${currentPatientId}&parentId=${currentParentId}&consultationId=${consultId}" class="btn btn-view-details btn-sm animsition-link">View Original (ID: ${consultId})</a>
+                                  </td>
+                              </tr>
+                          `;
+                          // Prepend to upcoming list to keep newest at top
+                          upcomingTableBody.insertAdjacentHTML('afterbegin', followUpRow);
+                          upcomingFollowupsCount++;
+                      }
+                  });
+
+                  if (pastConsultsCount === 0) {
+                      pastTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No past consultation records found for this child.</td></tr>';
+                  }
+
+                  if (upcomingFollowupsCount === 0) {
+                      upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming follow-ups found.</td></tr>';
+                  }
+
+              })
+              .catch(error => {
+                  console.error("Error fetching consultations:", error);
+                  pastTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading consultation data.</td></tr>';
+                  upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error loading follow-up data.</td></tr>';
+              });
+        }
+        
+        document.addEventListener('DOMContentLoaded', getPatientDetails);
+    </script>
+
+    <div id="animsition-box" class="animsition-box">
+        <div class="header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                         <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container portal-container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title">
+                        <h1>Consultation Records</h1>
+                    </div>
+
+                    <div class="info-header">
+                        <h2><span id="patient-name-display">...</span> (ID: <span id="patient-id-display">...</span>)</h2>
+                        <p>Parent: <strong id="parent-name-display-info">...</strong></p>
+                    </div>
+
+                    <div class="table-section">
+                        <h3>Upcoming Follow-ups</h3>
+                        <div class="table-responsive">
+                            <table class="table table-bordered upcoming-table">
+                                <thead>
+                                    <tr>
+                                        <th>Next Appointment Date</th>
+                                        <th>Last Consult Type</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="upcoming-followups-body">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="table-section">
+                        <h3>Past Consultation History</h3>
+                        <div class="table-responsive">
+                            <table class="table table-bordered consult-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Diagnosis Summary</th>
+                                        <th>Doctor ID</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="past-consultations-body">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="btn btn-default animsition-link" id="back-to-child-selection">
+                        <i class="fa fa-arrow-left"></i> Back to Child Selection
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tiny-footer">
+            <div class="container">
+                <p>Doctor Portal Access</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/animsition.js"></script>
+    <script type="text/javascript" src="../js/animsition-script.js"></script>
+</body>
+</html>

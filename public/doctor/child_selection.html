@@ -4,12 +4,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Doctor Portal | Select Child</title>
+    <title>Doctor Portal | Select Child & View Records</title>
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <style>
+        /* Base styles */
         .animsition-box {
             padding-top: 100px;
             min-height: 100vh;
@@ -21,6 +22,19 @@
             background-color: #00c3c9;
             color: white;
         }
+
+        /* NEW: Styles for horizontal buttons and row highlighting */
+        .child-table .action-buttons-container {
+            display: flex;
+            gap: 5px; /* Spacing between buttons */
+            min-width: 250px; 
+            margin: 0;
+        }
+        .child-table .action-buttons-container .btn {
+            flex-grow: 1; 
+            width: auto; 
+            margin-bottom: 0 !important;
+        }
         .child-table .btn-consult {
             background-color: #4CAF50;
             color: white;
@@ -28,11 +42,85 @@
         .child-table .btn-consult:hover {
             background-color: #45a049;
         }
+        .child-table .btn-view {
+            background-color: #f7a83d;
+            color: white;
+        }
+        .child-table .btn-view:hover {
+            background-color: #e09734;
+        }
+        .selected-child {
+            background-color: #e6ffec !important; /* Light green highlight */
+            border-left: 5px solid #4CAF50;
+            font-weight: bold;
+        }
+
         .parent-info-display {
             font-size: 1.2em;
             font-weight: 600;
             color: #f7a83d;
             margin-bottom: 20px;
+        }
+
+        /* Styles for the Consultation Display Area */
+        #consultation-display-container {
+            margin-top: 50px;
+            padding: 30px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            display: none; 
+        }
+        #consultation-display-container h2 {
+            margin-top: 0;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            color: #4CAF50; 
+            border-bottom: 2px solid #4CAF50;
+        }
+        .consult-table th {
+            background-color: #00c3c9;
+            color: white;
+        }
+        .upcoming-table th {
+            background-color: #f7a83d;
+            color: white;
+        }
+        .table-section {
+            margin-bottom: 30px;
+        }
+        .consultation-details-link {
+            cursor: pointer;
+            color: #00c3c9;
+            font-weight: bold;
+        }
+        .consultation-details-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal Styles */
+        #consultationDetailModal .modal-header {
+            background-color: #00c3c9;
+            color: white;
+        }
+        #consultationDetailModal .modal-title {
+            font-weight: bold;
+        }
+        .detail-item {
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .detail-item strong {
+            display: block;
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .detail-item p {
+            white-space: pre-wrap; 
+            padding-left: 10px;
+            border-left: 3px solid #f7a83d;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -58,6 +146,12 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Global variables for context and caching
+        let currentParentId = null;
+        let currentParentName = 'Loading...';
+        let activePatientId = null; // Stores the ID of the currently displayed records
+        const doctorCache = {}; // Cache to store fetched doctor names
+
         function getQueryVariable(variable) {
             const query = window.location.search.substring(1);
             const vars = query.split("&");
@@ -70,24 +164,47 @@
             return (false);
         }
 
-        let currentParentId = getQueryVariable('parentId');
-        let currentParentName = 'Loading...'; // Global to hold the fetched name
-
-        // Helper function to sanitize name for use in a document ID
         function slugifyName(text) {
             return text.toLowerCase()
                 .trim()
-                .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric (except spaces/hyphens)
-                .replace(/\s+/g, '-')       // Replace spaces with hyphens
-                .replace(/-+/g, '-');      // Collapse multiple hyphens
+                .replace(/[^a-z0-9\s-]/g, '') 
+                .replace(/\s+/g, '-')       
+                .replace(/-+/g, '-');      
         }
         
-        // FIX: Create the unique, traceable Parent document key
         function createParentKey(parentName, parentId) {
             const nameSlug = slugifyName(parentName || 'unknown-parent');
-            // Format: ParentNameSlug_ParentID (e.g., akshyata-tamse_asdf12345)
             return `${nameSlug}_${parentId}`;
         }
+        
+        function formatFirestoreDateOnly(timestamp) {
+            if (!timestamp || !timestamp.toDate) return 'N/A';
+            return timestamp.toDate().toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+        }
+        
+        // --- Doctor Name Caching and Fetching ---
+        async function getDoctorName(doctorId) {
+            if (!doctorId) return 'N/A';
+            if (doctorCache[doctorId]) return doctorCache[doctorId];
+            
+            try {
+                const docRef = db.collection('users').doc(doctorId);
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    const name = doc.data().name || doc.data().displayName || `ID: ${doctorId}`;
+                    doctorCache[doctorId] = name;
+                    return name;
+                }
+            } catch (e) {
+                console.error("Error fetching doctor name for ID:", doctorId, e);
+            }
+            // Fallback: cache and return ID if name fetch fails
+            doctorCache[doctorId] = `ID: ${doctorId}`; 
+            return doctorCache[doctorId];
+        }
+
 
         // --- Role-Based Access Check ---
         auth.onAuthStateChanged(user => {
@@ -95,6 +212,8 @@
                 window.location.href = '../login.html';
                 return;
             }
+            currentParentId = getQueryVariable('parentId');
+            
             if (!currentParentId) {
                 alert('Parent ID missing. Redirecting to Parent List.');
                 window.location.href = 'doctor_portal.html';
@@ -121,24 +240,25 @@
 
         // --- Fetch Parent Name and Children ---
         async function fetchParentNameAndChildren() {
-            let parentName = 'Loading Parent Name...';
+            // ... (Same as previous version, fetches parent name and calls fetchChildren) ...
+            let parentNameDisplay = 'Loading Parent Name...';
             try {
                 const parentDoc = await db.collection('users').doc(currentParentId).get();
                 if (parentDoc.exists) {
                     const data = parentDoc.data();
                     currentParentName = data.name || data.displayName || `Parent ID: ${currentParentId}`;
-                    parentName = currentParentName;
+                    parentNameDisplay = currentParentName;
                 } else {
-                    parentName = `Parent Not Found (ID: ${currentParentId})`;
-                    currentParentName = parentName; // Update global variable too
+                    parentNameDisplay = `Parent Not Found (ID: ${currentParentId})`;
+                    currentParentName = parentNameDisplay;
                 }
             } catch (error) {
                 console.error("Error fetching parent name:", error);
-                parentName = `Error loading parent name (ID: ${currentParentId})`;
-                currentParentName = parentName; // Update global variable too
+                parentNameDisplay = `Error loading parent name (ID: ${currentParentId})`;
+                currentParentName = parentNameDisplay;
             }
 
-            document.getElementById('parent-name-display').textContent = parentName;
+            document.getElementById('parent-name-display').textContent = parentNameDisplay;
             
             fetchChildren();
         }
@@ -147,10 +267,8 @@
             const childTableBody = document.getElementById('child-table-body');
             childTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Children...</td></tr>';
 
-            // Generate the composite key now that we have the name
             const parentKey = createParentKey(currentParentName, currentParentId);
             
-            // FIX: Query the children sub-collection under the composite Parent Key document
             db.collection('patients').doc(parentKey).collection('children').get()
                 .then(snapshot => {
                     childTableBody.innerHTML = '';
@@ -172,18 +290,23 @@
                         }
                         
                         const row = `
-                            <tr>
+                            <tr id="child-row-${patientId}" data-patient-id="${patientId}" data-patient-name="${child.name}">
                                 <td>${child.name || 'N/A'}</td>
                                 <td>${patientId}</td>
                                 <td>${dob ? dob.toLocaleDateString() : 'N/A'}</td>
                                 <td>${ageDisplay}</td>
-                                <td>
-                                    <a href="patient_consultation.html?patientId=${patientId}&parentId=${currentParentId}" class="btn btn-consult animsition-link">Start Consultation</a>
+                                <td style="min-width: 260px;">
+                                    <div class="action-buttons-container">
+                                        <a href="patient_consultation.html?patientId=${patientId}&parentId=${currentParentId}" class="btn btn-consult btn-sm animsition-link">Start Consultation</a>
+                                        <button type="button" class="btn btn-view btn-sm view-records-btn" data-patient-id="${patientId}" data-patient-name="${child.name}">View Records</button>
+                                    </div>
                                 </td>
                             </tr>
                         `;
                         childTableBody.innerHTML += row;
                     });
+                    
+                    setupViewRecordsListeners(parentKey);
                 })
                 .catch(error => {
                     console.error("Error fetching children:", error);
@@ -195,7 +318,6 @@
             document.getElementById('register-new-child-btn').href = `register_child.html?parentId=${currentParentId}`;
         }
 
-        // --- Confirmation for Back Button ---
         function setupCancelButton() {
             const backBtn = document.getElementById('back-to-parent-list-btn');
             if (backBtn) {
@@ -205,6 +327,182 @@
                         window.location.href = 'doctor_portal.html';
                     }
                 });
+            }
+        }
+        
+        // --- Setup View Records Listeners ---
+        function setupViewRecordsListeners(parentKey) {
+            document.querySelectorAll('.view-records-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const patientId = this.getAttribute('data-patient-id');
+                    const patientName = this.getAttribute('data-patient-name');
+                    
+                    // Logic for the View/Hide toggle
+                    if (activePatientId === patientId) {
+                        // If clicking the active child's button, HIDE the records
+                        document.getElementById('consultation-display-container').style.display = 'none';
+                        activePatientId = null;
+                        this.textContent = 'View Records';
+                        document.getElementById(`child-row-${patientId}`).classList.remove('selected-child');
+                    } else {
+                        // If clicking a new child's button (or if currently hidden), SHOW records
+                        // 1. Reset all buttons and highlights
+                        document.querySelectorAll('.view-records-btn').forEach(btn => btn.textContent = 'View Records');
+                        document.querySelectorAll('#child-table-body tr').forEach(row => row.classList.remove('selected-child'));
+                        
+                        // 2. Set new active state
+                        activePatientId = patientId;
+                        this.textContent = 'Hide Records';
+                        document.getElementById(`child-row-${patientId}`).classList.add('selected-child');
+                        
+                        // 3. Load and display data
+                        showConsultations(patientId, patientName, parentKey);
+                    }
+                });
+            });
+        }
+        
+        // --- Modal Dialog Logic ---
+        function showConsultationDetailsInModal(consult) {
+            const modalTitle = document.getElementById('modal-consultation-title');
+            const modalBody = document.getElementById('modal-consultation-body');
+            
+            modalTitle.innerHTML = `Consultation Details (ID: ${consult.consultId}) <br><small>Date: ${formatFirestoreDateOnly(consult.date)} | Dr: ${consult.doctorName}</small>`;
+
+            modalBody.innerHTML = `
+                <div class="detail-item">
+                    <strong>Patient Name:</strong> ${document.getElementById('current-patient-name').textContent} (ID: ${document.getElementById('current-patient-id').textContent})
+                </div>
+                <div class="detail-item">
+                    <strong>Type:</strong> ${consult.type || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Vitals:</strong> Weight: ${consult.weight || 'N/A'} / Height: ${consult.height || 'N/A'} / Temp: ${consult.temperature || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>S. Subjective (Chief Complaint/History):</strong> <p>${consult.subjective || 'N/A'}</p>
+                </div>
+                <div class="detail-item">
+                    <strong>O. Objective (Exam Findings/Vitals Notes):</strong> <p>${consult.objective || 'N/A'}</p>
+                </div>
+                <div class="detail-item">
+                    <strong>A. Assessment / Diagnosis:</strong> <p>${consult.assessment || 'N/A'}</p>
+                </div>
+                <div class="detail-item">
+                    <strong>P. Plan / Treatment:</strong> <p>${consult.plan || 'N/A'}</p>
+                </div>
+                <div class="detail-item">
+                    <strong>Prescription Given:</strong> ${consult.prescriptionGiven ? 'Yes' : 'No'}
+                </div>
+                <div class="detail-item">
+                    <strong>Follow-up Required:</strong> ${consult.followUpRequired ? 'Yes' : 'No'}
+                    ${consult.followUpRequired ? ` (Next: ${formatFirestoreDateOnly(consult.nextFollowUpDate)})` : ''}
+                </div>
+            `;
+            
+            // Use jQuery from Bootstrap to show the modal
+            $('#consultationDetailModal').modal('show');
+        }
+
+        // --- Core Logic: Display Consultations on the same page ---
+        async function showConsultations(patientId, patientName, parentKey) {
+            const container = document.getElementById('consultation-display-container');
+            document.getElementById('current-patient-name').textContent = patientName;
+            document.getElementById('current-patient-id').textContent = patientId;
+            const pastTableBody = document.getElementById('past-consultations-body');
+            const upcomingTableBody = document.getElementById('upcoming-followups-body');
+            
+            container.style.display = 'block';
+            pastTableBody.innerHTML = '<tr><td colspan="4" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Records...</td></tr>';
+            upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">Loading...</td></tr>'; 
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); 
+
+            try {
+                const snapshot = await db.collection('patients').doc(parentKey)
+                    .collection('children').doc(patientId)
+                    .collection('consultations')
+                    .orderBy('date', 'desc') 
+                    .get();
+
+                pastTableBody.innerHTML = '';
+                upcomingTableBody.innerHTML = '';
+                const consultations = [];
+                let pastConsultsCount = 0;
+                let upcomingFollowupsCount = 0;
+                
+                // 1. Gather all data and prepare the doctor name fetching promises
+                const doctorNamePromises = [];
+                snapshot.forEach(doc => {
+                    const consult = doc.data();
+                    consult.consultId = doc.id;
+                    consultations.push(consult);
+                    doctorNamePromises.push(getDoctorName(consult.doctorId));
+                });
+                
+                // 2. Wait for all doctor names to be fetched
+                const doctorNames = await Promise.all(doctorNamePromises);
+
+                // 3. Build the tables
+                if (consultations.length === 0) {
+                    pastTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No past consultation records found for this child.</td></tr>';
+                    upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming follow-ups found.</td></tr>';
+                    return;
+                }
+
+                consultations.forEach((consult, index) => {
+                    const doctorName = doctorNames[index];
+                    consult.doctorName = doctorName; // Add name to object for modal
+                    const consultDateDisplay = formatFirestoreDateOnly(consult.date);
+                    
+                    // --- Past Consultations Table Row ---
+                    const pastRow = document.createElement('tr');
+                    pastRow.innerHTML = `
+                        <td>${consultDateDisplay}</td>
+                        <td>${consult.type || 'N/A'}</td>
+                        <td>${consult.assessment ? consult.assessment.substring(0, 70) + '...' : 'N/A'}</td>
+                        <td>
+                            ${doctorName}
+                            <span class="consultation-details-link" data-consult-index="${index}">View Full Notes</span>
+                        </td>
+                    `;
+                    pastTableBody.appendChild(pastRow);
+                    pastConsultsCount++;
+                    
+                    // --- Upcoming Follow-ups Table Row ---
+                    const followUpDate = consult.nextFollowUpDate ? consult.nextFollowUpDate.toDate() : null;
+
+                    if (consult.followUpRequired && followUpDate && followUpDate > today) {
+                        const followUpRow = document.createElement('tr');
+                        followUpRow.innerHTML = `
+                            <td class="date-upcoming">${formatFirestoreDateOnly(consult.nextFollowUpDate)}</td>
+                            <td>${doctorName}</td>
+                            <td>
+                                <span class="consultation-details-link" data-consult-index="${index}">View Original Consult Notes</span>
+                            </td>
+                        `;
+                        upcomingTableBody.appendChild(followUpRow);
+                        upcomingFollowupsCount++;
+                    }
+                });
+                
+                if (upcomingFollowupsCount === 0) {
+                    upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming follow-ups found.</td></tr>';
+                }
+                
+                // 4. Attach modal click listeners
+                document.querySelectorAll('.consultation-details-link').forEach(el => {
+                    el.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-consult-index'));
+                        showConsultationDetailsInModal(consultations[index]);
+                    });
+                });
+
+            } catch (error) {
+                console.error("Error fetching consultations:", error);
+                pastTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading consultation data.</td></tr>';
+                upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error loading follow-up data.</td></tr>';
             }
         }
     </script>
@@ -225,7 +523,7 @@
                 <div class="col-lg-12">
                     <div class="section-title">
                         <h1>Child Selection</h1>
-                        <p>Select an existing child or register a new one for today's visit.</p>
+                        <p>Select a child to **Start Consultation** or **View Records**.</p>
                         <div class="parent-info-display">
                             Parent: <span id="parent-name-display">Loading...</span>
                         </div>
@@ -243,7 +541,7 @@
                                     <th>Patient ID</th>
                                     <th>Date of Birth</th>
                                     <th>Age</th>
-                                    <th>Action</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="child-table-body">
@@ -254,7 +552,56 @@
                     <a href="doctor_portal.html" class="btn btn-default animsition-link" id="back-to-parent-list-btn">Back to Parent List</a>
                 </div>
             </div>
-        </div>
+            
+            <div class="row">
+                <div class="col-lg-12">
+                    <div id="consultation-display-container">
+                        <h2>
+                            Consultation Records for 
+                            <span id="current-patient-name" style="font-weight: 700;">...</span> 
+                            <small>(Patient ID: <span id="current-patient-id">...</span>)</small>
+                        </h2>
+
+                        <div class="table-section">
+                            <h3>Upcoming Follow-ups <i class="fa fa-calendar-check-o"></i></h3>
+                            <div class="table-responsive">
+                                <table class="table table-bordered upcoming-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Next Appointment Date</th>
+                                            <th>Doctor Name</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="upcoming-followups-body">
+                                        <tr><td colspan="3" class="text-center">Select a child to view records.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="table-section">
+                            <h3>Past Consultation History <i class="fa fa-history"></i></h3>
+                            <div class="table-responsive">
+                                <table class="table table-bordered consult-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Diagnosis Summary</th>
+                                            <th>Doctor Name / Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="past-consultations-body">
+                                        <tr><td colspan="4" class="text-center">Select a child to view records.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
 
         <div class="tiny-footer">
             <div class="container">
@@ -263,7 +610,25 @@
         </div>
 
     </div>
-
+    
+    <div class="modal fade" id="consultationDetailModal" tabindex="-1" role="dialog" aria-labelledby="consultationDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="modal-consultation-title">Consultation Details</h4>
+                </div>
+                <div class="modal-body" id="modal-consultation-body">
+                    <p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading details...</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../js/animsition.js"></script>
