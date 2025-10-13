@@ -15,11 +15,9 @@
             padding-top: 100px;
             min-height: 100vh;
         }
-
         .portal-container {
             padding: 40px 0;
         }
-
         .child-table th {
             background-color: #00c3c9;
             color: white;
@@ -28,39 +26,31 @@
         /* Styles for horizontal buttons and row highlighting */
         .child-table .action-buttons-container {
             display: flex;
-            gap: 5px;
-            /* Spacing between buttons */
-            min-width: 250px;
+            gap: 5px; /* Spacing between buttons */
+            min-width: 250px; 
             margin: 0;
         }
-
         .child-table .action-buttons-container .btn {
-            flex-grow: 1;
-            width: auto;
+            flex-grow: 1; 
+            width: auto; 
             margin-bottom: 0 !important;
         }
-
         .child-table .btn-consult {
             background-color: #4CAF50;
             color: white;
         }
-
         .child-table .btn-consult:hover {
             background-color: #45a049;
         }
-
         .child-table .btn-view {
             background-color: #f7a83d;
             color: white;
         }
-
         .child-table .btn-view:hover {
             background-color: #e09734;
         }
-
         .selected-child {
-            background-color: #e6ffec !important;
-            /* Light green highlight */
+            background-color: #e6ffec !important; /* Light green highlight */
             border-left: 5px solid #4CAF50;
             font-weight: bold;
         }
@@ -79,37 +69,32 @@
             background-color: #f9f9f9;
             border-radius: 8px;
             border: 1px solid #ddd;
-            display: none;
+            display: none; 
         }
-
         #consultation-display-container h2 {
             margin-top: 0;
             padding: 10px 0;
             margin-bottom: 20px;
-            color: #4CAF50;
+            color: #4CAF50; 
             border-bottom: 2px solid #4CAF50;
         }
-
         .consult-table th {
             background-color: #00c3c9;
             color: white;
         }
-
         .upcoming-table th {
             background-color: #f7a83d;
             color: white;
         }
-
         .table-section {
             margin-bottom: 30px;
         }
-
+        /* Style for the link inside the Past Consultations table for full view */
         .consultation-details-link {
             cursor: pointer;
             color: #00c3c9;
             font-weight: bold;
         }
-
         .consultation-details-link:hover {
             text-decoration: underline;
         }
@@ -119,52 +104,45 @@
             background-color: #00c3c9;
             color: white;
         }
-
         #consultationDetailModal .modal-title {
             font-weight: bold;
         }
-
         .detail-item {
             margin-bottom: 10px;
             padding: 5px 0;
             border-bottom: 1px dashed #eee;
         }
-
         .detail-item strong {
             display: block;
             color: #333;
             font-size: 1.1em;
             margin-bottom: 5px;
         }
-
         .detail-item p {
-            white-space: pre-wrap;
+            white-space: pre-wrap; 
             padding-left: 10px;
             border-left: 3px solid #f7a83d;
         }
-
         /* Style for the WhatsApp button */
         .btn-whatsapp {
             background-color: #25D366;
             color: white;
             border: none;
         }
-
         .btn-whatsapp:hover {
             background-color: #1DA851;
             color: white;
         }
-
         /* Content for PDF generation (hide elements that shouldn't be in the PDF, if necessary) */
         #pdf-content-container {
             /* Ensures proper padding/margin when PDF is generated */
-            padding: 20px;
+            padding: 20px; 
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 
@@ -189,8 +167,8 @@
         // Global variables for context and caching
         let currentParentId = null;
         let currentParentName = 'Loading...';
-        let activePatientId = null;
-        const doctorCache = {};
+        let activePatientId = null; 
+        const doctorCache = {}; 
         let currentParentMobile = null; // New variable to store the parent's mobile number
 
         function getQueryVariable(variable) {
@@ -208,28 +186,28 @@
         function slugifyName(text) {
             return text.toLowerCase()
                 .trim()
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-');
+                .replace(/[^a-z0-9\s-]/g, '') 
+                .replace(/\s+/g, '-')       
+                .replace(/-+/g, '-');      
         }
-
+        
         function createParentKey(parentName, parentId) {
             const nameSlug = slugifyName(parentName || 'unknown-parent');
             return `${nameSlug}_${parentId}`;
         }
-
+        
         function formatFirestoreDateOnly(timestamp) {
             if (!timestamp || !timestamp.toDate) return 'N/A';
             return timestamp.toDate().toLocaleDateString('en-US', {
                 year: 'numeric', month: 'short', day: 'numeric'
             });
         }
-
+        
         // --- Doctor Name Caching and Fetching ---
         async function getDoctorName(doctorId) {
             if (!doctorId) return 'N/A';
             if (doctorCache[doctorId]) return doctorCache[doctorId];
-
+            
             try {
                 const docRef = db.collection('users').doc(doctorId);
                 const doc = await docRef.get();
@@ -242,7 +220,7 @@
                 console.error("Error fetching doctor name for ID:", doctorId, e);
             }
             // Fallback: cache and return ID if name fetch fails
-            doctorCache[doctorId] = `ID: ${doctorId}`;
+            doctorCache[doctorId] = `ID: ${doctorId}`; 
             return doctorCache[doctorId];
         }
 
@@ -254,7 +232,7 @@
                 return;
             }
             currentParentId = getQueryVariable('parentId');
-
+            
             if (!currentParentId) {
                 alert('Parent ID missing. Redirecting to Parent List.');
                 window.location.href = 'doctor_portal.html';
@@ -268,9 +246,9 @@
                         alert('Access Denied.');
                         window.location.href = '../index.html';
                     } else {
-                        fetchParentNameAndChildren();
+                        fetchParentNameAndChildren(); 
                         setupButtons();
-                        setupCancelButton();
+                        setupCancelButton(); 
                     }
                 })
                 .catch(error => {
@@ -278,6 +256,71 @@
                     window.location.href = '../index.html';
                 });
         });
+
+
+        // ----------------------------------------------------------------------
+        // --- FUNCTIONS FOR CHAINING LOGIC (CORRECTED) ---
+        // ----------------------------------------------------------------------
+
+        /**
+         * Fetches the consultId of the most recent past visit for a patient.
+         * @param {string} patientId The ID of the patient.
+         * @returns {Promise<string|null>} The consult ID or null if none exists.
+         */
+        async function getLatestConsultId(patientId) {
+            const parentKey = createParentKey(currentParentName, currentParentId);
+            if (!parentKey || !patientId) return null;
+
+            try {
+                const snapshot = await db.collection('patients').doc(parentKey)
+                    .collection('children').doc(patientId)
+                    .collection('consultations')
+                    .orderBy('date', 'desc')
+                    .limit(1)
+                    .get();
+
+                if (!snapshot.empty) {
+                    // The first document is the latest one
+                    return snapshot.docs[0].id;
+                }
+                return null;
+            } catch (error) {
+                console.error("Error fetching latest consult ID:", error);
+                return null;
+            }
+        }
+
+        /**
+         * Handles the redirection for a new consultation, linking it to the immediate previous visit 
+         * and passing the age.
+         * @param {string} patientId The ID of the patient.
+         * @param {string} patientAge The calculated age string from the row.
+         * @param {string} [previousConsultIdToUse=null] Optional: Use a specific previous ID (e.g., from follow-up logic)
+         */
+        async function startConsultationAndLink(patientId, patientAge, previousConsultIdToUse = null) {
+            let latestConsultId = previousConsultIdToUse;
+
+            // If a specific ID is NOT provided (e.g., from the main table button), 
+            // fetch the absolute latest one.
+            if (!latestConsultId) {
+                latestConsultId = await getLatestConsultId(patientId);
+            }
+
+            // AGE is passed here
+            let url = `patient_consultation.html?patientId=${patientId}&parentId=${currentParentId}&patientAge=${encodeURIComponent(patientAge)}`;
+
+            if (latestConsultId) {
+                url += `&previousConsultId=${latestConsultId}`;
+            }
+            
+            // Redirect the user.
+            window.location.href = url;
+        }
+
+
+        // ----------------------------------------------------------------------
+        // --- ORIGINAL FUNCTIONS WITH MODIFICATIONS ---
+        // ----------------------------------------------------------------------
 
         // --- Fetch Parent Name, Mobile, and Children ---
         async function fetchParentNameAndChildren() {
@@ -300,16 +343,17 @@
             }
 
             document.getElementById('parent-name-display').textContent = parentNameDisplay;
-
+            
             fetchChildren();
         }
 
+        // --- Fetch Children (Age calculation remains here, storing result in data-attribute) ---
         function fetchChildren() {
             const childTableBody = document.getElementById('child-table-body');
             childTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Children...</td></tr>';
 
             const parentKey = createParentKey(currentParentName, currentParentId);
-
+            
             db.collection('patients').doc(parentKey).collection('children').get()
                 .then(snapshot => {
                     childTableBody.innerHTML = '';
@@ -322,23 +366,36 @@
                         const child = doc.data();
                         const patientId = doc.id;
                         const dob = child.dob ? new Date(child.dob.seconds * 1000) : null;
-
+                        
                         let ageDisplay = 'N/A';
+                        let ageForHeader = 'N/A'; // Store the calculated age string
+
                         if (dob) {
                             const diff_ms = Date.now() - dob.getTime();
                             const age_dt = new Date(diff_ms);
-                            ageDisplay = Math.abs(age_dt.getUTCFullYear() - 1970) + ' years';
-                        }
+                            const years = Math.abs(age_dt.getUTCFullYear() - 1970);
+                            const months = age_dt.getUTCMonth();
 
+                            if (years > 0) {
+                                ageDisplay = `${years} yrs`;
+                                if (months > 0) ageDisplay += `, ${months} mos`;
+                            } else {
+                                ageDisplay = `${months} mos`;
+                            }
+                            if (ageDisplay === "") ageDisplay = 'Newborn';
+                            ageForHeader = ageDisplay;
+                        }
+                        
+                        // Age is stored in the data-patient-age attribute
                         const row = `
-                            <tr id="child-row-${patientId}" data-patient-id="${patientId}" data-patient-name="${child.name}">
+                            <tr id="child-row-${patientId}" data-patient-id="${patientId}" data-patient-name="${child.name}" data-patient-age="${ageForHeader}">
                                 <td>${child.name || 'N/A'}</td>
                                 <td>${patientId}</td>
                                 <td>${dob ? dob.toLocaleDateString() : 'N/A'}</td>
                                 <td>${ageDisplay}</td>
                                 <td style="min-width: 260px;">
                                     <div class="action-buttons-container">
-                                        <a href="patient_consultation.html?patientId=${patientId}&parentId=${currentParentId}" class="btn btn-consult btn-sm animsition-link">Start Consultation</a>
+                                        <button type="button" class="btn btn-consult btn-sm" onclick="startConsultationAndLink('${patientId}', '${ageForHeader}')">Start Consultation</button>
                                         <button type="button" class="btn btn-view btn-sm view-records-btn" data-patient-id="${patientId}" data-patient-name="${child.name}">View Records</button>
                                     </div>
                                 </td>
@@ -346,7 +403,7 @@
                         `;
                         childTableBody.innerHTML += row;
                     });
-
+                    
                     setupViewRecordsListeners(parentKey);
                 })
                 .catch(error => {
@@ -354,7 +411,7 @@
                     childTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading child data.</td></tr>';
                 });
         }
-
+        
         function setupButtons() {
             document.getElementById('register-new-child-btn').href = `register_child.html?parentId=${currentParentId}`;
         }
@@ -362,7 +419,7 @@
         function setupCancelButton() {
             const backBtn = document.getElementById('back-to-parent-list-btn');
             if (backBtn) {
-                backBtn.addEventListener('click', function (e) {
+                backBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     if (confirm('Are you sure you want to go back to the Parent List?')) {
                         window.location.href = 'doctor_portal.html';
@@ -370,14 +427,14 @@
                 });
             }
         }
-
+        
         // --- Setup View Records Listeners ---
         function setupViewRecordsListeners(parentKey) {
             document.querySelectorAll('.view-records-btn').forEach(button => {
-                button.addEventListener('click', function () {
+                button.addEventListener('click', function() {
                     const patientId = this.getAttribute('data-patient-id');
                     const patientName = this.getAttribute('data-patient-name');
-
+                    
                     // Logic for the View/Hide toggle
                     if (activePatientId === patientId) {
                         // HIDE the records
@@ -390,26 +447,26 @@
                         // 1. Reset all buttons and highlights
                         document.querySelectorAll('.view-records-btn').forEach(btn => btn.textContent = 'View Records');
                         document.querySelectorAll('#child-table-body tr').forEach(row => row.classList.remove('selected-child'));
-
+                        
                         // 2. Set new active state
                         activePatientId = patientId;
                         this.textContent = 'Hide Records';
                         document.getElementById(`child-row-${patientId}`).classList.add('selected-child');
-
+                        
                         // 3. Load and display data
                         showConsultations(patientId, patientName, parentKey);
                     }
                 });
             });
         }
-
+        
         // --- Modal Dialog Logic ---
         function showConsultationDetailsInModal(consult) {
             const modalTitle = document.getElementById('modal-consultation-title');
             const modalBody = document.getElementById('modal-consultation-body');
             const downloadBtn = document.getElementById('download-pdf-btn');
             const whatsappBtn = document.getElementById('whatsapp-share-btn');
-
+            
             modalTitle.innerHTML = `Consultation Details (ID: ${consult.consultId}) <br><small>Date: ${formatFirestoreDateOnly(consult.date)} | Dr: ${consult.doctorName}</small>`;
 
             // Create the content structure for PDF generation
@@ -447,17 +504,17 @@
                     </div>
                 </div>
             `;
-
+            
             // Update Download button functionality
             downloadBtn.onclick = () => generatePDF(consult);
-
+            
             // Update WhatsApp button functionality
             whatsappBtn.onclick = () => sendWhatsAppMessage(consult);
-
+            
             // Show the modal
             $('#consultationDetailModal').modal('show');
         }
-
+        
         // --- PDF Generation Function ---
         function generatePDF(consult) {
             const element = document.getElementById('pdf-content-container');
@@ -483,12 +540,12 @@
             }
 
             // 1. Clean the mobile number
-            const mobileNumber = currentParentMobile.replace(/[^\d+]/g, '');
+            const mobileNumber = currentParentMobile.replace(/[^\d+]/g, ''); 
             const patientName = document.getElementById('current-patient-name').textContent;
             const date = formatFirestoreDateOnly(consult.date);
-
+            
             // 2. Generate the detailed text summary message (Prescription/Visit Notes)
-            const messageContent =
+            const messageContent = 
                 `🏥 *Child Consultation Record*\n` +
                 `----------------------------------------\n` +
                 `Patient: ${patientName}\n` +
@@ -497,30 +554,28 @@
                 `Attending Doctor: ${consult.doctorName}\n` +
                 `\n` +
                 `*A. Assessment / Diagnosis:*\n` +
-                `${consult.assessment || 'No diagnosis recorded.'}\n` +
+                `${consult.assessment || 'N/A'}\n` +
                 `\n` +
                 `*P. Plan / Treatment:*\n` +
-                `${consult.plan || 'No treatment plan recorded.'}\n` +
+                `${consult.plan || 'N/A'}\n` +
                 `\n` +
-                `*Next Steps:*\n` +
-                `Follow-up Required: ${consult.followUpRequired ? 'Yes' : 'No'}` +
-                `${consult.followUpRequired ? ` (Date: ${formatFirestoreDateOnly(consult.nextFollowUpDate)})` : ''}\n` +
+                `*Follow-up:*\n` +
+                `Next Appointment: ${consult.followUpRequired ? formatFirestoreDateOnly(consult.nextFollowUpDate) : 'Not required'}\n` +
                 `\n` +
-                `_A detailed record is available on the Doctor Portal._\n` +
+                `_This is an automated summary from the Doctor Portal._\n` +
                 `----------------------------------------`;
-
+                
             const message = encodeURIComponent(messageContent);
 
             // 3. Construct the standard web URL
             const webUrl = `https://wa.me/${mobileNumber}?text=${message}`;
 
             // 4. ***CRITICAL FIX: Immediately close the modal.***
-            // This removes the blank window delay by giving focus back to the main window 
-            // just before the new tab is opened.
-            $('#consultationDetailModal').modal('hide');
+            // This prevents the blank window delay.
+            $('#consultationDetailModal').modal('hide'); 
 
             // 5. Open the web link in a new tab/window
-            const newWindow = window.open(webUrl, '_blank');
+            const newWindow = window.open(webUrl, '_blank'); 
 
             // Optional: Try to focus the new window/tab if possible (browser dependent)
             if (newWindow) {
@@ -529,27 +584,42 @@
         }
 
 
-        // --- Core Logic: Display Consultations on the same page ---
+        // --- Core Logic: Display Consultations on the same page (EFFICIENTLY retrieves Age) ---
         async function showConsultations(patientId, patientName, parentKey) {
-            // ... (Same as previous version, fetches data and populates tables) ...
+            
+            // --- EFFICIENT AGE RETRIEVAL: Get Age from the DOM ---
+            const patientRow = document.getElementById(`child-row-${patientId}`);
+            // Retrieve age from the data attribute set in fetchChildren
+            const patientAge = patientRow ? patientRow.getAttribute('data-patient-age') : 'N/A';
+            
             const container = document.getElementById('consultation-display-container');
+            
+            // --- Update Header with Name, Age, and ID ---
+            document.getElementById('consultation-records-header').innerHTML = `
+                Consultation Records for 
+                <span id="current-patient-name" style="font-weight: 700;">${patientName}</span> 
+                <small>(Age: ${patientAge} | Patient ID: <span id="current-patient-id">${patientId}</span>)</small>
+            `;
+            
+            // We set these elements for the modal usage later, even though the header is updated
             document.getElementById('current-patient-name').textContent = patientName;
             document.getElementById('current-patient-id').textContent = patientId;
+
             const pastTableBody = document.getElementById('past-consultations-body');
             const upcomingTableBody = document.getElementById('upcoming-followups-body');
-
+            
             container.style.display = 'block';
             pastTableBody.innerHTML = '<tr><td colspan="4" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Records...</td></tr>';
-            upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">Loading...</td></tr>';
+            upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">Loading...</td></tr>'; 
 
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0); 
 
             try {
                 const snapshot = await db.collection('patients').doc(parentKey)
                     .collection('children').doc(patientId)
                     .collection('consultations')
-                    .orderBy('date', 'desc')
+                    .orderBy('date', 'desc') 
                     .get();
 
                 pastTableBody.innerHTML = '';
@@ -557,7 +627,7 @@
                 const consultations = [];
                 let pastConsultsCount = 0;
                 let upcomingFollowupsCount = 0;
-
+                
                 // 1. Gather all data and prepare the doctor name fetching promises
                 const doctorNamePromises = [];
                 snapshot.forEach(doc => {
@@ -566,7 +636,7 @@
                     consultations.push(consult);
                     doctorNamePromises.push(getDoctorName(consult.doctorId));
                 });
-
+                
                 // 2. Wait for all doctor names to be fetched
                 const doctorNames = await Promise.all(doctorNamePromises);
 
@@ -576,12 +646,16 @@
                     upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming follow-ups found.</td></tr>';
                     return;
                 }
+                
+                // Determine the ID of the ABSOLUTE latest past visit
+                const absoluteLatestConsultId = consultations.length > 0 ? consultations[0].consultId : null;
+
 
                 consultations.forEach((consult, index) => {
                     const doctorName = doctorNames[index];
                     consult.doctorName = doctorName; // Add name to object for modal
                     const consultDateDisplay = formatFirestoreDateOnly(consult.date);
-
+                    
                     // --- Past Consultations Table Row ---
                     const pastRow = document.createElement('tr');
                     pastRow.innerHTML = `
@@ -595,31 +669,39 @@
                     `;
                     pastTableBody.appendChild(pastRow);
                     pastConsultsCount++;
-
-                    // --- Upcoming Follow-ups Table Row ---
+                    
+                    // --- Upcoming Follow-ups Table Row (MODIFIED FOR LAYOUT FIX) ---
                     const followUpDate = consult.nextFollowUpDate ? consult.nextFollowUpDate.toDate() : null;
 
                     if (consult.followUpRequired && followUpDate && followUpDate > today) {
                         const followUpRow = document.createElement('tr');
+                        
+                        const patientAgeForFollowUp = patientRow ? patientRow.getAttribute('data-patient-age') : 'N/A';
+                        
+                        const onclickAction = `startConsultationAndLink('${patientId}', '${patientAgeForFollowUp}', '${absoluteLatestConsultId}')`;
+
                         followUpRow.innerHTML = `
                             <td class="date-upcoming">${formatFirestoreDateOnly(consult.nextFollowUpDate)}</td>
                             <td>${doctorName}</td>
-                            <td>
-                                <span class="consultation-details-link" data-consult-index="${index}">View Original Consult Notes</span>
+                            <td style="min-width: 280px;">
+                                <div class="action-buttons-container">
+                                    <button type="button" class="btn btn-consult btn-sm" onclick="${onclickAction}">Start Consultation</button>
+                                    <button type="button" class="btn btn-view btn-sm consultation-details-link" data-consult-index="${index}">View Original Notes</button>
+                                </div>
                             </td>
                         `;
                         upcomingTableBody.appendChild(followUpRow);
                         upcomingFollowupsCount++;
                     }
                 });
-
+                
                 if (upcomingFollowupsCount === 0) {
                     upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming follow-ups found.</td></tr>';
                 }
-
+                
                 // 4. Attach modal click listeners
                 document.querySelectorAll('.consultation-details-link').forEach(el => {
-                    el.addEventListener('click', function () {
+                    el.addEventListener('click', function() {
                         const index = parseInt(this.getAttribute('data-consult-index'));
                         showConsultationDetailsInModal(consultations[index]);
                     });
@@ -638,7 +720,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                         <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
                     </div>
                 </div>
             </div>
@@ -655,8 +737,12 @@
                         </div>
                     </div>
 
-                    <a id="register-new-child-btn" href="#" class="btn btn-primary animsition-link mb30">
-                        <i class="fa fa-plus"></i> Register New Child
+                    <a id="register-new-child-btn" href="#" class="btn btn-primary" style="margin-bottom: 20px;">
+                        <i class="fa fa-child"></i> Register New Child
+                    </a>
+                    
+                    <a id="back-to-parent-list-btn" href="doctor_portal.html" class="btn btn-default" style="margin-bottom: 20px;">
+                        <i class="fa fa-arrow-left"></i> Back to Parent List
                     </a>
 
                     <div class="table-responsive">
@@ -667,50 +753,40 @@
                                     <th>Patient ID</th>
                                     <th>Date of Birth</th>
                                     <th>Age</th>
-                                    <th>Actions</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="child-table-body">
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
-
-                    <a href="doctor_portal.html" class="btn btn-default animsition-link"
-                        id="back-to-parent-list-btn">Back to Parent List</a>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-12">
+                    
                     <div id="consultation-display-container">
-                        <h2>
-                            Consultation Records for
-                            <span id="current-patient-name" style="font-weight: 700;">...</span>
+                        <h2 id="consultation-records-header">
+                            Consultation Records for 
+                            <span id="current-patient-name" style="font-weight: 700;">...</span> 
                             <small>(Patient ID: <span id="current-patient-id">...</span>)</small>
                         </h2>
 
                         <div class="table-section">
-                            <h3>Upcoming Follow-ups <i class="fa fa-calendar-check-o"></i></h3>
+                            <h4><i class="fa fa-clock-o"></i> Upcoming Follow-ups</h4>
                             <div class="table-responsive">
                                 <table class="table table-bordered upcoming-table">
                                     <thead>
                                         <tr>
-                                            <th>Next Appointment Date</th>
-                                            <th>Doctor Name</th>
-                                            <th>Actions</th>
+                                            <th>Follow-up Date</th>
+                                            <th>Doctor</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="upcoming-followups-body">
-                                        <tr>
-                                            <td colspan="3" class="text-center">Select a child to view records.</td>
-                                        </tr>
-                                    </tbody>
+                                        </tbody>
                                 </table>
                             </div>
                         </div>
 
                         <div class="table-section">
-                            <h3>Past Consultation History <i class="fa fa-history"></i></h3>
+                            <h4><i class="fa fa-history"></i> Past Consultations</h4>
                             <div class="table-responsive">
                                 <table class="table table-bordered consult-table">
                                     <thead>
@@ -718,17 +794,40 @@
                                             <th>Date</th>
                                             <th>Type</th>
                                             <th>Diagnosis Summary</th>
-                                            <th>Doctor Name / Actions</th>
+                                            <th>Details / Doctor</th>
                                         </tr>
                                     </thead>
                                     <tbody id="past-consultations-body">
-                                        <tr>
-                                            <td colspan="4" class="text-center">Select a child to view records.</td>
-                                        </tr>
-                                    </tbody>
+                                        </tbody>
                                 </table>
                             </div>
                         </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="consultationDetailModal" tabindex="-1" role="dialog" aria-labelledby="modal-consultation-title">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title" id="modal-consultation-title">Consultation Details</h4>
+                    </div>
+                    <div class="modal-body" id="modal-consultation-body">
+                        <p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading details...</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="download-pdf-btn">
+                            <i class="fa fa-download"></i> Download PDF
+                        </button>
+                        <button type="button" class="btn btn-whatsapp" id="whatsapp-share-btn">
+                            <i class="fa fa-whatsapp"></i> Send via WhatsApp
+                        </button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -742,35 +841,9 @@
 
     </div>
 
-    <div class="modal fade" id="consultationDetailModal" tabindex="-1" role="dialog"
-        aria-labelledby="consultationDetailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    <h4 class="modal-title" id="modal-consultation-title">Consultation Details</h4>
-                </div>
-                <div class="modal-body" id="modal-consultation-body">
-                    <p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading details...</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" id="download-pdf-btn">
-                        <i class="fa fa-download"></i> Download PDF
-                    </button>
-                    <button type="button" class="btn btn-whatsapp" id="whatsapp-share-btn">
-                        <i class="fa fa-whatsapp"></i> Send via WhatsApp
-                    </button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../js/animsition.js"></script>
     <script type="text/javascript" src="../js/animsition-script.js"></script>
 </body>
-
 </html>

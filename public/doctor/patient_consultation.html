@@ -151,6 +151,7 @@
         async function initializeForm() {
             currentPatientId = getQueryVariable('patientId');
             currentParentId = getQueryVariable('parentId'); 
+            const patientAge = decodeURIComponent(getQueryVariable('patientAge') || 'N/A'); // <<-- MODIFIED: Fetch and decode age
 
             if (!currentPatientId || !currentParentId) {
                 alert('Error: Patient ID or Parent ID not provided. Redirecting to Parent List.');
@@ -181,6 +182,7 @@
                     
                     document.getElementById('patient-name-display').textContent = currentPatientName;
                     document.getElementById('patient-id-display').textContent = currentPatientId;
+                    document.getElementById('patient-age-display').textContent = patientAge; // <<-- MODIFIED: Display age
                     
                     document.getElementById('date-of-visit').value = getTodayDate();
                     document.getElementById('consultation-form').addEventListener('submit', handleFormSubmission);
@@ -221,7 +223,7 @@
             e.preventDefault();
 
             if (!confirm('Are you sure you want to save these consultation notes?')) {
-                return; 
+                return;
             }
 
             const form = e.target;
@@ -229,15 +231,13 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
 
-            const consultationId = generateConsultationId(currentPatientName); 
+            const consultationId = generateConsultationId(currentPatientName);
             const parentKey = createParentKey(currentParentName, currentParentId);
-
 
             const consultationData = {
                 doctorId: currentDoctorId,
                 date: new Date(form['date-of-visit'].value),
                 type: form['consultation-type'].value,
-                
                 // Vitals
                 weight: parseFloat(form['weight'].value) || null,
                 height: parseFloat(form['height'].value) || null,
@@ -255,7 +255,6 @@
                 prescriptionGiven: form['prescription-given'].checked,
                 followUpRequired: form['follow-up-required'].checked,
                 nextFollowUpDate: form['follow-up-required'].checked && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null,
-                
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -263,31 +262,32 @@
                 // FIX: Save consultation notes to the deepest sub-collection
                 await db.collection('patients').doc(parentKey)
                         .collection('children').doc(currentPatientId)
-                        .collection('consultations').doc(consultationId).set(consultationData);
+                        .collection('consultations').doc(consultationId)
+                        .set(consultationData);
 
-                alert(`Consultation notes saved successfully! Consultation ID: ${consultationId}`);
-                form.reset();
-                window.location.href = `child_selection.html?parentId=${currentParentId}`; 
+                alert(`Consultation notes saved successfully for ${currentPatientName}!`);
+                window.location.href = `child_selection.html?parentId=${currentParentId}`;
             } catch (error) {
-                console.error("Error saving consultation:", error);
-                alert('Error saving consultation. Check the console for details.');
-                submitBtn.textContent = 'Save Consultation Notes';
+                console.error("Error saving consultation notes:", error);
+                alert(`Error saving consultation notes: ${error.message}. Please try again.`);
                 submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Consultation Notes';
             }
         }
-        
-        // --- Confirmation for Cancel Button ---
-        function setupCancelButton() {
-            const cancelBtn = document.getElementById('cancel-back-link');
-            const targetUrl = cancelBtn.href;
 
-            cancelBtn.href = "#";
-            cancelBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (confirm('Are you sure you want to discard these notes and go back to the Child List? Any unsaved data will be lost.')) {
-                    window.location.href = targetUrl;
-                }
-            });
+        function setupCancelButton() {
+            const backLink = document.getElementById('cancel-back-link');
+            if (backLink) {
+                backLink.addEventListener('click', function(e) {
+                    // Prevent default action initially
+                    e.preventDefault(); 
+                    
+                    if (confirm('Are you sure you want to cancel and lose unsaved progress?')) {
+                        // If confirmed, navigate to the href set in initializeForm
+                        window.location.href = backLink.href;
+                    }
+                });
+            }
         }
     </script>
 
@@ -295,8 +295,8 @@
         <div class="header">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-3 col-sm-6 col-xs-6">
-                        <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                    <div class="col-md-12">
+                         <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
                     </div>
                 </div>
             </div>
@@ -306,84 +306,89 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title">
-                        <h1>Consultation Notes</h1>
+                        <h1 class="form-title">New Consultation Notes</h1>
+                        <div class="patient-info">
+                            <strong>Patient Name:</strong> <span id="patient-name-display">Loading...</span> 
+                            | <strong>ID:</strong> <span id="patient-id-display">Loading...</span>
+                            | <strong>Age:</strong> <span id="patient-age-display">Loading...</span>
+                        </div>
+                        <div class="patient-info">
+                            <strong>Parent:</strong> <span id="parent-name-display">Loading...</span>
+                        </div>
                     </div>
-                    
-                    <div class="patient-info">
-                        Patient Name: <strong><span id="patient-name-display">...</span></strong> (ID: <span id="patient-id-display">...</span>)
-                    </div>
-                    <div class="patient-info">
-                        Parent: <strong><span id="parent-name-display">Loading...</span></strong>
-                    </div>
-                    <hr>
 
                     <form id="consultation-form">
-                        
                         <div class="row">
                             <div class="col-md-4 form-group">
-                                <label for="date-of-visit">Date of Visit *</label>
+                                <label for="date-of-visit">Date of Visit</label>
                                 <input type="date" class="form-control" id="date-of-visit" required>
                             </div>
                             <div class="col-md-4 form-group">
-                                <label for="consultation-type">Consultation Type *</label>
+                                <label for="consultation-type">Consultation Type</label>
                                 <select class="form-control" id="consultation-type" required>
-                                    <option value="" disabled selected>Select Type</option>
-                                    <option value="Sick Visit">Sick Visit</option>
-                                    <option value="Routine Check-up">Routine Check-up / Well-Visit</option>
+                                    <option value="Initial">Initial Visit</option>
                                     <option value="Follow-up">Follow-up</option>
-                                    <option value="Vaccination">Vaccination</option>
+                                    <option value="Emergency">Emergency</option>
+                                    <option value="Routine Checkup">Routine Checkup</option>
                                 </select>
                             </div>
+                            <div class="col-md-4 form-group">
+                                <label for="symptom-duration">Symptom Duration</label>
+                                <input type="text" class="form-control" id="symptom-duration" placeholder="e.g., 3 days, 1 week">
+                            </div>
+                        </div>
+                        
+                        <div class="section-separator">
+                            <h3>Vitals & Notes</h3>
                         </div>
 
-                        <h3 class="form-title section-separator">Vitals & Assessment</h3>
                         <div class="row">
-                            <div class="col-md-3 form-group">
+                            <div class="col-md-4 form-group">
                                 <label for="weight">Weight (kg)</label>
                                 <input type="number" step="0.1" class="form-control" id="weight">
                             </div>
-                            <div class="col-md-3 form-group">
+                            <div class="col-md-4 form-group">
                                 <label for="height">Height (cm)</label>
                                 <input type="number" step="0.1" class="form-control" id="height">
                             </div>
-                            <div class="col-md-3 form-group">
-                                <label for="temperature">Temperature (°C/°F)</label>
-                                <input type="text" class="form-control" id="temperature">
-                            </div>
-                            <div class="col-md-3 form-group">
-                                <label for="symptom-duration">Symptom Duration</label>
-                                <input type="text" class="form-control" id="symptom-duration" placeholder="e.g., 3 days, since morning">
+                            <div class="col-md-4 form-group">
+                                <label for="temperature">Temperature (°C)</label>
+                                <input type="text" class="form-control" id="temperature" placeholder="e.g., 37.5, Normal">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="vitals-notes">Vitals Notes / Quick Summary</label>
-                            <textarea class="form-control" id="vitals-notes" rows="2"></textarea>
+                            <label for="vitals-notes">Vitals / Examination Notes</label>
+                            <textarea class="form-control" id="vitals-notes" rows="3" placeholder="Enter any notes on physical examination or vital readings..."></textarea>
                         </div>
-
-
-                        <h3 class="form-title section-separator">S.O.A.P. Notes</h3>
-
-                        <div class="form-group">
-                            <label for="subjective">Subjective (S) - Parent/Patient Complaint *</label>
-                            <textarea class="form-control" id="subjective" rows="5" required></textarea>
+                        
+                        <div class="section-separator">
+                            <h3>S.O.A.P. Notes</h3>
                         </div>
                         
                         <div class="form-group">
-                            <label for="objective">Objective (O) - Physical Exam Findings</label>
-                            <textarea class="form-control" id="objective" rows="5"></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="assessment">Assessment / Diagnosis (A) *</label>
-                            <textarea class="form-control" id="assessment" rows="5" required></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="plan">Plan / Treatment (P) *</label>
-                            <textarea class="form-control" id="plan" rows="5" required></textarea>
+                            <label for="subjective">S. Subjective (Chief Complaint & History)</label>
+                            <textarea class="form-control" id="subjective" rows="5" required placeholder="Patient's reported symptoms, onset, duration, and relevant history."></textarea>
                         </div>
 
-                        <h3 class="form-title section-separator">Action & Follow-up</h3>
+                        <div class="form-group">
+                            <label for="objective">O. Objective (Physical Exam / Vitals Findings)</label>
+                            <textarea class="form-control" id="objective" rows="5" placeholder="Doctor's findings from examination."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assessment">A. Assessment / Diagnosis</label>
+                            <textarea class="form-control" id="assessment" rows="5" required placeholder="Final diagnosis or differential diagnosis."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="plan">P. Plan / Treatment</label>
+                            <textarea class="form-control" id="plan" rows="5" required placeholder="Treatment plan, medication, advice, and discharge instructions."></textarea>
+                        </div>
+
+                        <div class="section-separator">
+                            <h3>Action & Follow-up</h3>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-4 form-group">
                                 <div class="checkbox">
