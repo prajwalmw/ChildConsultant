@@ -15,9 +15,11 @@
             padding-top: 100px;
             min-height: 100vh;
         }
+
         .portal-container {
             padding: 40px 0;
         }
+
         .child-table th {
             background-color: #00c3c9;
             color: white;
@@ -26,31 +28,39 @@
         /* Styles for horizontal buttons and row highlighting */
         .child-table .action-buttons-container {
             display: flex;
-            gap: 5px; /* Spacing between buttons */
-            min-width: 250px; 
+            gap: 5px;
+            /* Spacing between buttons */
+            min-width: 250px;
             margin: 0;
         }
+
         .child-table .action-buttons-container .btn {
-            flex-grow: 1; 
-            width: auto; 
+            flex-grow: 1;
+            width: auto;
             margin-bottom: 0 !important;
         }
+
         .child-table .btn-consult {
             background-color: #4CAF50;
             color: white;
         }
+
         .child-table .btn-consult:hover {
             background-color: #45a049;
         }
+
         .child-table .btn-view {
             background-color: #f7a83d;
             color: white;
         }
+
         .child-table .btn-view:hover {
             background-color: #e09734;
         }
+
         .selected-child {
-            background-color: #e6ffec !important; /* Light green highlight */
+            background-color: #e6ffec !important;
+            /* Light green highlight */
             border-left: 5px solid #4CAF50;
             font-weight: bold;
         }
@@ -69,31 +79,37 @@
             background-color: #f9f9f9;
             border-radius: 8px;
             border: 1px solid #ddd;
-            display: none; 
+            display: none;
         }
+
         #consultation-display-container h2 {
             margin-top: 0;
             padding: 10px 0;
             margin-bottom: 20px;
-            color: #4CAF50; 
+            color: #4CAF50;
             border-bottom: 2px solid #4CAF50;
         }
+
         .consult-table th {
             background-color: #00c3c9;
             color: white;
         }
+
         .upcoming-table th {
             background-color: #f7a83d;
             color: white;
         }
+
         .table-section {
             margin-bottom: 30px;
         }
+
         .consultation-details-link {
             cursor: pointer;
             color: #00c3c9;
             font-weight: bold;
         }
+
         .consultation-details-link:hover {
             text-decoration: underline;
         }
@@ -103,45 +119,52 @@
             background-color: #00c3c9;
             color: white;
         }
+
         #consultationDetailModal .modal-title {
             font-weight: bold;
         }
+
         .detail-item {
             margin-bottom: 10px;
             padding: 5px 0;
             border-bottom: 1px dashed #eee;
         }
+
         .detail-item strong {
             display: block;
             color: #333;
             font-size: 1.1em;
             margin-bottom: 5px;
         }
+
         .detail-item p {
-            white-space: pre-wrap; 
+            white-space: pre-wrap;
             padding-left: 10px;
             border-left: 3px solid #f7a83d;
         }
+
         /* Style for the WhatsApp button */
         .btn-whatsapp {
             background-color: #25D366;
             color: white;
             border: none;
         }
+
         .btn-whatsapp:hover {
             background-color: #1DA851;
             color: white;
         }
+
         /* Content for PDF generation (hide elements that shouldn't be in the PDF, if necessary) */
         #pdf-content-container {
             /* Ensures proper padding/margin when PDF is generated */
-            padding: 20px; 
+            padding: 20px;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 
@@ -166,8 +189,8 @@
         // Global variables for context and caching
         let currentParentId = null;
         let currentParentName = 'Loading...';
-        let activePatientId = null; 
-        const doctorCache = {}; 
+        let activePatientId = null;
+        const doctorCache = {};
         let currentParentMobile = null; // New variable to store the parent's mobile number
 
         function getQueryVariable(variable) {
@@ -185,28 +208,28 @@
         function slugifyName(text) {
             return text.toLowerCase()
                 .trim()
-                .replace(/[^a-z0-9\s-]/g, '') 
-                .replace(/\s+/g, '-')       
-                .replace(/-+/g, '-');      
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
         }
-        
+
         function createParentKey(parentName, parentId) {
             const nameSlug = slugifyName(parentName || 'unknown-parent');
             return `${nameSlug}_${parentId}`;
         }
-        
+
         function formatFirestoreDateOnly(timestamp) {
             if (!timestamp || !timestamp.toDate) return 'N/A';
             return timestamp.toDate().toLocaleDateString('en-US', {
                 year: 'numeric', month: 'short', day: 'numeric'
             });
         }
-        
+
         // --- Doctor Name Caching and Fetching ---
         async function getDoctorName(doctorId) {
             if (!doctorId) return 'N/A';
             if (doctorCache[doctorId]) return doctorCache[doctorId];
-            
+
             try {
                 const docRef = db.collection('users').doc(doctorId);
                 const doc = await docRef.get();
@@ -219,7 +242,7 @@
                 console.error("Error fetching doctor name for ID:", doctorId, e);
             }
             // Fallback: cache and return ID if name fetch fails
-            doctorCache[doctorId] = `ID: ${doctorId}`; 
+            doctorCache[doctorId] = `ID: ${doctorId}`;
             return doctorCache[doctorId];
         }
 
@@ -231,7 +254,7 @@
                 return;
             }
             currentParentId = getQueryVariable('parentId');
-            
+
             if (!currentParentId) {
                 alert('Parent ID missing. Redirecting to Parent List.');
                 window.location.href = 'doctor_portal.html';
@@ -245,9 +268,9 @@
                         alert('Access Denied.');
                         window.location.href = '../index.html';
                     } else {
-                        fetchParentNameAndChildren(); 
+                        fetchParentNameAndChildren();
                         setupButtons();
-                        setupCancelButton(); 
+                        setupCancelButton();
                     }
                 })
                 .catch(error => {
@@ -277,7 +300,7 @@
             }
 
             document.getElementById('parent-name-display').textContent = parentNameDisplay;
-            
+
             fetchChildren();
         }
 
@@ -286,7 +309,7 @@
             childTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Children...</td></tr>';
 
             const parentKey = createParentKey(currentParentName, currentParentId);
-            
+
             db.collection('patients').doc(parentKey).collection('children').get()
                 .then(snapshot => {
                     childTableBody.innerHTML = '';
@@ -299,14 +322,14 @@
                         const child = doc.data();
                         const patientId = doc.id;
                         const dob = child.dob ? new Date(child.dob.seconds * 1000) : null;
-                        
+
                         let ageDisplay = 'N/A';
                         if (dob) {
                             const diff_ms = Date.now() - dob.getTime();
                             const age_dt = new Date(diff_ms);
                             ageDisplay = Math.abs(age_dt.getUTCFullYear() - 1970) + ' years';
                         }
-                        
+
                         const row = `
                             <tr id="child-row-${patientId}" data-patient-id="${patientId}" data-patient-name="${child.name}">
                                 <td>${child.name || 'N/A'}</td>
@@ -323,7 +346,7 @@
                         `;
                         childTableBody.innerHTML += row;
                     });
-                    
+
                     setupViewRecordsListeners(parentKey);
                 })
                 .catch(error => {
@@ -331,7 +354,7 @@
                     childTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading child data.</td></tr>';
                 });
         }
-        
+
         function setupButtons() {
             document.getElementById('register-new-child-btn').href = `register_child.html?parentId=${currentParentId}`;
         }
@@ -339,7 +362,7 @@
         function setupCancelButton() {
             const backBtn = document.getElementById('back-to-parent-list-btn');
             if (backBtn) {
-                backBtn.addEventListener('click', function(e) {
+                backBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     if (confirm('Are you sure you want to go back to the Parent List?')) {
                         window.location.href = 'doctor_portal.html';
@@ -347,14 +370,14 @@
                 });
             }
         }
-        
+
         // --- Setup View Records Listeners ---
         function setupViewRecordsListeners(parentKey) {
             document.querySelectorAll('.view-records-btn').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function () {
                     const patientId = this.getAttribute('data-patient-id');
                     const patientName = this.getAttribute('data-patient-name');
-                    
+
                     // Logic for the View/Hide toggle
                     if (activePatientId === patientId) {
                         // HIDE the records
@@ -367,26 +390,26 @@
                         // 1. Reset all buttons and highlights
                         document.querySelectorAll('.view-records-btn').forEach(btn => btn.textContent = 'View Records');
                         document.querySelectorAll('#child-table-body tr').forEach(row => row.classList.remove('selected-child'));
-                        
+
                         // 2. Set new active state
                         activePatientId = patientId;
                         this.textContent = 'Hide Records';
                         document.getElementById(`child-row-${patientId}`).classList.add('selected-child');
-                        
+
                         // 3. Load and display data
                         showConsultations(patientId, patientName, parentKey);
                     }
                 });
             });
         }
-        
+
         // --- Modal Dialog Logic ---
         function showConsultationDetailsInModal(consult) {
             const modalTitle = document.getElementById('modal-consultation-title');
             const modalBody = document.getElementById('modal-consultation-body');
             const downloadBtn = document.getElementById('download-pdf-btn');
             const whatsappBtn = document.getElementById('whatsapp-share-btn');
-            
+
             modalTitle.innerHTML = `Consultation Details (ID: ${consult.consultId}) <br><small>Date: ${formatFirestoreDateOnly(consult.date)} | Dr: ${consult.doctorName}</small>`;
 
             // Create the content structure for PDF generation
@@ -424,17 +447,17 @@
                     </div>
                 </div>
             `;
-            
+
             // Update Download button functionality
             downloadBtn.onclick = () => generatePDF(consult);
-            
+
             // Update WhatsApp button functionality
             whatsappBtn.onclick = () => sendWhatsAppMessage(consult);
-            
+
             // Show the modal
             $('#consultationDetailModal').modal('show');
         }
-        
+
         // --- PDF Generation Function ---
         function generatePDF(consult) {
             const element = document.getElementById('pdf-content-container');
@@ -452,26 +475,57 @@
             html2pdf().from(element).set(opt).save();
         }
 
-        // --- WhatsApp Integration Function ---
+        // --- WhatsApp Integration Function (Text-based Summary) ---
         function sendWhatsAppMessage(consult) {
             if (!currentParentMobile) {
                 alert("Parent's mobile number is not available. Please ensure the parent profile is complete.");
                 return;
             }
 
-            const mobileNumber = currentParentMobile.replace(/[^\d+]/g, ''); // Clean the number
+            // 1. Clean the mobile number
+            const mobileNumber = currentParentMobile.replace(/[^\d+]/g, '');
             const patientName = document.getElementById('current-patient-name').textContent;
-            
-            // Pre-fill message
-            const message = encodeURIComponent(
-                `Hello ${currentParentName},\n\nPlease find the consultation record for ${patientName} from the visit on ${formatFirestoreDateOnly(consult.date)} attached (you must download the PDF first).\n\nDoctor: ${consult.doctorName}\nDiagnosis Summary: ${consult.assessment ? consult.assessment.substring(0, 100) + '...' : 'N/A'}\n\nThank you.`
-            );
+            const date = formatFirestoreDateOnly(consult.date);
 
-            // Open WhatsApp link (web for desktop, app for mobile)
-            const url = `https://wa.me/${mobileNumber}?text=${message}`;
-            window.open(url, '_blank');
-            
-            alert("A WhatsApp chat window has opened. Please attach the downloaded PDF file to the message and send it.");
+            // 2. Generate the detailed text summary message (Prescription/Visit Notes)
+            const messageContent =
+                `🏥 *Child Consultation Record*\n` +
+                `----------------------------------------\n` +
+                `Patient: ${patientName}\n` +
+                `Parent: ${currentParentName}\n` +
+                `Date of Visit: ${date}\n` +
+                `Attending Doctor: ${consult.doctorName}\n` +
+                `\n` +
+                `*A. Assessment / Diagnosis:*\n` +
+                `${consult.assessment || 'No diagnosis recorded.'}\n` +
+                `\n` +
+                `*P. Plan / Treatment:*\n` +
+                `${consult.plan || 'No treatment plan recorded.'}\n` +
+                `\n` +
+                `*Next Steps:*\n` +
+                `Follow-up Required: ${consult.followUpRequired ? 'Yes' : 'No'}` +
+                `${consult.followUpRequired ? ` (Date: ${formatFirestoreDateOnly(consult.nextFollowUpDate)})` : ''}\n` +
+                `\n` +
+                `_A detailed record is available on the Doctor Portal._\n` +
+                `----------------------------------------`;
+
+            const message = encodeURIComponent(messageContent);
+
+            // 3. Construct the standard web URL
+            const webUrl = `https://wa.me/${mobileNumber}?text=${message}`;
+
+            // 4. ***CRITICAL FIX: Immediately close the modal.***
+            // This removes the blank window delay by giving focus back to the main window 
+            // just before the new tab is opened.
+            $('#consultationDetailModal').modal('hide');
+
+            // 5. Open the web link in a new tab/window
+            const newWindow = window.open(webUrl, '_blank');
+
+            // Optional: Try to focus the new window/tab if possible (browser dependent)
+            if (newWindow) {
+                newWindow.focus();
+            }
         }
 
 
@@ -483,19 +537,19 @@
             document.getElementById('current-patient-id').textContent = patientId;
             const pastTableBody = document.getElementById('past-consultations-body');
             const upcomingTableBody = document.getElementById('upcoming-followups-body');
-            
+
             container.style.display = 'block';
             pastTableBody.innerHTML = '<tr><td colspan="4" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Records...</td></tr>';
-            upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">Loading...</td></tr>'; 
+            upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">Loading...</td></tr>';
 
             const today = new Date();
-            today.setHours(0, 0, 0, 0); 
+            today.setHours(0, 0, 0, 0);
 
             try {
                 const snapshot = await db.collection('patients').doc(parentKey)
                     .collection('children').doc(patientId)
                     .collection('consultations')
-                    .orderBy('date', 'desc') 
+                    .orderBy('date', 'desc')
                     .get();
 
                 pastTableBody.innerHTML = '';
@@ -503,7 +557,7 @@
                 const consultations = [];
                 let pastConsultsCount = 0;
                 let upcomingFollowupsCount = 0;
-                
+
                 // 1. Gather all data and prepare the doctor name fetching promises
                 const doctorNamePromises = [];
                 snapshot.forEach(doc => {
@@ -512,7 +566,7 @@
                     consultations.push(consult);
                     doctorNamePromises.push(getDoctorName(consult.doctorId));
                 });
-                
+
                 // 2. Wait for all doctor names to be fetched
                 const doctorNames = await Promise.all(doctorNamePromises);
 
@@ -527,7 +581,7 @@
                     const doctorName = doctorNames[index];
                     consult.doctorName = doctorName; // Add name to object for modal
                     const consultDateDisplay = formatFirestoreDateOnly(consult.date);
-                    
+
                     // --- Past Consultations Table Row ---
                     const pastRow = document.createElement('tr');
                     pastRow.innerHTML = `
@@ -541,7 +595,7 @@
                     `;
                     pastTableBody.appendChild(pastRow);
                     pastConsultsCount++;
-                    
+
                     // --- Upcoming Follow-ups Table Row ---
                     const followUpDate = consult.nextFollowUpDate ? consult.nextFollowUpDate.toDate() : null;
 
@@ -558,14 +612,14 @@
                         upcomingFollowupsCount++;
                     }
                 });
-                
+
                 if (upcomingFollowupsCount === 0) {
                     upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming follow-ups found.</td></tr>';
                 }
-                
+
                 // 4. Attach modal click listeners
                 document.querySelectorAll('.consultation-details-link').forEach(el => {
-                    el.addEventListener('click', function() {
+                    el.addEventListener('click', function () {
                         const index = parseInt(this.getAttribute('data-consult-index'));
                         showConsultationDetailsInModal(consultations[index]);
                     });
@@ -584,7 +638,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                         <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                        <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
                     </div>
                 </div>
             </div>
@@ -604,7 +658,7 @@
                     <a id="register-new-child-btn" href="#" class="btn btn-primary animsition-link mb30">
                         <i class="fa fa-plus"></i> Register New Child
                     </a>
-                    
+
                     <div class="table-responsive">
                         <table class="table table-bordered child-table">
                             <thead>
@@ -617,20 +671,21 @@
                                 </tr>
                             </thead>
                             <tbody id="child-table-body">
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
-                    
-                    <a href="doctor_portal.html" class="btn btn-default animsition-link" id="back-to-parent-list-btn">Back to Parent List</a>
+
+                    <a href="doctor_portal.html" class="btn btn-default animsition-link"
+                        id="back-to-parent-list-btn">Back to Parent List</a>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-lg-12">
                     <div id="consultation-display-container">
                         <h2>
-                            Consultation Records for 
-                            <span id="current-patient-name" style="font-weight: 700;">...</span> 
+                            Consultation Records for
+                            <span id="current-patient-name" style="font-weight: 700;">...</span>
                             <small>(Patient ID: <span id="current-patient-id">...</span>)</small>
                         </h2>
 
@@ -646,7 +701,9 @@
                                         </tr>
                                     </thead>
                                     <tbody id="upcoming-followups-body">
-                                        <tr><td colspan="3" class="text-center">Select a child to view records.</td></tr>
+                                        <tr>
+                                            <td colspan="3" class="text-center">Select a child to view records.</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -665,7 +722,9 @@
                                         </tr>
                                     </thead>
                                     <tbody id="past-consultations-body">
-                                        <tr><td colspan="4" class="text-center">Select a child to view records.</td></tr>
+                                        <tr>
+                                            <td colspan="4" class="text-center">Select a child to view records.</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -673,7 +732,7 @@
                     </div>
                 </div>
             </div>
-            </div>
+        </div>
 
         <div class="tiny-footer">
             <div class="container">
@@ -682,8 +741,9 @@
         </div>
 
     </div>
-    
-    <div class="modal fade" id="consultationDetailModal" tabindex="-1" role="dialog" aria-labelledby="consultationDetailModalLabel" aria-hidden="true">
+
+    <div class="modal fade" id="consultationDetailModal" tabindex="-1" role="dialog"
+        aria-labelledby="consultationDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -712,4 +772,5 @@
     <script type="text/javascript" src="../js/animsition.js"></script>
     <script type="text/javascript" src="../js/animsition-script.js"></script>
 </body>
+
 </html>
