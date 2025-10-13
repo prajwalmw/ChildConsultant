@@ -23,7 +23,7 @@
             color: white;
         }
 
-        /* NEW: Styles for horizontal buttons and row highlighting */
+        /* Styles for horizontal buttons and row highlighting */
         .child-table .action-buttons-container {
             display: flex;
             gap: 5px; /* Spacing between buttons */
@@ -122,10 +122,27 @@
             padding-left: 10px;
             border-left: 3px solid #f7a83d;
         }
+        /* Style for the WhatsApp button */
+        .btn-whatsapp {
+            background-color: #25D366;
+            color: white;
+            border: none;
+        }
+        .btn-whatsapp:hover {
+            background-color: #1DA851;
+            color: white;
+        }
+        /* Content for PDF generation (hide elements that shouldn't be in the PDF, if necessary) */
+        #pdf-content-container {
+            /* Ensures proper padding/margin when PDF is generated */
+            padding: 20px; 
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 
 <body class="animsition">
@@ -149,8 +166,9 @@
         // Global variables for context and caching
         let currentParentId = null;
         let currentParentName = 'Loading...';
-        let activePatientId = null; // Stores the ID of the currently displayed records
-        const doctorCache = {}; // Cache to store fetched doctor names
+        let activePatientId = null; 
+        const doctorCache = {}; 
+        let currentParentMobile = null; // New variable to store the parent's mobile number
 
         function getQueryVariable(variable) {
             const query = window.location.search.substring(1);
@@ -238,22 +256,22 @@
                 });
         });
 
-        // --- Fetch Parent Name and Children ---
+        // --- Fetch Parent Name, Mobile, and Children ---
         async function fetchParentNameAndChildren() {
-            // ... (Same as previous version, fetches parent name and calls fetchChildren) ...
             let parentNameDisplay = 'Loading Parent Name...';
             try {
                 const parentDoc = await db.collection('users').doc(currentParentId).get();
                 if (parentDoc.exists) {
                     const data = parentDoc.data();
                     currentParentName = data.name || data.displayName || `Parent ID: ${currentParentId}`;
+                    currentParentMobile = data.mobile || data.phoneNumber; // Assuming mobile/phoneNumber field exists
                     parentNameDisplay = currentParentName;
                 } else {
                     parentNameDisplay = `Parent Not Found (ID: ${currentParentId})`;
                     currentParentName = parentNameDisplay;
                 }
             } catch (error) {
-                console.error("Error fetching parent name:", error);
+                console.error("Error fetching parent name and mobile:", error);
                 parentNameDisplay = `Error loading parent name (ID: ${currentParentId})`;
                 currentParentName = parentNameDisplay;
             }
@@ -339,13 +357,13 @@
                     
                     // Logic for the View/Hide toggle
                     if (activePatientId === patientId) {
-                        // If clicking the active child's button, HIDE the records
+                        // HIDE the records
                         document.getElementById('consultation-display-container').style.display = 'none';
                         activePatientId = null;
                         this.textContent = 'View Records';
                         document.getElementById(`child-row-${patientId}`).classList.remove('selected-child');
                     } else {
-                        // If clicking a new child's button (or if currently hidden), SHOW records
+                        // SHOW records
                         // 1. Reset all buttons and highlights
                         document.querySelectorAll('.view-records-btn').forEach(btn => btn.textContent = 'View Records');
                         document.querySelectorAll('#child-table-body tr').forEach(row => row.classList.remove('selected-child'));
@@ -366,46 +384,100 @@
         function showConsultationDetailsInModal(consult) {
             const modalTitle = document.getElementById('modal-consultation-title');
             const modalBody = document.getElementById('modal-consultation-body');
+            const downloadBtn = document.getElementById('download-pdf-btn');
+            const whatsappBtn = document.getElementById('whatsapp-share-btn');
             
             modalTitle.innerHTML = `Consultation Details (ID: ${consult.consultId}) <br><small>Date: ${formatFirestoreDateOnly(consult.date)} | Dr: ${consult.doctorName}</small>`;
 
+            // Create the content structure for PDF generation
             modalBody.innerHTML = `
-                <div class="detail-item">
-                    <strong>Patient Name:</strong> ${document.getElementById('current-patient-name').textContent} (ID: ${document.getElementById('current-patient-id').textContent})
-                </div>
-                <div class="detail-item">
-                    <strong>Type:</strong> ${consult.type || 'N/A'}
-                </div>
-                <div class="detail-item">
-                    <strong>Vitals:</strong> Weight: ${consult.weight || 'N/A'} / Height: ${consult.height || 'N/A'} / Temp: ${consult.temperature || 'N/A'}
-                </div>
-                <div class="detail-item">
-                    <strong>S. Subjective (Chief Complaint/History):</strong> <p>${consult.subjective || 'N/A'}</p>
-                </div>
-                <div class="detail-item">
-                    <strong>O. Objective (Exam Findings/Vitals Notes):</strong> <p>${consult.objective || 'N/A'}</p>
-                </div>
-                <div class="detail-item">
-                    <strong>A. Assessment / Diagnosis:</strong> <p>${consult.assessment || 'N/A'}</p>
-                </div>
-                <div class="detail-item">
-                    <strong>P. Plan / Treatment:</strong> <p>${consult.plan || 'N/A'}</p>
-                </div>
-                <div class="detail-item">
-                    <strong>Prescription Given:</strong> ${consult.prescriptionGiven ? 'Yes' : 'No'}
-                </div>
-                <div class="detail-item">
-                    <strong>Follow-up Required:</strong> ${consult.followUpRequired ? 'Yes' : 'No'}
-                    ${consult.followUpRequired ? ` (Next: ${formatFirestoreDateOnly(consult.nextFollowUpDate)})` : ''}
+                <div id="pdf-content-container">
+                    <h4 style="text-align: center; color: #00c3c9;">Child Consultation Record</h4>
+                    <hr>
+                    <div class="detail-item">
+                        <strong>Patient:</strong> ${document.getElementById('current-patient-name').textContent} (ID: ${document.getElementById('current-patient-id').textContent})
+                    </div>
+                    <div class="detail-item">
+                        <strong>Consult Date:</strong> ${formatFirestoreDateOnly(consult.date)} | <strong>Type:</strong> ${consult.type || 'N/A'} | <strong>Attending Doctor:</strong> ${consult.doctorName}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Vitals:</strong> Weight: ${consult.weight || 'N/A'} / Height: ${consult.height || 'N/A'} / Temp: ${consult.temperature || 'N/A'}
+                    </div>
+                    <hr>
+                    <div class="detail-item">
+                        <strong>S. Subjective (Chief Complaint/History):</strong> <p>${consult.subjective || 'N/A'}</p>
+                    </div>
+                    <div class="detail-item">
+                        <strong>O. Objective (Exam Findings/Vitals Notes):</strong> <p>${consult.objective || 'N/A'}</p>
+                    </div>
+                    <div class="detail-item">
+                        <strong>A. Assessment / Diagnosis:</strong> <p>${consult.assessment || 'N/A'}</p>
+                    </div>
+                    <div class="detail-item">
+                        <strong>P. Plan / Treatment:</strong> <p>${consult.plan || 'N/A'}</p>
+                    </div>
+                    <hr>
+                    <div class="detail-item">
+                        <strong>Prescription Given:</strong> ${consult.prescriptionGiven ? 'Yes' : 'No'} | 
+                        <strong>Follow-up Required:</strong> ${consult.followUpRequired ? 'Yes' : 'No'}
+                        ${consult.followUpRequired ? ` (Next: ${formatFirestoreDateOnly(consult.nextFollowUpDate)})` : ''}
+                    </div>
                 </div>
             `;
             
-            // Use jQuery from Bootstrap to show the modal
+            // Update Download button functionality
+            downloadBtn.onclick = () => generatePDF(consult);
+            
+            // Update WhatsApp button functionality
+            whatsappBtn.onclick = () => sendWhatsAppMessage(consult);
+            
+            // Show the modal
             $('#consultationDetailModal').modal('show');
         }
+        
+        // --- PDF Generation Function ---
+        function generatePDF(consult) {
+            const element = document.getElementById('pdf-content-container');
+            const filename = `Consultation_${consult.consultId}_${document.getElementById('current-patient-name').textContent.replace(/\s/g, '_')}.pdf`;
+
+            const opt = {
+                margin: 10,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, logging: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Use html2pdf to generate and save the file
+            html2pdf().from(element).set(opt).save();
+        }
+
+        // --- WhatsApp Integration Function ---
+        function sendWhatsAppMessage(consult) {
+            if (!currentParentMobile) {
+                alert("Parent's mobile number is not available. Please ensure the parent profile is complete.");
+                return;
+            }
+
+            const mobileNumber = currentParentMobile.replace(/[^\d+]/g, ''); // Clean the number
+            const patientName = document.getElementById('current-patient-name').textContent;
+            
+            // Pre-fill message
+            const message = encodeURIComponent(
+                `Hello ${currentParentName},\n\nPlease find the consultation record for ${patientName} from the visit on ${formatFirestoreDateOnly(consult.date)} attached (you must download the PDF first).\n\nDoctor: ${consult.doctorName}\nDiagnosis Summary: ${consult.assessment ? consult.assessment.substring(0, 100) + '...' : 'N/A'}\n\nThank you.`
+            );
+
+            // Open WhatsApp link (web for desktop, app for mobile)
+            const url = `https://wa.me/${mobileNumber}?text=${message}`;
+            window.open(url, '_blank');
+            
+            alert("A WhatsApp chat window has opened. Please attach the downloaded PDF file to the message and send it.");
+        }
+
 
         // --- Core Logic: Display Consultations on the same page ---
         async function showConsultations(patientId, patientName, parentKey) {
+            // ... (Same as previous version, fetches data and populates tables) ...
             const container = document.getElementById('consultation-display-container');
             document.getElementById('current-patient-name').textContent = patientName;
             document.getElementById('current-patient-id').textContent = patientId;
@@ -624,6 +696,12 @@
                     <p class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading details...</p>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="download-pdf-btn">
+                        <i class="fa fa-download"></i> Download PDF
+                    </button>
+                    <button type="button" class="btn btn-whatsapp" id="whatsapp-share-btn">
+                        <i class="fa fa-whatsapp"></i> Send via WhatsApp
+                    </button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
