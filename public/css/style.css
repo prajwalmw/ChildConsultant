@@ -110,7 +110,8 @@ Author:             Jitu Chauhan
     1. Body / Typography 
 -----------------------------------*/
 
-body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-size: 16px; background-color: #fff; color: #7a8080; font-family: 'PT Sans', sans-serif; line-height: 1.6; }
+html, body { margin: 0 !important; padding: 0 !important; }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-size: 16px; background-color: #fff; color: #7a8080; font-family: 'PT Sans', sans-serif; line-height: 1.6; overflow-x: hidden; }
 h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; margin-bottom: 10px; color: #4a4e4e; font-weight: 600; }
 h1 { font-size: 30px; line-height: 30px; font-weight: 700; }
 h2 { font-size: 24px; }
@@ -357,10 +358,11 @@ img { width: auto; max-width: 100%; height: auto; margin: 0; padding: 0; border:
    ----------------------*/
 .logo { padding-top: 7px; }
 .is-sticky .header { background-color: #00c3c9; }
-.header { -webkit-transition: background-color .8s ease-out; -moz-transition: background-color .8s ease-out; -o-transition: background-color .8s ease-out; transition: background-color .8s ease-out; position: relative; padding-top: 15px; padding-bottom: 15px; font-family: 'PT Sans', sans-serif; z-index: 9; }
+.header { -webkit-transition: background-color .8s ease-out; -moz-transition: background-color .8s ease-out; -o-transition: background-color .8s ease-out; transition: background-color .8s ease-out; position: relative; padding-top: 15px; padding-bottom: 15px; font-family: 'PT Sans', sans-serif; z-index: 9; text-align: left; }
+.header .container { text-align: left; }
 .mail-text, .top-nav { font-size: 12px; color: #e1feff; text-transform: capitalize; font-weight: 400; letter-spacing: 1px; }
 .top-nav a { font-size: 14px; color: #e1feff; margin-right: 10px; margin-left: 15px; }
-.top-bar { padding-top: 10px; border-bottom: 1px solid rgba(145, 145, 145, 0.3); line-height: 1; padding-bottom: 10px; }
+.top-bar { display: none !important; }
 .top-header { padding-top: 10px; color: #fff; border-bottom: 1px solid rgba(00, 00, 00, 0.3); line-height: 1; padding-bottom: 10px; }
 .top-link { margin-left: 15px; color: #fff; }
 .top-link a { color: #e3e3e3; }
@@ -369,7 +371,11 @@ img { width: auto; max-width: 100%; height: auto; margin: 0; padding: 0; border:
 /*--------------------------
     5.2 Navigations Regular
    ----------------------------*/
-.hero-section { background: linear-gradient(rgba(0, 195, 201, 0.3), rgba(0, 195, 201, 0.3), rgba(0, 195, 201, 0.3)), url(../images/hero.jpg) no-repeat center; background-size: cover; }
+.hero-section { background: linear-gradient(rgba(0, 195, 201, 0.3), rgba(0, 195, 201, 0.3), rgba(0, 195, 201, 0.3)), url(../images/hero.jpg) no-repeat center; background-size: cover; margin-top: -30px !important; padding-top: 30px !important; position: relative; top: 0; }
+#animsition-box { margin: 0 !important; padding: 0 !important; position: relative; top: 0; margin-top: -30px !important; }
+.hero-section .container { margin-top: 0 !important; padding-top: 0 !important; }
+.hero-section .row { margin-top: 0 !important; }
+.hero-section .header { margin-top: 0 !important; }
 .hero-caption { padding-top: 150px; padding-bottom: 150px; }
 .hero-title { font-size: 42px; color: #fff; line-height: 50px; font-weight: 600; }
 .hero-text { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #fff; font-weight: 700; margin-bottom: 50px; }
@@ -808,8 +814,9 @@ canvas {
 
 body {
       font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
+      text-align: left;
+      margin: 0 !important;
+      padding: 0 !important;
     }
     #firebaseui-auth-container {
       display: inline-block;

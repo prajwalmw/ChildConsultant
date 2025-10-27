@@ -46,17 +46,36 @@
     auth.onAuthStateChanged(user => {
       var profileImg = document.getElementById('profile-img');
       var navigation = document.getElementById('navigation');
-      
+      var profileMenu = document.querySelector('.profile-menu');
+
       if (!user) {
-        // Not logged in → redirect to login page
-        window.location.href = 'login.html';
+        // Not logged in → Show Login button instead of redirecting
+        if (profileMenu) {
+          profileMenu.style.display = 'none';
+        }
+
+        // Add Login button to navigation
+        const homeMenuItem = navigation?.querySelector('ul > li:first-child');
+        if (homeMenuItem && !document.getElementById('login-menu-item')) {
+          const loginHtml = '<li id="login-menu-item"><a href="login.html" title="Login" class="animsition-link">Login</a></li>';
+          homeMenuItem.insertAdjacentHTML('afterend', loginHtml);
+        }
       } else {
         // Logged in: Set profile image and fetch role
+        if (profileMenu) {
+          profileMenu.style.display = 'block';
+        }
         if (profileImg) {
             profileImg.src = user.photoURL || 'images/default-profile.png'; // Use a fallback image
         }
-        
-        // --- 🔑 New Logic: Fetch User Role and Update Menu ---
+
+        // Remove Login button if it exists
+        const loginMenuItem = document.getElementById('login-menu-item');
+        if (loginMenuItem) {
+          loginMenuItem.remove();
+        }
+
+        // --- 🔑 Fetch User Role and Update Menu ---
         db.collection('users').doc(user.uid).get()
           .then(doc => {
             let menuHtml = '';
@@ -77,13 +96,13 @@
                 // Fallback to parent dashboard if user document is missing
                 menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
             }
-            
+
             // Find the position after "Home" (first <li>)
             const homeMenuItem = navigation.querySelector('ul > li:first-child');
             if (homeMenuItem) {
                 // Insert the new menu item right after Home
                 homeMenuItem.insertAdjacentHTML('afterend', menuHtml);
-            } 
+            }
           })
           .catch(error => {
             console.error("Error fetching user role:", error);
@@ -94,7 +113,7 @@
               homeMenuItem.insertAdjacentHTML('afterend', '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>');
             }
           });
-        // --- End New Logic ---
+        // --- End Logic ---
       }
     });
   </script>
