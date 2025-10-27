@@ -6,52 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>User Profile | Update Details</title>
     <link href="../css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
+    <link rel="stylesheet" href="../css/style.css"> <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
-    <style>
-        .animsition-box {
-            padding-top: 100px;
-            min-height: 100vh;
-        }
-        .profile-container {
-            padding: 40px 0;
-            max-width: 700px;
-            margin: auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .section-title {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        .form-group label {
-            font-weight: 600;
-        }
-        #mobile-otp-section {
-            border: 1px solid #00c3c9;
-            padding: 20px;
-            border-radius: 6px;
-            margin-top: 20px;
-            background-color: #f0faff;
-            margin-bottom: 30px;
-        }
-        #otp-input-group {
-            display: none;
-        }
-        .button-group-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-    </style>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
     <script>
@@ -64,7 +25,7 @@
 <body class="animsition">
 
     <script>
-        // --- Firebase Configuration ---
+        // --- Firebase Configuration & Setup ---
         const firebaseConfig = {
             apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
             authDomain: "child-consultant.firebaseapp.com",
@@ -78,11 +39,13 @@
         }
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage(); 
 
         let currentUser = null;
         let generatedOTP = null; 
+        const defaultPhotoURL = 'https://via.placeholder.com/150/00c3c9/ffffff?text=U'; 
 
-        // --- Auth Check and Data Fetch ---
+        // --- Data Fetching ---
         auth.onAuthStateChanged(user => {
             if (!user) {
                 window.location.href = '../login.html';
@@ -96,8 +59,10 @@
             try {
                 const doc = await db.collection('users').doc(uid).get();
                 const profileEmailInput = document.getElementById('profile-email');
+                const profileImgElement = document.getElementById('profile-img');
                 
                 let userEmail = currentUser.email || 'N/A';
+                let photoURL = currentUser.photoURL || defaultPhotoURL;
                 
                 if (doc.exists) {
                     const data = doc.data();
@@ -106,12 +71,14 @@
                     document.getElementById('profile-name').value = userFullName;
                     document.getElementById('profile-mobile').value = data.mobile || '';
                     document.getElementById('current-mobile-display').textContent = data.mobile ? `Current Registered Mobile: ${data.mobile}` : 'No mobile number registered.';
+                    
+                    photoURL = data.photoURL || photoURL; 
                 } else {
                     document.getElementById('profile-name').value = currentUser.displayName || userEmail.split('@')[0] || '';
                     console.warn('User profile data not found in Firestore. Using default Auth details.');
                 }
 
-                // Set email value in the disabled input field
+                profileImgElement.src = photoURL;
                 profileEmailInput.value = userEmail;
                 
             } catch (error) {
@@ -120,143 +87,55 @@
             }
         }
 
-        // NEW HELPER FUNCTION to guarantee a valid email retrieval
-        function getRecipientEmail() {
-            // 1. Try to get it from the populated DOM input field (most reliable after page load)
-            let emailFromDom = document.getElementById('profile-email').value.trim();
-            if (emailFromDom && emailFromDom !== 'N/A') {
-                return emailFromDom;
-            }
-            
-            // 2. Fallback to the live Firebase currentUser object
-            if (currentUser && currentUser.email) {
-                return currentUser.email.trim();
-            }
-            
-            return null; // Return null if no valid email is found anywhere
-        }
+        // --- Profile Picture Logic ---
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        // --- OTP Verification Workflow ---
-
-        function generateOtp() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
-
-        async function sendOtpToEmail() {
-            
-            // CRITICAL CHECK: Ensure currentUser is loaded
-            if (!currentUser) {
-                alert('System not ready. Please wait a moment for profile data to load or try reloading the page.');
+            if (!file.type.match('image.*')) {
+                alert("Please select an image file.");
                 return;
             }
-            
-            const mobile = document.getElementById('profile-mobile').value.trim();
-            
-            if (!mobile || mobile.length < 10) {
-                alert('Please enter a valid mobile number (at least 10 digits).');
-                return;
-            }
-            
-            const btn = document.getElementById('send-otp-btn');
-            btn.disabled = true;
-            btn.textContent = 'Sending...';
-
-            // Use the new robust helper function
-            let recipientEmail = getRecipientEmail();
-
-            // 🔑 DEBUG LOGGING ADDED HERE
-            console.log('DEBUG: Recipient Email retrieved:', recipientEmail);
-
-            if (!recipientEmail) {
-                alert('Error: Cannot send OTP. A valid email address could not be retrieved from your account. Please ensure your Firebase account is linked to an email.');
-                btn.disabled = false;
-                btn.textContent = 'Send OTP to Email';
+            if (file.size > 2 * 1024 * 1024) { 
+                alert("The image size must be less than 2MB.");
                 return;
             }
 
-            // 🔑 NEW VARIABLE ADDED HERE
-            const appCompanyName = "Nubee"; // <-- Define your company name here
-        
-            generatedOTP = generateOtp();
-            
-            try {
-                // ACTUAL SENDING using EmailJS with provided IDs
-                await emailjs.send(
-                    "service_frugd33", // User Provided Service ID
-                    "template_0dgxg2t", // User Provided Template ID
-                    {
-                        email: recipientEmail, // Guaranteed to be non-empty here
-                        passcode: generatedOTP, 
-                        user_name: currentUser.displayName || recipientEmail.split('@')[0],
-                        company_name: appCompanyName // <-- NEW PARAMETER ADDED HERE
-                    }
-                );
-                
-                console.log(`Actual OTP sent to ${recipientEmail}`);
-                
-                alert(`A verification code has been successfully sent to your registered email: ${recipientEmail}. Please check your inbox and spam folder.`);
-                
-                document.getElementById('otp-input-group').style.display = 'block';
-                btn.textContent = 'OTP Sent. Resend?';
-                
-            } catch (error) {
-                console.error('Error sending OTP via EmailJS:', error);
-                const errorMessage = error.text || 'An unknown error occurred.'; 
-                alert(`Failed to send verification code. Error: ${errorMessage}. Please check your EmailJS service configuration or try again.`);
-                btn.textContent = 'Send OTP to Email';
-            } finally {
-                btn.disabled = false;
-            }
-        }
+            const imgElement = document.getElementById('profile-img');
+            const uploadBtn = document.getElementById('change-photo-btn');
+            const oldBtnText = uploadBtn.innerHTML;
 
-        async function verifyOtpAndSaveMobile() {
-            const enteredOtp = document.getElementById('mobile-otp').value.trim();
-            const newMobile = document.getElementById('profile-mobile').value.trim();
-            
-            if (!generatedOTP) {
-                alert('Please send the OTP first.');
-                return;
-            }
-
-            if (enteredOtp !== generatedOTP) {
-                alert('Invalid OTP. Please check the code or resend OTP.');
-                return;
-            }
-
-            if (!newMobile) {
-                alert('Mobile number field cannot be empty.');
-                return;
-            }
-
-            const btn = document.getElementById('verify-save-btn');
-            btn.disabled = true;
-            btn.textContent = 'Saving...';
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Uploading...';
 
             try {
+                const storageRef = storage.ref();
+                const fileExtension = file.name.split('.').pop();
+                const imageRef = storageRef.child(`profile_pictures/${currentUser.uid}/profile.${fileExtension}`);
+                
+                const snapshot = await imageRef.put(file);
+                const newPhotoURL = await snapshot.ref.getDownloadURL();
+                
                 await db.collection('users').doc(currentUser.uid).update({
-                    mobile: newMobile,
-                    mobileVerified: true,
+                    photoURL: newPhotoURL,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-
-                alert('Mobile number successfully verified and saved!');
                 
-                generatedOTP = null;
-                document.getElementById('mobile-otp').value = '';
-                document.getElementById('otp-input-group').style.display = 'none';
-                document.getElementById('send-otp-btn').textContent = 'Send OTP to Email';
-                document.getElementById('current-mobile-display').textContent = `Current Registered Mobile: ${newMobile}`;
+                await currentUser.updateProfile({ photoURL: newPhotoURL });
+
+                imgElement.src = newPhotoURL;
+                alert('Profile picture updated successfully!');
                 
             } catch (error) {
-                console.error('Error saving mobile number:', error);
-                alert('Failed to save mobile number. Please try again.');
+                console.error('Error uploading image:', error);
+                alert('Failed to upload image. Please try again. Error: ' + error.message);
             } finally {
-                btn.disabled = false;
-                btn.textContent = 'Verify OTP & Save Mobile';
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = oldBtnText;
             }
         }
-        
-        // --- Profile Update Function ---
+
+        // --- Account Update Logic ---
         async function updateProfile() {
             const newName = document.getElementById('profile-name').value.trim();
             const profileUpdateBtn = document.getElementById('profile-update-btn');
@@ -271,7 +150,6 @@
 
             try {
                 await currentUser.updateProfile({ displayName: newName });
-
                 await db.collection('users').doc(currentUser.uid).update({
                     name: newName,
                     displayName: newName, 
@@ -288,11 +166,102 @@
             }
         }
 
-        // Attach event listeners after DOM load
+        // --- Mobile Verification Logic ---
+        function getRecipientEmail() {
+            let emailFromDom = document.getElementById('profile-email').value.trim();
+            if (emailFromDom && emailFromDom !== 'N/A') { return emailFromDom; }
+            if (currentUser && currentUser.email) { return currentUser.email.trim(); }
+            return null;
+        }
+
+        function generateOtp() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        async function sendOtpToEmail() {
+            if (!currentUser) { /* ... check ... */ return; }
+            const mobile = document.getElementById('profile-mobile').value.trim();
+            if (!mobile || mobile.length < 10) { alert('Please enter a valid mobile number (at least 10 digits).'); return; }
+            
+            const btn = document.getElementById('send-otp-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            let recipientEmail = getRecipientEmail();
+
+            if (!recipientEmail) { /* ... error check ... */ btn.disabled = false; btn.textContent = 'Send OTP to Email'; return; }
+
+            const appCompanyName = "Nubee";
+            generatedOTP = generateOtp();
+            
+            try {
+                await emailjs.send("service_frugd33", "template_0dgxg2t", {
+                    email: recipientEmail, passcode: generatedOTP, 
+                    user_name: currentUser.displayName || recipientEmail.split('@')[0],
+                    company_name: appCompanyName 
+                });
+                
+                alert(`A verification code has been successfully sent to your registered email: ${recipientEmail}. Please check your inbox and spam folder.`);
+                document.getElementById('otp-input-group').style.display = 'block';
+                btn.textContent = 'OTP Sent. Resend?';
+            } catch (error) {
+                console.error('Error sending OTP via EmailJS:', error);
+                const errorMessage = error.text || 'An unknown error occurred.'; 
+                alert(`Failed to send verification code. Error: ${errorMessage}. Please check your EmailJS service configuration or try again.`);
+                btn.textContent = 'Send OTP to Email';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function verifyOtpAndSaveMobile() {
+            const enteredOtp = document.getElementById('mobile-otp').value.trim();
+            const newMobile = document.getElementById('profile-mobile').value.trim();
+            
+            if (!generatedOTP) { alert('Please send the OTP first.'); return; }
+            if (enteredOtp !== generatedOTP) { alert('Invalid OTP. Please check the code or resend OTP.'); return; }
+            if (!newMobile) { alert('Mobile number field cannot be empty.'); return; }
+
+            const btn = document.getElementById('verify-save-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                await db.collection('users').doc(currentUser.uid).update({
+                    mobile: newMobile, mobileVerified: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert('Mobile number successfully verified and saved!');
+                generatedOTP = null;
+                document.getElementById('mobile-otp').value = '';
+                document.getElementById('otp-input-group').style.display = 'none';
+                document.getElementById('send-otp-btn').textContent = 'Send OTP to Email';
+                document.getElementById('current-mobile-display').textContent = `Current Registered Mobile: ${newMobile}`;
+            } catch (error) {
+                console.error('Error saving mobile number:', error);
+                alert('Failed to save mobile number. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verify OTP & Save Mobile';
+            }
+        }
+
+        // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('send-otp-btn').addEventListener('click', sendOtpToEmail);
             document.getElementById('verify-save-btn').addEventListener('click', verifyOtpAndSaveMobile);
             document.getElementById('profile-update-btn').addEventListener('click', updateProfile);
+            
+            // Image Upload Listeners
+            const fileInput = document.getElementById('file-input');
+            const profileImg = document.getElementById('profile-img');
+            const changePhotoBtn = document.getElementById('change-photo-btn');
+
+            profileImg.addEventListener('click', () => fileInput.click());
+            changePhotoBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleImageUpload);
+            
+            document.getElementById('profile-form').addEventListener('submit', (e) => e.preventDefault());
         });
     </script>
 
@@ -316,19 +285,37 @@
                         <h4 id="current-mobile-display" class="text-info"></h4>
                     </div>
 
-                    <form id="profile-form">
-                        <h3>Account Details</h3>
-                        <div class="form-group">
-                            <label for="profile-name">Full Name</label>
-                            <input type="text" class="form-control" id="profile-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="profile-email">Email Address (Read-Only)</label>
-                            <input type="email" class="form-control" id="profile-email" disabled>
-                        </div>
+                    <div class="profile-picture-container">
+                        <img id="profile-img" src="" alt="Profile Picture">
                         
-                        <hr>
+                        <div class="upload-btn-wrapper">
+                            <button class="btn btn-sm btn-info" type="button" id="change-photo-btn"><i class="fa fa-camera"></i> Change Photo</button>
+                            <input type="file" id="file-input" accept="image/*" />
+                        </div>
+                        <small class="text-muted d-block mt-2">Max file size 2MB (JPG/PNG)</small>
+                    </div>
 
+                    <div class="profile-section-card">
+                        <h3>Account Details</h3>
+                        <form id="profile-form">
+                            <div class="form-group">
+                                <label for="profile-name">Full Name</label>
+                                <input type="text" class="form-control" id="profile-name" required placeholder="Enter your full name">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-email">Email Address <small>(Read-Only)</small></label>
+                                <input type="email" class="form-control" id="profile-email" disabled>
+                            </div>
+
+                            <div class="text-right" style="margin-top: 20px;">
+                                <button type="button" id="profile-update-btn" class="btn btn-primary">
+                                    <i class="fa fa-save"></i> Update Profile Details
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="profile-section-card" style="border-bottom: none;">
                         <h3>Mobile Number Verification</h3>
                         <div id="mobile-otp-section">
                             <p>Verify your mobile number to enable features like **WhatsApp sharing** for consultation notes.</p>
@@ -357,12 +344,13 @@
                                 </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
                     
                     <div class="button-group-bottom">
-                        <a href="../index.html" class="btn btn-default animsition-link">Back to Dashboard</a>
-                        <button type="button" id="profile-update-btn" class="btn btn-primary">Update Profile Details</button>
-                    </div>
+                        <a href="../index.html" class="btn btn-default animsition-link">
+                            <i class="fa fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        </div>
 
                 </div>
             </div>

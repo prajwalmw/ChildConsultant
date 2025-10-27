@@ -833,3 +833,115 @@ body {
   color: #333;
 }
 
+/* --- Profile Picture and Container Styles (For update_profile.html) --- */
+
+/* Ensures the main card has a consistent look and feel */
+.profile-container {
+    padding: 40px 0;
+    max-width: 700px;
+    margin: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Center and space out the image section */
+.profile-picture-container {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+}
+
+/* Style for the actual profile image */
+#profile-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%; /* Makes it circular */
+    object-fit: cover; /* Ensures image covers the area without distortion */
+    border: 4px solid #00c3c9; /* Highlight color */
+    background-color: #f0f0f0;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+#profile-img:hover {
+    border-color: #00999e;
+}
+
+/* Wrapper to hide the file input, making the button/image clickable */
+.upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.upload-btn-wrapper input[type=file] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* --- Form Field and Section Separation Styles --- */
+
+.section-title {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.form-group label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Fix for cramped input fields: adds horizontal padding to the content section */
+.profile-section-card {
+    padding: 20px 30px; /* IMPORTANT: Adds the 30px left/right padding */
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee; /* Visual separator between sections */
+}
+
+/* Style for the standard input look */
+.form-control {
+    border: 1px solid #ccc;
+    padding: 10px 12px;
+    height: auto;
+    font-size: 16px;
+    width: 100%;
+}
+
+/* Mobile Verification Section Styling */
+#mobile-otp-section {
+    border: 1px solid #00c3c9;
+    padding: 20px;
+    border-radius: 6px;
+    margin-top: 20px;
+    background-color: #f0faff;
+    margin-bottom: 30px;
+}
+
+#otp-input-group {
+    display: none;
+}
+
+/* Style for the bottom button group for consistent padding */
+.button-group-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding: 20px 30px 0; /* IMPORTANT: Adds the 30px left/right padding */
+    border-top: 1px solid #eee;
+}
+
+/* Minor input group visual clean-up */
+.input-group > .form-control {
+    border-right: none;
+}
+.input-group-btn .btn {
+    border-left: 1px solid transparent;
+}
