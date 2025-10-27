@@ -110,7 +110,7 @@ Author:             Jitu Chauhan
     1. Body / Typography 
 -----------------------------------*/
 
-html, body { margin: 0 !important; padding: 0 !important; }
+html, body { margin: 0 !important; padding: 0 !important; height: 100%; overflow-y: auto; }
 body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-size: 16px; background-color: #fff; color: #7a8080; font-family: 'PT Sans', sans-serif; line-height: 1.6; overflow-x: hidden; }
 h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; margin-bottom: 10px; color: #4a4e4e; font-weight: 600; }
 h1 { font-size: 30px; line-height: 30px; font-weight: 700; }
@@ -372,7 +372,7 @@ img { width: auto; max-width: 100%; height: auto; margin: 0; padding: 0; border:
     5.2 Navigations Regular
    ----------------------------*/
 .hero-section { background: linear-gradient(rgba(0, 195, 201, 0.3), rgba(0, 195, 201, 0.3), rgba(0, 195, 201, 0.3)), url(../images/hero.jpg) no-repeat center; background-size: cover; margin-top: -30px !important; padding-top: 30px !important; position: relative; top: 0; }
-#animsition-box { margin: 0 !important; padding: 0 !important; position: relative; top: 0; margin-top: -30px !important; }
+#animsition-box { margin: 0 !important; padding: 0 !important; position: relative; top: 0; margin-top: -30px !important; margin-bottom: 0 !important; padding-bottom: 0 !important; }
 .hero-section .container { margin-top: 0 !important; padding-top: 0 !important; }
 .hero-section .row { margin-top: 0 !important; }
 .hero-section .header { margin-top: 0 !important; }
@@ -486,7 +486,7 @@ visibility: hidden; line-height: 0; height: 0;}*/
 .footer-widget .form-control { height: 52px; color: #8c8d8d; background-color: #444444; border: 0px solid; }
 
 /*-------------- tiny footer ------------*/
-.tiny-footer { background-color: #262727; padding-top: 14px; padding-bottom: 14px; font-size: 12px; color: #575a5a; text-align: center; }
+.tiny-footer { background-color: #262727; padding-top: 14px; padding-bottom: 14px; font-size: 12px; color: #575a5a; text-align: center; margin: 0 !important; }
 
 /*-----------------------------------
 9. Pages 
