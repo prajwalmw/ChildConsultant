@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ChildConsultant (branded as "Nubee") is a pediatric consultation management web application built with Firebase. The system enables doctors to manage patient consultations, track child health records, and share prescriptions with parents via WhatsApp and PDF.
+ChildConsultant (branded as "Aqiraa") is a pediatric consultation management web application built with Firebase. The system enables doctors to manage patient consultations, track child health records, and share prescriptions with parents via WhatsApp and PDF.
 
 **Live URL:** https://child-consultant.web.app
 

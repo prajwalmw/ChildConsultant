@@ -51,13 +51,19 @@ p, span, div, li {
   color: var(--dark) !important;
 }
 
-/* Links should be visible but with hover effect */
-a {
-  color: var(--baby-blue-dark) !important;
+/* Links should be visible but with hover effect - BUT NOT buttons or images */
+a:not(.btn):not(.logo a) {
+  color: var(--dark) !important;
 }
 
-a:hover {
+a:not(.btn):not(.logo a):hover {
   color: var(--baby-pink-dark) !important;
+}
+
+/* Make sure logo and images are always visible */
+.logo img {
+  opacity: 1 !important;
+  filter: none !important;
 }
 
 /* Specific text color fixes */
@@ -84,7 +90,6 @@ label {
 }
 
 /* White text should only be on colored backgrounds */
-.btn-white,
 .text-white,
 .cta-title,
 .cta-block *,
@@ -105,7 +110,17 @@ label {
   color: var(--white) !important;
 }
 
-/* Button text colors */
+/* Button text colors - ALWAYS visible */
+.btn,
+.btn-default,
+.btn-primary,
+.btn-white,
+a.btn,
+button {
+  color: var(--dark) !important;
+}
+
+/* Buttons on colored backgrounds can have white text */
 .btn-default,
 .btn-primary {
   color: var(--white) !important;
@@ -333,13 +348,13 @@ h3 {
 
 .btn-white {
   background: var(--white);
-  color: var(--dark);
+  color: var(--dark) !important;
   border: 3px solid var(--dark);
 }
 
 .btn-white:hover {
   background: var(--baby-orange);
-  color: var(--white);
+  color: var(--white) !important;
   border-color: var(--baby-orange);
 }
 
