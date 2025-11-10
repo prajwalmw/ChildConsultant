@@ -1,18 +1,103 @@
-rules_version='2'
+rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+
+    // Check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Check if user is accessing their own document
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Get user role from Firestore
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Check if user is admin
+    function isAdmin() {
+      return isSignedIn() && getUserRole() == 'admin';
+    }
+
+    // Check if user is doctor
+    function isDoctor() {
+      return isSignedIn() && getUserRole() == 'doctor';
+    }
+
+    // ============================================
+    // USERS COLLECTION
+    // ============================================
+    match /users/{userId} {
+      // All authenticated users can read user profiles
+      allow read: if isSignedIn();
+
+      // Users can update their own profile, admins can update any
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // ============================================
+    // CHILDREN COLLECTION
+    // ============================================
+    match /children/{childId} {
+      // Authenticated users can read children data
+      allow read: if isSignedIn();
+
+      // Any authenticated user can create child records
+      allow create: if isSignedIn();
+
+      // Admins, doctors, or parent can update/delete
+      allow update, delete: if isAdmin() || isDoctor() || isOwner(resource.data.parentId);
+    }
+
+    // ============================================
+    // CONSULTATIONS COLLECTION
+    // ============================================
+    match /consultations/{consultationId} {
+      // Authenticated users can read consultations
+      allow read: if isSignedIn();
+
+      // Only doctors and admins can create consultations
+      allow create: if isDoctor() || isAdmin();
+
+      // Only admins and doctors can update/delete
+      allow update, delete: if isAdmin() || isDoctor();
+    }
+
+    // ============================================
+    // PATIENTS COLLECTION
+    // ============================================
+    match /patients/{patientId} {
+      allow read: if isSignedIn();
+      allow write: if isDoctor() || isAdmin();
+    }
+
+    // ============================================
+    // INQUIRIES COLLECTION (Contact Form)
+    // ============================================
+    match /inquiries/{inquiryId} {
+      // Only admins can read inquiries
+      allow read: if isAdmin();
+
+      // Anyone can create an inquiry (contact form)
+      allow create: if true;
+
+      // Only admins can update/delete
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // DEFAULT DENY ALL OTHER COLLECTIONS
+    // ============================================
     match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2025, 11, 5);
+      allow read, write: if false;
     }
   }
 }

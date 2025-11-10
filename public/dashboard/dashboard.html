@@ -2,13 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard</title>
+  <title>Dashboard - Nubee</title>
+
+  <!-- Child-Friendly UI/UX Enhancements -->
+  <link rel="stylesheet" href="../css/child-friendly.css">
+
   <script type="module" src="dashboard.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
+    body { font-family: 'Poppins', sans-serif; padding: 40px; }
     h1 { text-align: center; }
     .chart-container { width: 80%; margin: auto; }
+    .chart-section {
+      background: white;
+      padding: 30px;
+      border-radius: 25px;
+      margin: 30px 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>

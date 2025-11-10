@@ -1,0 +1,838 @@
+/*
+ * Child-Friendly UI/UX Enhancements
+ * Designed for children aged 3-12 years
+ * Vibrant, playful, and engaging design
+ */
+
+/* ============================================
+   1. SOFT BABY NURSERY COLORS
+   ============================================ */
+:root {
+  /* Soft Baby Colors - Gentle and Soothing */
+  --baby-blue: #A8DAFF;      /* Soft baby blue */
+  --baby-pink: #FFB3D9;      /* Soft baby pink */
+  --baby-yellow: #FFF9C4;    /* Soft baby yellow */
+  --baby-green: #C8E6C9;     /* Soft baby green */
+  --baby-purple: #E1BEE7;    /* Soft baby purple */
+  --baby-orange: #FFCC80;    /* Soft baby orange */
+  --baby-mint: #B2DFDB;      /* Soft baby mint */
+  --baby-peach: #FFCCBC;     /* Soft baby peach */
+
+  /* Deeper tones for accents */
+  --baby-blue-dark: #64B5F6;
+  --baby-pink-dark: #F48FB1;
+  --baby-yellow-dark: #FFE082;
+  --baby-green-dark: #81C784;
+  --baby-purple-dark: #BA68C8;
+  --baby-orange-dark: #FFB74D;
+
+  /* Neutral Colors */
+  --white: #FFFFFF;
+  --gray-light: #F5F5F5;
+  --gray-medium: #BDBDBD;
+  --dark: #424242;
+}
+
+/* ============================================
+   2. PLAYFUL TYPOGRAPHY
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--dark) !important;
+  background: var(--baby-blue);
+}
+
+/* Ensure all text is visible - COMPREHENSIVE FIX */
+p, span, div, li {
+  color: var(--dark) !important;
+}
+
+/* Links should be visible but with hover effect */
+a {
+  color: var(--baby-blue-dark) !important;
+}
+
+a:hover {
+  color: var(--baby-pink-dark) !important;
+}
+
+/* Specific text color fixes */
+.service-content p,
+.service-content,
+.post-content p,
+.post-content,
+.testimonial-text,
+.testimonial-content p,
+.about-text,
+.doctor-meta p,
+.doctor-detail p,
+.doctor-info,
+.feature-content,
+.feature-content p,
+.lead,
+.call-block,
+.hours,
+input,
+textarea,
+select,
+label {
+  color: var(--dark) !important;
+}
+
+/* White text should only be on colored backgrounds */
+.btn-white,
+.text-white,
+.cta-title,
+.cta-block *,
+.footer,
+.footer *,
+.top-bar,
+.top-bar * {
+  color: var(--white) !important;
+}
+
+/* Navigation text */
+.navigation ul li a {
+  color: var(--dark) !important;
+}
+
+.navigation ul li a:hover,
+.navigation ul li.active a {
+  color: var(--white) !important;
+}
+
+/* Button text colors */
+.btn-default,
+.btn-primary {
+  color: var(--white) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+h1 {
+  font-size: 3.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 2.5rem;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+/* ============================================
+   3. SOFT BABY HERO SECTION
+   ============================================ */
+.hero-section {
+  background: var(--baby-yellow);
+  min-height: 600px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Floating Shapes Animation */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  top: -100px;
+  right: -100px;
+  animation: float 6s ease-in-out infinite;
+}
+
+.hero-section::after {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  bottom: -50px;
+  left: 10%;
+  animation: float 8s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(10deg);
+  }
+}
+
+.hero-title {
+  color: var(--dark);
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-shadow: 2px 4px 10px rgba(255, 255, 255, 0.3);
+  animation: slideInLeft 0.8s ease-out;
+}
+
+.hero-text {
+  color: var(--dark);
+  font-size: 1.5rem;
+  opacity: 0.95;
+  animation: slideInLeft 1s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.hero-image {
+  animation: slideInRight 0.8s ease-out;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-image img {
+  border-radius: 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 100%;
+  height: auto;
+  animation: floatImage 3s ease-in-out infinite;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes floatImage {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+/* ============================================
+   4. FUN NAVIGATION BAR
+   ============================================ */
+.header {
+  background: var(--white);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 1000;
+}
+
+.logo img {
+  transition: transform 0.3s ease;
+}
+
+.logo:hover img {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.navigation ul li a {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--dark);
+  padding: 10px 20px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.navigation ul li a:hover,
+.navigation ul li.active a {
+  background: linear-gradient(135deg, var(--baby-purple), var(--baby-pink));
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(225, 190, 231, 0.6);
+}
+
+/* ============================================
+   5. PLAYFUL BUTTONS
+   ============================================ */
+.btn {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  padding: 15px 35px;
+  border-radius: 50px;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.btn-default {
+  background: var(--baby-orange);
+  color: var(--white);
+}
+
+.btn-default:hover {
+  background: var(--baby-orange-dark);
+}
+
+.btn-primary {
+  background: var(--baby-blue);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--baby-blue-dark);
+}
+
+.btn-white {
+  background: var(--white);
+  color: var(--dark);
+  border: 3px solid var(--dark);
+}
+
+.btn-white:hover {
+  background: var(--baby-orange);
+  color: var(--white);
+  border-color: var(--baby-orange);
+}
+
+/* ============================================
+   6. SOFT BABY SERVICE CARDS
+   ============================================ */
+.service-block {
+  background: var(--white);
+  border-radius: 25px;
+  padding: 25px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 3px solid transparent;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.service-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.service-block:hover::before {
+  transform: scaleX(1);
+}
+
+.service-block:hover {
+  transform: translateY(-15px) scale(1.03);
+}
+
+/* Individual soft baby colors for each service card */
+.row > div:nth-child(1) .service-block {
+  border-color: var(--baby-pink);
+}
+
+.row > div:nth-child(1) .service-block::before {
+  background: var(--baby-pink);
+}
+
+.row > div:nth-child(1) .service-block:hover {
+  box-shadow: 0 15px 40px rgba(255, 179, 217, 0.5);
+  border-color: var(--baby-pink-dark);
+}
+
+.row > div:nth-child(1) .service-title {
+  color: var(--baby-pink-dark) !important;
+}
+
+.row > div:nth-child(2) .service-block {
+  border-color: var(--baby-yellow);
+}
+
+.row > div:nth-child(2) .service-block::before {
+  background: var(--baby-yellow);
+}
+
+.row > div:nth-child(2) .service-block:hover {
+  box-shadow: 0 15px 40px rgba(255, 249, 196, 0.6);
+  border-color: var(--baby-yellow-dark);
+}
+
+.row > div:nth-child(2) .service-title {
+  color: var(--baby-orange-dark) !important;
+}
+
+.row > div:nth-child(3) .service-block {
+  border-color: var(--baby-green);
+}
+
+.row > div:nth-child(3) .service-block::before {
+  background: var(--baby-green);
+}
+
+.row > div:nth-child(3) .service-block:hover {
+  box-shadow: 0 15px 40px rgba(200, 230, 201, 0.6);
+  border-color: var(--baby-green-dark);
+}
+
+.row > div:nth-child(3) .service-title {
+  color: var(--baby-green-dark) !important;
+}
+
+.service-img {
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.service-img img {
+  transition: transform 0.5s ease;
+  border-radius: 20px;
+}
+
+.service-block:hover .service-img img {
+  transform: scale(1.1) rotate(2deg);
+}
+
+.service-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.5rem;
+  color: var(--baby-purple-dark);
+  transition: color 0.3s ease;
+}
+
+.service-block:hover .service-title {
+  background: linear-gradient(135deg, var(--baby-purple), var(--baby-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   7. SOFT BABY SECTION TITLES
+   ============================================ */
+.section-title {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.section-title h1 {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--baby-blue-dark);
+  position: relative;
+  display: inline-block;
+}
+
+.section-title h1::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 6px;
+  background: var(--baby-pink);
+  border-radius: 5px;
+}
+
+/* ============================================
+   8. SOFT BABY CALL-TO-ACTION BLOCK
+   ============================================ */
+.cta-block {
+  background: var(--baby-purple);
+  border-radius: 25px;
+  color: var(--white);
+  box-shadow: 0 10px 30px rgba(225, 190, 231, 0.5);
+  transition: all 0.3s ease;
+}
+
+.cta-block:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(225, 190, 231, 0.7);
+  background: var(--baby-purple-dark);
+}
+
+.cta-title {
+  font-family: 'Fredoka', sans-serif;
+  color: var(--white);
+  font-size: 1.75rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   9. DOCTOR PROFILE CARD
+   ============================================ */
+.doctor-block {
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s ease;
+  border: 3px solid var(--baby-purple);
+}
+
+.doctor-block:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 50px rgba(225, 190, 231, 0.5);
+  border-color: var(--baby-purple-dark);
+}
+
+.doctor-img {
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.doctor-info h3 {
+  color: var(--baby-purple-dark);
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.75rem;
+}
+
+/* ============================================
+   10. TESTIMONIAL CARDS
+   ============================================ */
+.testimonial-block {
+  background: var(--white);
+  border-radius: 25px;
+  padding: 35px;
+  border-left: 5px solid var(--baby-yellow);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.testimonial-block:hover {
+  transform: translateX(10px);
+  box-shadow: 0 12px 35px rgba(255, 249, 196, 0.5);
+}
+
+.testimonial-icon {
+  background: linear-gradient(135deg, var(--baby-yellow), var(--baby-orange));
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(255, 249, 196, 0.5);
+}
+
+/* ============================================
+   11. BLOG POST CARDS
+   ============================================ */
+.post-block {
+  border-radius: 25px;
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.post-block:hover {
+  transform: translateY(-15px) rotate(-2deg);
+  box-shadow: 0 20px 40px rgba(168, 218, 255, 0.5);
+}
+
+.meta-box {
+  background: linear-gradient(135deg, var(--baby-blue), var(--baby-purple));
+  position: relative;
+  overflow: hidden;
+}
+
+.meta-box::before {
+  content: '📅';
+  font-size: 3rem;
+  position: absolute;
+  top: 50%;
+  right: -20px;
+  transform: translateY(-50%);
+  opacity: 0.2;
+}
+
+.post-img img {
+  transition: transform 0.5s ease;
+}
+
+.post-block:hover .post-img img {
+  transform: scale(1.15);
+}
+
+/* ============================================
+   12. INTERACTIVE FORM ELEMENTS
+   ============================================ */
+.form-control {
+  border-radius: 15px;
+  border: 2px solid var(--gray-light);
+  padding: 15px 20px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--baby-purple-dark);
+  box-shadow: 0 0 0 4px rgba(225, 190, 231, 0.3);
+  background: rgba(225, 190, 231, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   13. SOFT BABY FOOTER
+   ============================================ */
+.footer {
+  background: var(--baby-blue);
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--baby-yellow);
+}
+
+.footer-title {
+  color: var(--white);
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.5rem;
+  margin-bottom: 25px;
+}
+
+.footer a {
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+.footer a:hover {
+  color: var(--white);
+  transform: translateX(5px);
+  display: inline-block;
+}
+
+/* ============================================
+   14. FLOATING ELEMENTS & DECORATIONS
+   ============================================ */
+.feature-left {
+  transition: all 0.3s ease;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+.feature-left:hover {
+  background: rgba(225, 190, 231, 0.2);
+  transform: translateX(10px);
+}
+
+.feature-icon i {
+  color: var(--baby-purple-dark);
+  transition: all 0.3s ease;
+}
+
+.feature-left:hover .feature-icon i {
+  transform: scale(1.2) rotate(360deg);
+  color: var(--baby-pink-dark);
+}
+
+/* ============================================
+   15. LOADING ANIMATIONS
+   ============================================ */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-on-scroll {
+  animation: bounceIn 0.8s ease-out;
+}
+
+/* ============================================
+   16. MOBILE RESPONSIVENESS
+   ============================================ */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .section-title h1 {
+    font-size: 2rem;
+  }
+
+  .btn {
+    padding: 12px 25px;
+    font-size: 14px;
+  }
+}
+
+/* ============================================
+   17. PROFILE IMAGE STYLING
+   ============================================ */
+#profile-img {
+  border: 3px solid var(--white);
+  box-shadow: 0 4px 15px rgba(225, 190, 231, 0.5);
+  transition: all 0.3s ease;
+}
+
+#profile-img:hover {
+  transform: scale(1.1) rotate(5deg);
+  border-color: var(--baby-purple);
+  box-shadow: 0 6px 20px rgba(225, 190, 231, 0.7);
+}
+
+/* ============================================
+   18. SOFT BABY SMOOTH SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gray-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--baby-blue);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--baby-orange);
+}
+
+/* ============================================
+   19. SOFT BABY TOP BAR
+   ============================================ */
+.top-bar {
+  background: var(--baby-green);
+  padding: 10px 0;
+}
+
+.mail-text {
+  color: var(--white);
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   20. SOFT BABY GENERAL ENHANCEMENTS
+   ============================================ */
+.bg-light {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Content sections should have white backgrounds for readability */
+.space-medium,
+.space-small {
+  background: var(--white);
+  padding: 60px 0;
+  margin: 0;
+}
+
+/* Add soft glow to images on hover */
+.service-img img:hover,
+.doctor-img img:hover,
+.hero-image img:hover {
+  box-shadow: 0 0 30px rgba(168, 218, 255, 0.6);
+}
+
+img {
+  border-radius: 15px;
+}
+
+/* Add bouncing arrow or fun elements */
+.btn-link::after {
+  content: ' →';
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.btn-link:hover::after {
+  transform: translateX(5px);
+}
+
+/* Contact form container */
+.form-container {
+  background: var(--white);
+  border-radius: 25px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border: 3px solid var(--baby-purple);
+}
+
+.form-container h3 {
+  color: var(--baby-purple-dark);
+  font-family: 'Fredoka', sans-serif;
+  margin-bottom: 30px;
+}
