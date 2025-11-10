@@ -64,6 +64,35 @@ a:not(.btn):not(.logo a):hover {
 .logo img {
   opacity: 1 !important;
   filter: none !important;
+  max-height: 60px !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+/* Logo container - positioned far left */
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-left: -15px;
+  padding-left: 0;
+}
+
+.logo-link {
+  display: inline-block;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.logo-link:hover {
+  transform: scale(1.05);
+}
+
+.logo-img {
+  opacity: 1 !important;
+  filter: none !important;
+  max-height: 70px !important;
+  width: auto !important;
+  object-fit: contain !important;
 }
 
 /* Specific text color fixes */
@@ -267,6 +296,10 @@ h3 {
 
 .logo:hover img {
   transform: scale(1.1) rotate(-5deg);
+}
+
+.logo-container .logo-link:hover .logo-img {
+  transform: rotate(-5deg);
 }
 
 .navigation ul li a {
