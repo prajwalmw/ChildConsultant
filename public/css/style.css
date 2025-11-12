@@ -358,8 +358,24 @@ img { width: auto; max-width: 100%; height: auto; margin: 0; padding: 0; border:
     5.1 Header Regular 
    ----------------------*/
 .logo { padding-top: 7px; }
+.logo-container {
+  display: flex;
+  align-items: flex-start;
+  height: 100%;
+  position: relative;
+  z-index: 100;
+}
+.logo-img {
+  height: 120px !important;
+  width: auto !important;
+  max-height: 120px !important;
+  max-width: none !important;
+  position: relative;
+  top: 5px;
+  margin-bottom: -60px;
+}
 .is-sticky .header { background-color: #00c3c9; }
-.header { -webkit-transition: background-color .8s ease-out; -moz-transition: background-color .8s ease-out; -o-transition: background-color .8s ease-out; transition: background-color .8s ease-out; position: relative; padding-top: 15px; padding-bottom: 15px; font-family: 'PT Sans', sans-serif; z-index: 9; text-align: left; }
+.header { -webkit-transition: background-color .8s ease-out; -moz-transition: background-color .8s ease-out; -o-transition: background-color .8s ease-out; transition: background-color .8s ease-out; position: relative; padding-top: 15px; padding-bottom: 15px; font-family: 'PT Sans', sans-serif; z-index: 9; text-align: left; overflow: visible; }
 .header .container { text-align: left; }
 .mail-text, .top-nav { font-size: 12px; color: #e1feff; text-transform: capitalize; font-weight: 400; letter-spacing: 1px; }
 .top-nav a { font-size: 14px; color: #e1feff; margin-right: 10px; margin-left: 15px; }
