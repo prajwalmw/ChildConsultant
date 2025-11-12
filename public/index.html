@@ -176,11 +176,19 @@
       <div class="container">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12">
-            <div class="hero-caption text-center">
+            <div class="hero-caption text-center" style="margin-top: -50px; position: relative; z-index: 10;">
               <h1 class="hero-title">We Will Take Care of <br>
                 Your Child</h1>
               <h3 class="hero-text">From Childcare Specialist</h3>
-              <a href="service-list.html" class="btn btn-white">View Services</a>
+              <a href="#contact-form" id="get-started-btn" class="btn btn-white" onclick="document.getElementById('contact-form').scrollIntoView({behavior: 'smooth'}); return false;">Get Started</a>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="hero-illustration" style="position: relative; z-index: 1; pointer-events: none;">
+              <img src="images/child_group.png" alt="Happy Children" class="hero-img"
+                   style="width: 100%; margin: 0; margin-top: -300px; display: block; pointer-events: none;">
             </div>
           </div>
         </div>
