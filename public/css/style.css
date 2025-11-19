@@ -548,8 +548,19 @@ visibility: hidden; line-height: 0; height: 0;}*/
 
 /* service section */
 .service-block { }
-.service-img { }
-.service-img img { width: 100%; }
+.service-img {
+  height: 250px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.service-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
 .service-caption { }
 .service-title { font-size: 22px; color: #4a4e4e; font-weight: 700; }
 .service-icon { }
