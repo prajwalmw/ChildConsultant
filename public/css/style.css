@@ -561,6 +561,9 @@ visibility: hidden; line-height: 0; height: 0;}*/
   object-fit: cover;
   object-position: center top;
 }
+.service-img img.pediatrician-img {
+  transform: scale(0.85);
+}
 .service-caption { }
 .service-title { font-size: 22px; color: #4a4e4e; font-weight: 700; }
 .service-icon { }
