@@ -572,6 +572,458 @@ visibility: hidden; line-height: 0; height: 0;}*/
 .cta-title { font-size: 26px; color: #fff; text-transform: uppercase; border-bottom: 1px solid #ff8775; line-height: 1.5; padding-bottom: 20px; margin-bottom: 19px; }
 .hours { color: #fff; border-bottom: 1px solid #ff8775; padding-bottom: 20px; margin-bottom: 19px; }
 .call-block { }
+
+/* Focus Areas Section - Creative Circular Layout */
+
+/* Container for Circular Orbit Layout */
+.focus-areas-container {
+  position: relative;
+  width: 100%;
+  height: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 50px 0;
+}
+
+/* Center Circle */
+.center-circle {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #FF6B9D, #FFD93D, #A8DAFF);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 60px rgba(255, 107, 157, 0.4);
+  z-index: 10;
+  animation: centerPulse 3s ease-in-out infinite;
+}
+
+@keyframes centerPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.center-content {
+  text-align: center;
+  color: white;
+}
+
+.center-content i {
+  font-size: 48px;
+  margin-bottom: 10px;
+  display: block;
+  animation: heartBeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.2); }
+  50% { transform: scale(1); }
+}
+
+.center-content h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Orbit Cards - Positioned in Circle */
+.focus-card-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(var(--angle)) translateX(var(--distance)) rotate(calc(-1 * var(--angle)));
+}
+
+/* Creative Card Design */
+.focus-card-creative {
+  width: 180px;
+  background: white;
+  border-radius: 30px;
+  padding: 30px 20px;
+  text-align: center;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.focus-card-creative:hover {
+  transform: scale(1.15) translateY(-10px);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+  z-index: 100;
+}
+
+/* Glowing Border Effect */
+.card-glow {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 30px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+.focus-card-1 .card-glow {
+  background: linear-gradient(135deg, #FF6B9D, #FF8FB2);
+}
+
+.focus-card-2 .card-glow {
+  background: linear-gradient(135deg, #95E1D3, #AAF0E4);
+}
+
+.focus-card-3 .card-glow {
+  background: linear-gradient(135deg, #A8DAFF, #C2E4FF);
+}
+
+.focus-card-4 .card-glow {
+  background: linear-gradient(135deg, #FFD93D, #FFE66D);
+}
+
+.focus-card-5 .card-glow {
+  background: linear-gradient(135deg, #E1BEE7, #F3E5F5);
+}
+
+.focus-card-creative:hover .card-glow {
+  opacity: 1;
+}
+
+/* Emoji Icons */
+.emoji-icon {
+  font-size: 60px;
+  margin-bottom: 15px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.focus-card-creative:hover .emoji-icon {
+  animation: spin 0.6s ease-in-out;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  to { transform: rotate(360deg) scale(1); }
+}
+
+/* Typography */
+.focus-card-creative .focus-title {
+  font-size: 16px;
+  color: #2C3E50;
+  margin-bottom: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.focus-card-creative .focus-description {
+  font-size: 13px;
+  color: #546E7A;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.focus-card-creative:hover .focus-title {
+  color: #FF6B9D;
+}
+
+/* Floating Background Shapes */
+.floating-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.shape {
+  position: absolute;
+  opacity: 0.15;
+}
+
+.shape-circle-1 {
+  width: 150px;
+  height: 150px;
+  background: #FF6B9D;
+  border-radius: 50%;
+  top: 10%;
+  left: 5%;
+  animation: float 8s ease-in-out infinite;
+}
+
+.shape-circle-2 {
+  width: 100px;
+  height: 100px;
+  background: #FFD93D;
+  border-radius: 50%;
+  bottom: 15%;
+  right: 8%;
+  animation: float 10s ease-in-out infinite reverse;
+}
+
+.shape-triangle-1 {
+  width: 0;
+  height: 0;
+  border-left: 60px solid transparent;
+  border-right: 60px solid transparent;
+  border-bottom: 100px solid #A8DAFF;
+  top: 50%;
+  right: 10%;
+  animation: float 12s ease-in-out infinite;
+}
+
+.shape-star-1 {
+  width: 80px;
+  height: 80px;
+  background: #95E1D3;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  top: 20%;
+  right: 15%;
+  animation: spin 15s linear infinite;
+}
+
+.shape-heart-1 {
+  width: 70px;
+  height: 70px;
+  background: #FF6B9D;
+  transform: rotate(-45deg);
+  bottom: 25%;
+  left: 10%;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.shape-heart-1::before,
+.shape-heart-1::after {
+  content: "";
+  width: 70px;
+  height: 70px;
+  background: #FF6B9D;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.shape-heart-1::before {
+  top: -35px;
+  left: 0;
+}
+
+.shape-heart-1::after {
+  left: 35px;
+  top: 0;
+}
+
+.shape-square-1 {
+  width: 90px;
+  height: 90px;
+  background: #E1BEE7;
+  transform: rotate(25deg);
+  top: 60%;
+  left: 8%;
+  animation: float 9s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(10deg); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: rotate(-45deg) scale(1); }
+  50% { transform: rotate(-45deg) scale(1.1); }
+}
+
+/* Focus Cards */
+.focus-card {
+  background: white;
+  border-radius: 30px;
+  padding: 50px 30px 40px;
+  text-align: center;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border: 4px solid transparent;
+}
+
+/* Card Badge Numbers */
+.card-badge {
+  position: absolute;
+  top: -15px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #FF6B9D, #FFD93D);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+  z-index: 3;
+  transition: all 0.4s ease;
+}
+
+.focus-card:hover .card-badge {
+  transform: rotate(360deg) scale(1.2);
+}
+
+/* Decorative Pattern Background */
+.card-pattern {
+  position: absolute;
+  bottom: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255, 107, 157, 0.1) 2px, transparent 2px);
+  background-size: 15px 15px;
+  border-radius: 50%;
+  transition: all 0.5s ease;
+}
+
+.focus-card:hover .card-pattern {
+  transform: rotate(180deg) scale(1.3);
+  opacity: 0.6;
+}
+
+/* Icon Container */
+.focus-icon {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Icon Decoration Ring */
+.icon-decoration {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  border: 4px solid;
+  border-radius: 50%;
+  top: 35px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: transparent;
+  border-top-color: currentColor;
+  opacity: 0.2;
+  transition: all 0.5s ease;
+}
+
+.focus-card:hover .icon-decoration {
+  transform: translateX(-50%) rotate(360deg) scale(1.2);
+  opacity: 0.4;
+}
+
+/* Individual Card Colors */
+.focus-card-1 .focus-icon {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF8FB2 100%);
+}
+.focus-card-1 .icon-decoration { color: #FF6B9D; }
+.focus-card-1 .card-badge { background: linear-gradient(135deg, #FF6B9D, #FF8FB2); }
+
+.focus-card-2 .focus-icon {
+  background: linear-gradient(135deg, #95E1D3 0%, #AAF0E4 100%);
+}
+.focus-card-2 .icon-decoration { color: #95E1D3; }
+.focus-card-2 .card-badge { background: linear-gradient(135deg, #95E1D3, #AAF0E4); }
+
+.focus-card-3 .focus-icon {
+  background: linear-gradient(135deg, #A8DAFF 0%, #C2E4FF 100%);
+}
+.focus-card-3 .icon-decoration { color: #A8DAFF; }
+.focus-card-3 .card-badge { background: linear-gradient(135deg, #A8DAFF, #C2E4FF); }
+
+.focus-card-4 .focus-icon {
+  background: linear-gradient(135deg, #FFD93D 0%, #FFE66D 100%);
+}
+.focus-card-4 .icon-decoration { color: #FFD93D; }
+.focus-card-4 .card-badge { background: linear-gradient(135deg, #FFD93D, #FFE66D); }
+
+.focus-card-5 .focus-icon {
+  background: linear-gradient(135deg, #E1BEE7 0%, #F3E5F5 100%);
+}
+.focus-card-5 .icon-decoration { color: #E1BEE7; }
+.focus-card-5 .card-badge { background: linear-gradient(135deg, #E1BEE7, #F3E5F5); }
+
+/* Hover Effects */
+.focus-card:hover {
+  transform: translateY(-20px) rotate(-2deg);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+}
+
+.focus-card:hover .focus-icon {
+  transform: scale(1.2) rotate(10deg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.focus-icon i {
+  font-size: 48px;
+  color: white;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  transition: all 0.4s ease;
+}
+
+.focus-card:hover .focus-icon i {
+  transform: scale(1.1);
+}
+
+/* Typography */
+.focus-title {
+  font-size: 22px;
+  color: #2C3E50;
+  margin-bottom: 18px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.focus-card:hover .focus-title {
+  color: #FF6B9D;
+  transform: scale(1.05);
+}
+
+.focus-description {
+  color: #546E7A;
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.focus-card:hover .focus-description {
+  color: #2C3E50;
+}
 .call-no { font-size: 20px; color: #fff; font-weight: 600; }
 
 /*-----------------------------------------
