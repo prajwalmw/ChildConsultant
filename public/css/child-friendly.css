@@ -884,3 +884,72 @@ img {
   font-family: 'Fredoka', sans-serif;
   margin-bottom: 30px;
 }
+
+/* ============================================
+   21. TESTIMONIAL HORIZONTAL SCROLL
+   ============================================ */
+.testimonial-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--baby-purple) var(--gray-light);
+}
+
+.testimonial-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.testimonial-scroll-container::-webkit-scrollbar-track {
+  background: var(--gray-light);
+  border-radius: 10px;
+}
+
+.testimonial-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--baby-purple);
+  border-radius: 10px;
+}
+
+.testimonial-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: var(--baby-purple-dark);
+}
+
+.testimonial-scroll {
+  display: flex;
+  gap: 30px;
+  padding: 10px 0;
+}
+
+.testimonial-card {
+  flex: 0 0 380px;
+  min-width: 380px;
+  max-width: 380px;
+}
+
+.testimonial-card .testimonial-block {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonial-card .testimonial-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonial-card .testimonial-text {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .testimonial-card {
+    flex: 0 0 320px;
+    min-width: 320px;
+    max-width: 320px;
+  }
+}

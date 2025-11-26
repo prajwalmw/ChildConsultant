@@ -154,12 +154,8 @@
               <div class="navigation pull-right" id="navigation">
                 <ul>
                   <li class="active"><a href="index.html" title="Home" class="animsition-link">Home</a></li>
-                  <li><a href="blog-default.html" title="Blog" class="animsition-link">Blog Default</a>
-                    <ul>
-                      <li><a href="blog-default.html" title="Blog" class="animsition-link">Blog Default</a></li>
-                      <li><a href="blog-single.html" title="Blog Single" class="animsition-link">Blog Single</a></li>
-                    </ul>
-                  </li>
+                  <li><a href="#about" title="About Us" onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'}); return false;">About Us</a></li>
+                  <li><a href="#contact-form" title="Contact" onclick="document.getElementById('contact-form').scrollIntoView({behavior: 'smooth'}); return false;">Contact</a></li>
                   <li class="profile-menu" style="position:relative;">
                     <a href="#" id="profile-icon" style="padding:0 10px;">
                       <img id="profile-img" src="" alt="Profile" style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;">
@@ -178,10 +174,9 @@
       <div class="container">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12">
-            <div class="hero-caption text-center" style="margin-top: -50px; position: relative; z-index: 10;">
-              <h1 class="hero-title">We Will Take Care of <br>
-                Your Child</h1>
-              <h3 class="hero-text">From Childcare Specialist</h3>
+            <div class="hero-caption text-center" style="margin-top: -100px; position: relative; z-index: 10;">
+              <h1 class="hero-title">Nurturing Little Minds</h1>
+              <h3 class="hero-text">Comprehensive Care | Every Milestone | Every Child</h3>
               <a href="#contact-form" id="get-started-btn" class="btn btn-white" onclick="document.getElementById('contact-form').scrollIntoView({behavior: 'smooth'}); return false;">Get Started</a>
             </div>
           </div>
@@ -196,7 +191,47 @@
         </div>
       </div>
     </div>
-    <div class="space-medium">
+
+    <!-- About Us Section -->
+    <div id="about" class="space-medium" style="background: #FFF5F8; padding: 80px 0;">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="section-title text-center" style="margin-bottom: 60px;">
+              <h1 style="font-size: 42px; color: #2C3E50; font-weight: 700;">About Aqiraa</h1>
+              <div style="width: 80px; height: 4px; background: linear-gradient(90deg, #9B59B6, #FF6B9D); margin: 20px auto 0; border-radius: 2px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="display: flex; align-items: center;">
+          <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" style="display: flex; align-items: center; justify-content: center;">
+            <div style="text-align: center; padding: 10px;">
+              <!-- Baby Image without circle -->
+              <img src="images/about_us.png" alt="About Aqiraa - Child Development"
+                   style="width: 100%; max-width: 600px; display: inline-block;">
+            </div>
+          </div>
+          <div class="col-lg-7 col-md-7 col-sm-12 col-xs-12" style="display: flex; align-items: center;">
+            <div style="padding: 30px;">
+              <h3 style="font-size: 24px; color: #9B59B6; margin-bottom: 25px; font-weight: 600;">Empowering Every Child's Journey</h3>
+              <p style="font-size: 17px; line-height: 1.9; color: #2C3E50; margin-bottom: 20px;">
+                At Aqiraa, we believe every child deserves the best start in life. Our comprehensive child development approach combines expert guidance in <span style="color: #9B59B6; font-weight: 600;">nutrition, cognitive growth, physical development,</span> and <span style="color: #9B59B6; font-weight: 600;">emotional wellbeing</span>.
+              </p>
+              <p style="font-size: 17px; line-height: 1.9; color: #2C3E50; margin-bottom: 20px;">
+                With a team of experienced specialists including nutritionists, developmental psychologists, and child wellness experts, we provide personalized care plans tailored to your child's unique needs and milestones.
+              </p>
+              <div style="background: #F0F9FF; padding: 20px 20px 20px 25px; border-radius: 8px; border-left: 4px solid #6BB6FF; margin-top: 25px;">
+                <p style="font-size: 17px; line-height: 1.8; color: #2C3E50; margin: 0; font-style: italic;">
+                  "We're here to partner with you in nurturing little minds and building bright futures, one milestone at a time."
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="services" class="space-medium">
       <div class="container">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -282,7 +317,7 @@
     </div>
 
     <!-- Focus Areas Section -->
-    <div class="space-medium focus-areas-section" style="background: linear-gradient(135deg, #FFE5F1 0%, #FFF4E6 50%, #E8F5E9 100%); padding: 100px 0; position: relative; overflow: hidden;">
+    <div id="focus-areas" class="space-medium focus-areas-section" style="background: linear-gradient(135deg, #FFE5F1 0%, #FFF4E6 50%, #E8F5E9 100%); padding: 100px 0; position: relative; overflow: hidden;">
       <!-- Floating Decorative Shapes -->
       <div class="floating-shapes">
         <div class="shape shape-circle-1"></div>
@@ -385,112 +420,69 @@
       </div>
     </div>
 
-    <div class="space-medium bg-light">
-      <div class="container">
-      <div class="row">
-        <div class="col-lg-offset-2 col-lg-8 col-md-offset-2 col-md-8 col-sm-12 col-xs-12">
-          <div class="lead italic mb40 text-center">
-            <p class="about-text">Over 10 years of experience from working in India. <br>
-              Certificate of completion of training in <strong>Paediatric Neurology from the india</strong> <br>
-              consultant paediatric child care clinic.</p>
-          </div>
-          <div class="text-center mb80"> <a href="#" class="btn btn-default">about us</a> </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-          <div class="doctor-block bg-white pinside30 outline mb30">
-            <div class="doctor-img mb30"> <img src="images/doctor.jpg" class="img-responsive"
-                alt="Pediatrician Website Template"> </div>
-            <div class="doctor-info">
-              <h3>Dr. Martha Carlson</h3>
-              <div class="doctor-meta mb30">
-                <p>Paediatric Neurologist <br>
-                  MBBS, DCH , MD </p>
-              </div>
-              <div class="icon"> <i class="icon-1x icon-phone-call icon-default"></i> <span
-                  class="doctor-contact">+91-123-456-789</span></div>
-              <div class="icon"><i class="icon-1x  icon-envelope icon-default"></i> <span
-                  class="doctor-contact">dr_martha@gmail.com</span> </div>
-            </div>
-            <div class="doctor-detail">
-              <h3>About Dr. Martha</h3>
-              <p>Integer lacinia rhoncus bibendum enean sedmpor duiveldasunce mus dolorusce sem velitcondi mentum
-                vitalaoreer misemuisque pretium facilsis laoreetn auctor urna semn molesti.</p>
-              <p>Integer lacinia rhoncus bibendum enean sedmpor duiveldasunce mus dolorusce sem velitcondi mentum
-                vitalaoreer mise.</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-offset-1 col-lg-5 col-md-offset-1 col-md-5 col-sm-12 col-xs-12">
-          <div class="why-choose-block">
-            <h2>Why Choose Childcare?</h2>
-            <p class="mb30">Duis quis fermentum ipsum ulum odio nisinrdum lorem fringilla fermentum ipsum ultrices one.
-              equat congue metus conse.</p>
-            <div class="feature-left mb30">
-              <div class="feature-icon"> <i class="icon-2x  icon-hospital icon-primary"></i></div>
-              <div class="feature-content">
-                <h3>Well Baby Clinic</h3>
-                <p>Duis quis fermentum ipsum ulum odio nisinrdum lorem fringilla fermentum ipsum ultrices one.</p>
-              </div>
-            </div>
-            <div class="feature-left mb30">
-              <div class="feature-icon"> <i class="icon-2x  icon-clock icon-primary"></i></div>
-              <div class="feature-content">
-                <h3>24X7 on Call Services</h3>
-                <p>Integer lacinia rhoncus bibendum enean sed tempor onr duivel sodales esuncac maxiousce semes. </p>
-              </div>
-            </div>
-            <div class="feature-left">
-              <div class="feature-icon"> <i class="icon-2x  icon-favorite icon-primary"></i></div>
-              <div class="feature-content">
-                <h3>Adolescent Consulting</h3>
-                <p>Cras lobortis volutpat porliquam ac tristique neueasellus eratsed eros posuere ultricesn.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-      </div>
     <div class="space-medium">
       <div class="container">
       <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
           <div class="section-title text-center">
-            <h1>What Patients Say About Us</h1>
+            <h1>What Parents Say About Us</h1>
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-          <div class="testimonial-block bg-light pinside30 mb30">
-            <div class="quote-box">
-              <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
-            </div>
-            <div class="testimonial-content mb30">
-              <p class=" testimonial-text">“I brought my 3-year-old daughter in for a well-child visit. She loved the
-                office and Dr. John sinha! Thanks so much for making her visit a great one!”</p>
-              <h2 class="testimonial-name"> - Nettie Drummond </h2>
+      <div class="testimonial-scroll-container">
+        <div class="testimonial-scroll">
+          <div class="testimonial-card">
+            <div class="testimonial-block bg-light pinside30">
+              <div class="quote-box">
+                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+              </div>
+              <div class="testimonial-content mb30">
+                <p class="testimonial-text">"Aqiraa has been a blessing for my son's development. The holistic approach covering nutrition, cognitive skills, and emotional growth has made a remarkable difference. The team truly understands each child's unique needs."</p>
+                <h2 class="testimonial-name">- Meera Sharma</h2>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-          <div class="testimonial-block bg-light pinside30 mb30">
-            <div class="quote-box">
-              <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+
+          <div class="testimonial-card">
+            <div class="testimonial-block bg-light pinside30">
+              <div class="quote-box">
+                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+              </div>
+              <div class="testimonial-content mb30">
+                <p class="testimonial-text">"The personalized care plan for my daughter has exceeded all expectations. From physical milestones to creative expression, Aqiraa's experts have guided us every step of the way. Highly recommended!"</p>
+                <h2 class="testimonial-name">- Ananya Desai</h2>
+              </div>
             </div>
-            <div class="testimonial-content mb30">
-              <p class=" testimonial-text">“Dr John sinha, He is very personable, cares about his patients I have been
-                so happy with the care we receive It is a wonderful environment”</p>
-              <h2 class="testimonial-name">- Edward Hendrix</h2>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="testimonial-block bg-light pinside30">
+              <div class="quote-box">
+                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+              </div>
+              <div class="testimonial-content mb30">
+                <p class="testimonial-text">"As a working mother, finding comprehensive child development support was challenging. Aqiraa's integrated approach to my twins' growth—covering health, learning, and personality development—has been invaluable."</p>
+                <h2 class="testimonial-name">- Kavya Patel</h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="testimonial-block bg-light pinside30">
+              <div class="quote-box">
+                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+              </div>
+              <div class="testimonial-content mb30">
+                <p class="testimonial-text">"The expert team at Aqiraa helped my son overcome developmental challenges with patience and professionalism. Their focus on complete child development—physical, mental, and emotional—truly sets them apart."</p>
+                <h2 class="testimonial-name">- Ishita Kapoor</h2>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
       </div>
-    <div class="space-medium bg-light">
+    <div class="space-medium bg-light" style="display: none;">
       <div class="container">
       <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -579,58 +571,68 @@
       </div>
     </section>
 
-    <div class="footer space-medium">
+    <div class="footer" style="background: linear-gradient(135deg, #E8F4FF 0%, #FFE8F0 100%); padding: 60px 0 30px 0; border-top: 3px solid #9B59B6;">
       <div class="container">
-        <div class="row">
-          <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-            <div class="footer-widget mb30">
-              <h3 class="footer-title">Specialist</h3>
-              <ul class="listnone">
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Adolescent Medicine</a></li>
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Child Abuse Pediatries</a></li>
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Allergy &amp;
-                    Immunology</a></li>
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Cardiology</a></li>
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="#">Pediatric Critical Care</a></li>
+        <div class="row" style="align-items: flex-start;">
+          <!-- About Section -->
+          <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+            <div style="margin-bottom: 30px;">
+              <img src="images/logo.png" alt="Aqiraa" style="height: 80px; margin-bottom: 20px; border-radius: 8px;">
+              <h3 style="color: #9B59B6; font-size: 22px; font-weight: 600; margin-bottom: 15px;">Aqiraa Child Consultancy</h3>
+              <p style="color: #2C3E50; line-height: 1.7; font-size: 15px;">
+                Empowering parents with expert guidance for complete child development. From nutrition to emotional wellbeing, we're here for every milestone.
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+            <div style="margin-bottom: 30px;">
+              <h3 style="color: #2C3E50; font-size: 18px; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #FF6B9D;">Quick Links</h3>
+              <ul style="list-style: none; padding: 0; margin: 0;">
+                <li style="margin-bottom: 12px;"><a href="index.html" style="color: #2C3E50; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#9B59B6'" onmouseout="this.style.color='#2C3E50'">→ Home</a></li>
+                <li style="margin-bottom: 12px;"><a href="service-list.html" style="color: #2C3E50; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#9B59B6'" onmouseout="this.style.color='#2C3E50'">→ Services</a></li>
+                <li style="margin-bottom: 12px;"><a href="blog-default.html" style="color: #2C3E50; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#9B59B6'" onmouseout="this.style.color='#2C3E50'">→ Blog</a></li>
+                <li style="margin-bottom: 12px;"><a href="contact.html" style="color: #2C3E50; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#9B59B6'" onmouseout="this.style.color='#2C3E50'">→ Contact Us</a></li>
+                <li style="margin-bottom: 12px;"><a href="testimonial.html" style="color: #2C3E50; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#9B59B6'" onmouseout="this.style.color='#2C3E50'">→ Testimonials</a></li>
               </ul>
             </div>
           </div>
-          <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
-            <div class="footer-widget mb30">
-              <h3 class="footer-title">For Patients</h3>
-              <ul class="listnone">
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="index.html">Home</a></li>
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="service-list.html">Services</a></li>
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="blog-default.html">Blog</a></li>
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="contact.html">Contactus</a></li>
-                <li><i class="icon icon-default icon-1x icon-next-11"></i> <a href="testimonial.html">Testimonials</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div class="col-lg-offset-1 col-lg-6 col-md-offset-1 col-md-6 col-sm-12 col-xs-12">
-            <div class="footer-widget mb30">
-              <h3 class="footer-title">News Letter Sign Up</h3>
-              <p class="mb20">Enter your email address below to receive our monthely fun-filled newsletter.</p>
-              <div class="row">
-                <div class="col-md-8">
-                  <input type="text" class="form-control" placeholder="Enter you email here">
-                </div>
-                <div class="col-md-4"> <a href="#" class="btn btn-primary">SUBSCRIBE</a></div>
+
+          <!-- Connect With Us -->
+          <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+            <div style="margin-bottom: 30px;">
+              <h3 style="color: #2C3E50; font-size: 18px; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #FF6B9D;">Connect With Us</h3>
+              <p style="color: #2C3E50; line-height: 1.7; font-size: 15px; margin-bottom: 20px;">
+                Follow us for daily parenting tips, child development insights, and expert advice.
+              </p>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a href="#" title="Twitter" style="width: 40px; height: 40px; background: #9B59B6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: transform 0.3s, background 0.3s;" onmouseover="this.style.transform='scale(1.1)'; this.style.background='#8B4BA6'" onmouseout="this.style.transform='scale(1)'; this.style.background='#9B59B6'">
+                  <i class="fa fa-twitter" style="font-size: 18px;"></i>
+                </a>
+                <a href="#" title="Facebook" style="width: 40px; height: 40px; background: #9B59B6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: transform 0.3s, background 0.3s;" onmouseover="this.style.transform='scale(1.1)'; this.style.background='#8B4BA6'" onmouseout="this.style.transform='scale(1)'; this.style.background='#9B59B6'">
+                  <i class="fa fa-facebook" style="font-size: 18px;"></i>
+                </a>
+                <a href="#" title="Instagram" style="width: 40px; height: 40px; background: #9B59B6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: transform 0.3s, background 0.3s;" onmouseover="this.style.transform='scale(1.1)'; this.style.background='#8B4BA6'" onmouseout="this.style.transform='scale(1)'; this.style.background='#9B59B6'">
+                  <i class="fa fa-instagram" style="font-size: 18px;"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/aqiraa-child-consultancy-6b7462396/" target="_blank" title="LinkedIn" style="width: 40px; height: 40px; background: #9B59B6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: transform 0.3s, background 0.3s;" onmouseover="this.style.transform='scale(1.1)'; this.style.background='#8B4BA6'" onmouseout="this.style.transform='scale(1)'; this.style.background='#9B59B6'">
+                  <i class="fa fa-linkedin" style="font-size: 18px;"></i>
+                </a>
+                <a href="mailto:info@aqiraa.com" title="Email" style="width: 40px; height: 40px; background: #9B59B6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; text-decoration: none; transition: transform 0.3s, background 0.3s;" onmouseover="this.style.transform='scale(1.1)'; this.style.background='#8B4BA6'" onmouseout="this.style.transform='scale(1)'; this.style.background='#9B59B6'">
+                  <i class="fa fa-envelope" style="font-size: 18px;"></i>
+                </a>
               </div>
             </div>
-            <div class="footer-social"> <a href="#"><i class="fa fa-twitter"></i></a> <a href="#" class="active"><i
-                  class="fa fa-facebook"></i> </a> <a href="#"> <i class="fa fa-google-plus"></i> </a> <a href="#"> <i
-                  class="fa fa-pinterest"></i> </a> <a href="#"> <i class="fa fa-envelope"></i> </a> </div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="tiny-footer">
-      <div class="container">
-        <div class="row">
+
+        <!-- Bottom Bar -->
+        <div class="row" style="margin-top: 30px; padding-top: 25px; border-top: 1px solid rgba(155, 89, 182, 0.2);">
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <p>Copyrights@2017 | All Rights Reserve</p>
+            <p style="text-align: center; color: #2C3E50; margin: 0; font-size: 14px;">
+              © 2025 Aqiraa Child Consultancy. All Rights Reserved. | Made with ❤️ for every child's bright future
+            </p>
           </div>
         </div>
       </div>
