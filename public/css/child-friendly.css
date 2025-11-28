@@ -11,7 +11,7 @@
   /* Soft Baby Colors - Gentle and Soothing */
   --baby-blue: #A8DAFF;      /* Soft baby blue */
   --baby-pink: #FFB3D9;      /* Soft baby pink */
-  --baby-yellow: #FFF9C4;    /* Soft baby yellow */
+  --baby-yellow: #fdfadd;    /* Soft baby yellow */
   --baby-green: #C8E6C9;     /* Soft baby green */
   --baby-purple: #E1BEE7;    /* Soft baby purple */
   --baby-orange: #FFCC80;    /* Soft baby orange */
@@ -221,17 +221,20 @@ h3 {
 }
 
 .hero-title {
-  color: var(--dark);
+  color: #FF5733;
   font-size: 3.5rem;
-  font-weight: 700;
-  text-shadow: 2px 4px 10px rgba(255, 255, 255, 0.3);
+  font-weight: 800;
   animation: slideInLeft 0.8s ease-out;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: -1px;
 }
 
 .hero-text {
-  color: var(--dark);
+  color: #eb64a7;
   font-size: 1.5rem;
-  opacity: 0.95;
+  font-weight: 700;
+  letter-spacing: 3px;
+  opacity: 1;
   animation: slideInLeft 1s ease-out;
 }
 

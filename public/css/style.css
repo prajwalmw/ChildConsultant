@@ -388,7 +388,7 @@ img { width: auto; max-width: 100%; height: auto; margin: 0; padding: 0; border:
 /*--------------------------
     5.2 Navigations Regular
    ----------------------------*/
-.hero-section { background: linear-gradient(rgba(0, 195, 201, 0.3), rgba(0, 195, 201, 0.3), rgba(0, 195, 201, 0.3)), url(../images/hero.jpg) no-repeat center; background-size: cover; margin-top: -30px !important; padding-top: 30px !important; padding-bottom: 0 !important; position: relative; top: 0; }
+.hero-section { background: linear-gradient(rgba(255, 253, 240, 0.24), rgba(255, 253, 240, 0.24)), url(../images/hero.jpg) no-repeat center; background-size: cover; margin-top: -30px !important; padding-top: 30px !important; padding-bottom: 0 !important; position: relative; top: 0; }
 .hero-section .row + .row {
   margin-top: 0 !important;
 }
@@ -510,14 +510,14 @@ visibility: hidden; line-height: 0; height: 0;}*/
 8. Footer 
 -------------------------------------*/
 .footer { background-color: #2f3030; }
-.footer-title { margin-bottom: 50px; color: #fff; text-transform: capitalize; font-size: 22px; }
+.footer-title { margin-bottom: 50px; color: #FF0000; text-transform: capitalize; font-size: 22px; }
 .footer-widget { }
 .footer-widget ul { }
 .footer-widget li { margin-bottom: 5px; }
 .footer-widget li i { color: #7b7b7b; padding-right: 10px; padding-bottom: 5px; }
-.footer-widget li a { color: #8c8d8d; }
-.footer-widget li a:hover { color: #fe5036; }
-.footer-widget p { color: #8c8d8d; }
+.footer-widget li a { color: #9B59B6; }
+.footer-widget li a:hover { color: #FF6B9D; }
+.footer-widget p { color: #9B59B6; }
 .footer-link { }
 .footer-social { }
 .footer-social a { height: 32px; width: 32px; border-radius: 50px; background-color: #3d3e3e; text-align: center; padding: 7px; line-height: 1.2; display: inline-block; }
