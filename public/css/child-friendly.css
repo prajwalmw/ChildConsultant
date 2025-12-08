@@ -594,29 +594,92 @@ h3 {
    10. TESTIMONIAL CARDS
    ============================================ */
 .testimonial-block {
-  background: var(--white);
+  background: #ffffff;
   border-radius: 25px;
-  padding: 35px;
-  border-left: 5px solid var(--baby-yellow);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  padding: 0;
+  border: none;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
+}
+
+.testimonial-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, #FF5733 0%, #FFD93D 50%, #1BA7B8 100%);
+}
+
+.testimonial-block::after {
+  content: '"';
+  position: absolute;
+  top: 80px;
+  right: 30px;
+  font-size: 150px;
+  font-family: Georgia, serif;
+  color: rgba(27, 167, 184, 0.05);
+  line-height: 1;
+  pointer-events: none;
 }
 
 .testimonial-block:hover {
-  transform: translateX(10px);
-  box-shadow: 0 12px 35px rgba(255, 249, 196, 0.5);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(27, 167, 184, 0.15), 0 5px 20px rgba(255, 87, 51, 0.1);
+}
+
+.quote-box {
+  position: absolute;
+  top: -25px;
+  left: 30px;
+  z-index: 10;
 }
 
 .testimonial-icon {
-  background: linear-gradient(135deg, var(--baby-yellow), var(--baby-orange));
-  width: 60px;
-  height: 60px;
+  background: linear-gradient(135deg, #FF5733 0%, #FFD93D 100%);
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 15px rgba(255, 249, 196, 0.5);
+  box-shadow: 0 8px 25px rgba(255, 87, 51, 0.35);
+  border: 4px solid #ffffff;
+  position: relative;
+}
+
+.testimonial-content {
+  padding: 50px 35px 35px 35px;
+  position: relative;
+  z-index: 2;
+}
+
+.testimonial-text {
+  position: relative;
+  z-index: 2;
+  padding-left: 20px;
+  border-left: 4px solid rgba(27, 167, 184, 0.2);
+  font-size: 16px !important;
+  line-height: 1.7 !important;
+  color: #555 !important;
+  font-style: normal !important;
+}
+
+.testimonial-name {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.testimonial-name::before {
+  content: '👤';
+  font-size: 18px;
 }
 
 /* ============================================
