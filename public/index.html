@@ -750,5 +750,24 @@
       }
     });
   </script>
+
+  <!-- Calendly badge widget begin -->
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+  <script type="text/javascript">window.onload = function() { Calendly.initBadgeWidget({ url: 'https://calendly.com/aqiraa-care/30min', text: 'Book Free Appointment', color: '#ff009a', textColor: '#ffffff', branding: false }); }</script>
+
+  <!-- Custom styling to force white text color -->
+  <style>
+    .calendly-badge-widget .calendly-badge-content {
+      color: #ffffff !important;
+      line-height: 1.6 !important;
+    }
+    .calendly-badge-widget .calendly-badge-content span {
+      color: #ffffff !important;
+      display: block !important;
+      margin-top: 4px !important;
+    }
+  </style>
+  <!-- Calendly badge widget end -->
 </body>
 </html>
