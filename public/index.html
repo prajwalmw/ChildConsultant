@@ -548,28 +548,33 @@
       </div>
     </div>
       </div>
-    <section id="contact-form">
+    <section id="contact-form" style="background-color: #ffffff !important;">
       <div class="form-container">
         <h3>Get in Touch</h3>
         <form id="inquiryForm">
           <div class="form-group">
-            <input type="text" id="nameInput" class="form-control" placeholder="Your Name" required>
+            <input type="text" id="nameInput" class="form-control" placeholder="Your Name *" required>
           </div>
           <div class="form-group">
-            <input type="tel" id="mobileInput" class="form-control" placeholder="Mobile Number" pattern="[0-9]{10}"
+            <input type="tel" id="mobileInput" class="form-control" placeholder="Mobile Number *" pattern="[0-9]{10}"
               required>
           </div>
           <div class="form-group">
-            <input type="email" id="emailInput" class="form-control" placeholder="Email Address" required>
+            <input type="email" id="emailInput" class="form-control" placeholder="Email Address *" required>
           </div>
           <div class="form-group">
-            <textarea id="reasonInput" class="form-control" rows="8" placeholder="Reason for Reaching Out"
-              required></textarea>
+            <textarea id="reasonInput" class="form-control" rows="8" placeholder="Reason for Reaching Out"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
+          <p style="text-align: center; color: #1565C0; font-size: 14px; margin-top: 25px; margin-bottom: 20px; font-weight: 500;">
+            <span style="display: inline-block; width: 18px; height: 18px; border: 2px solid #1565C0; border-radius: 50%; text-align: center; line-height: 14px; font-weight: bold; font-size: 12px; margin-right: 6px; vertical-align: middle; color: #1565C0;">i</span>
+            We will reach out to you within 24 hours.
+          </p>
+          <button type="submit" class="btn btn-primary" style="background-color: #2196F3 !important; color: #ffffff !important; font-weight: 600 !important;">Submit</button>
         </form>
       </div>
     </section>
+
+    <div style="margin-bottom: 60px;"></div>
 
     <div class="footer" style="background: linear-gradient(135deg, #E8F4FF 0%, #FFE8F0 100%); padding: 60px 0 30px 0; border-top: 3px solid #9B59B6;">
       <div class="container">
@@ -662,8 +667,8 @@
         const email = document.getElementById("emailInput")?.value.trim() || "";
         const reason = document.getElementById("reasonInput")?.value.trim() || "";
 
-        if (!name || !mobile || !email || !reason) {
-          alert("Please fill in all fields!");
+        if (!name || !mobile || !email) {
+          alert("Please fill in all required fields!");
           return;
         }
 
@@ -756,16 +761,22 @@
   <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
   <script type="text/javascript">window.onload = function() { Calendly.initBadgeWidget({ url: 'https://calendly.com/aqiraa-care/30min', text: 'Book Free Discovery Session', color: '#f706c9', textColor: '#ffffff', branding: false }); }</script>
 
-  <!-- Custom styling to force white text color -->
+  <!-- Custom styling for gradient button -->
   <style>
     .calendly-badge-widget .calendly-badge-content {
+      background: linear-gradient(135deg, #b97dd4 0%, #e879b9 100%) !important;
       color: #ffffff !important;
       line-height: 1.6 !important;
+      padding: 15px 25px !important;
+      border-radius: 50px !important;
+      box-shadow: 0 10px 30px rgba(185, 125, 212, 0.4) !important;
+      font-weight: 600 !important;
+      font-size: 16px !important;
     }
     .calendly-badge-widget .calendly-badge-content span {
       color: #ffffff !important;
-      display: block !important;
-      margin-top: 4px !important;
+      display: inline !important;
+      margin: 0 !important;
     }
   </style>
   <!-- Calendly badge widget end -->
