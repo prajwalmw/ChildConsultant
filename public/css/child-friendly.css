@@ -291,6 +291,37 @@ h3 {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   position: relative;
   z-index: 1000;
+  padding: 10px 0;
+}
+
+.header .container {
+  max-width: 100% !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+  width: 100% !important;
+}
+
+.header .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+.logo-container {
+  padding-left: 20px !important;
+  padding-top: 10px !important;
+  margin-left: 0 !important;
+}
+
+.logo-container .logo-img {
+  margin-left: 0 !important;
+}
+
+.header .navigation {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
 }
 
 .logo img {
