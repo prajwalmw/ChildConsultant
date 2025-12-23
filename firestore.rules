@@ -44,39 +44,32 @@ service cloud.firestore {
     }
 
     // ============================================
-    // CHILDREN COLLECTION
+    // PATIENTS COLLECTION WITH NESTED SUBCOLLECTIONS
     // ============================================
-    match /children/{childId} {
-      // Authenticated users can read children data
+    match /patients/{parentKey} {
+      // All authenticated users can read patient documents
       allow read: if isSignedIn();
 
-      // Any authenticated user can create child records
-      allow create: if isSignedIn();
-
-      // Admins, doctors, or parent can update/delete
-      allow update, delete: if isAdmin() || isDoctor() || isOwner(resource.data.parentId);
-    }
-
-    // ============================================
-    // CONSULTATIONS COLLECTION
-    // ============================================
-    match /consultations/{consultationId} {
-      // Authenticated users can read consultations
-      allow read: if isSignedIn();
-
-      // Only doctors and admins can create consultations
-      allow create: if isDoctor() || isAdmin();
-
-      // Only admins and doctors can update/delete
-      allow update, delete: if isAdmin() || isDoctor();
-    }
-
-    // ============================================
-    // PATIENTS COLLECTION
-    // ============================================
-    match /patients/{patientId} {
-      allow read: if isSignedIn();
+      // Doctors and admins can write patient documents
       allow write: if isDoctor() || isAdmin();
+
+      // NESTED: Children subcollection
+      match /children/{childId} {
+        // All authenticated users can read children
+        allow read: if isSignedIn();
+
+        // Doctors and admins can create/update/delete children
+        allow create, update, delete: if isDoctor() || isAdmin();
+
+        // NESTED: Consultations subcollection
+        match /consultations/{consultationId} {
+          // All authenticated users can read consultations
+          allow read: if isSignedIn();
+
+          // Only doctors and admins can create/update/delete consultations
+          allow create, update, delete: if isDoctor() || isAdmin();
+        }
+      }
     }
 
     // ============================================
