@@ -225,10 +225,6 @@
         async function handleFormSubmission(e) {
             e.preventDefault();
 
-            if (!confirm('Are you sure you want to save these consultation notes?')) {
-                return;
-            }
-
             const form = e.target;
             const submitBtn = form.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
@@ -284,11 +280,8 @@
                 backLink.addEventListener('click', function(e) {
                     // Prevent default action initially
                     e.preventDefault(); 
-                    
-                    if (confirm('Are you sure you want to cancel and lose unsaved progress?')) {
-                        // If confirmed, navigate to the href set in initializeForm
-                        window.location.href = backLink.href;
-                    }
+
+                    window.location.href = backLink.href;
                 });
             }
         }

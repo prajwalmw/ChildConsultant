@@ -141,10 +141,6 @@
         
         async function handleRegistration(e) {
             e.preventDefault();
-            
-            if (!confirm('Are you sure you want to register this new child? Double check the details before saving.')) {
-                return; 
-            }
 
             const form = e.target;
             const submitBtn = form.querySelector('button[type="submit"]');
@@ -190,9 +186,7 @@
             cancelBtn.href = "#";
             cancelBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (confirm('Are you sure you want to cancel registration? Any unsaved data will be lost.')) {
-                    window.location.href = targetUrl;
-                }
+                window.location.href = targetUrl;
             });
         }
     </script>
