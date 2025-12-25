@@ -1,6 +1,7 @@
 // dashboard.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -15,6 +16,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // Fetch all inquiry data
 async function fetchSubmissions() {
@@ -160,11 +162,101 @@ function drawTimeChart(submissions) {
 }
 
 
+// Check user authentication and role
+async function checkUserAccess() {
+  return new Promise((resolve, reject) => {
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        reject(new Error('NOT_AUTHENTICATED'));
+        return;
+      }
+
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists()) {
+          reject(new Error('USER_NOT_FOUND'));
+          return;
+        }
+
+        const userData = userDoc.data();
+        if (userData.role !== 'admin' && userData.role !== 'doctor') {
+          reject(new Error('INSUFFICIENT_PERMISSIONS'));
+          return;
+        }
+
+        resolve(user);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+}
+
 // Initialize dashboard
 async function initDashboard() {
-  const submissions = await fetchSubmissions();
-  drawReasonChart(submissions);
-  drawTimeChart(submissions);
+  try {
+    console.log('Initializing dashboard...');
+
+    // Check if Chart.js is loaded
+    if (typeof Chart === 'undefined') {
+      console.error('Chart.js is not loaded!');
+      return;
+    }
+
+    // Check user authentication and permissions
+    try {
+      await checkUserAccess();
+      console.log('User authenticated with admin role');
+    } catch (error) {
+      console.error('Access denied:', error.message);
+
+      let errorMessage = '';
+      if (error.message === 'NOT_AUTHENTICATED') {
+        errorMessage = 'Please <a href="../login.html" style="color: #3498db;">sign in</a> to view the dashboard.';
+        setTimeout(() => {
+          window.location.href = '../login.html';
+        }, 2000);
+      } else if (error.message === 'INSUFFICIENT_PERMISSIONS') {
+        errorMessage = 'Access Denied: Admin or Doctor privileges required to view this dashboard.';
+        setTimeout(() => {
+          window.location.href = '../index.html';
+        }, 2000);
+      } else {
+        errorMessage = 'Error verifying permissions. Please try again.';
+      }
+
+      document.querySelector('.dashboard-container').innerHTML =
+        `<p style="text-align: center; color: #e74c3c; margin-top: 40px;">${errorMessage}</p>`;
+      return;
+    }
+
+    const submissions = await fetchSubmissions();
+    console.log(`Fetched ${submissions.length} submissions`);
+
+    if (submissions.length === 0) {
+      console.warn('No submissions found in the database');
+      document.querySelector('.dashboard-container').innerHTML +=
+        '<p style="text-align: center; color: #7f8c8d; margin-top: 40px;">No inquiry data available yet.</p>';
+      return;
+    }
+
+    drawReasonChart(submissions);
+    drawTimeChart(submissions);
+    console.log('Dashboard initialized successfully');
+  } catch (error) {
+    console.error('Error initializing dashboard:', error);
+
+    let errorMsg = 'Error loading dashboard data.';
+    if (error.code === 'permission-denied') {
+      errorMsg = 'Permission denied. Only admins and doctors can access this dashboard.';
+      setTimeout(() => {
+        window.location.href = '../index.html';
+      }, 2000);
+    }
+
+    document.querySelector('.dashboard-container').innerHTML +=
+      `<p style="text-align: center; color: #e74c3c; margin-top: 40px;">${errorMsg}</p>`;
+  }
 }
 
 window.addEventListener("DOMContentLoaded", initDashboard);

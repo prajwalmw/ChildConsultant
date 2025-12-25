@@ -76,8 +76,8 @@ service cloud.firestore {
     // INQUIRIES COLLECTION (Contact Form)
     // ============================================
     match /inquiries/{inquiryId} {
-      // Only admins can read inquiries
-      allow read: if isAdmin();
+      // Admins and doctors can read inquiries
+      allow read: if isAdmin() || isDoctor();
 
       // Anyone can create an inquiry (contact form)
       allow create: if true;

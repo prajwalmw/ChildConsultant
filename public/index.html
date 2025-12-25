@@ -89,18 +89,18 @@
             if (doc.exists) {
               const role = doc.data().role;
               if (navigation && role) {
-                if (role === 'admin') {
-                  menuHtml = '<li><a href="admin/admin_dashboard.html" title="Admin Dashboard" class="animsition-link">Admin Dashboard</a></li>';
-                } else if (role === 'doctor') {
-                  menuHtml = '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
+                if (role === 'admin' || role === 'doctor') {
+                  // Both admin and doctor see Dashboard and Doctor Portal
+                  menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
+                  menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
                 } else {
                   // For 'parent' or default role
-                  menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
+                  menuHtml = '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>';
                 }
               }
             } else {
-                // Fallback to parent dashboard if user document is missing
-                menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
+                // Fallback to parent profile if user document is missing
+                menuHtml = '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>';
             }
 
             // Find the position after "Home" (first <li>)
@@ -112,11 +112,11 @@
           })
           .catch(error => {
             console.error("Error fetching user role:", error);
-            // Fallback: If network fails, still try to show a basic dashboard link
+            // Fallback: If network fails, still try to show a basic profile link
             const navigation = document.getElementById('navigation');
             const homeMenuItem = navigation?.querySelector('ul > li:first-child');
             if (homeMenuItem) {
-              homeMenuItem.insertAdjacentHTML('afterend', '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>');
+              homeMenuItem.insertAdjacentHTML('afterend', '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>');
             }
           });
         // --- End Logic ---
