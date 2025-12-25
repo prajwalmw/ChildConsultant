@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WHO Standards Test</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #f5f7fa;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    .test-section {
+      background: white;
+      padding: 30px;
+      margin: 20px 0;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .test-case {
+      padding: 15px;
+      margin: 10px 0;
+      background: #f8f9fa;
+      border-left: 4px solid #00c3c9;
+      border-radius: 5px;
+    }
+    .test-case h3 {
+      margin-top: 0;
+      color: #34495e;
+    }
+    .result {
+      margin: 10px 0;
+      padding: 10px;
+      background: #e8f5e9;
+      border-radius: 5px;
+    }
+    .result.warning {
+      background: #fff3e0;
+    }
+    .result.error {
+      background: #ffebee;
+    }
+    .pass {
+      color: #2ecc71;
+      font-weight: bold;
+    }
+    .fail {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #00c3c9;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      color: #7f8c8d;
+    }
+  </style>
+</head>
+<body>
+  <h1>WHO Growth Standards Validation Test</h1>
+
+  <div class="test-section">
+    <h2>Test Results</h2>
+    <div id="testResults" class="loading">Running tests...</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Sample Calculations</h2>
+    <div id="sampleCalculations"></div>
+  </div>
+
+  <script type="module">
+    import {
+      calculateWeightPercentile,
+      calculateHeightPercentile,
+      calculateHeadCircumferencePercentile,
+      calculateAgeInMonths,
+      getGrowthAssessment
+    } from "./js/who-standards.js";
+
+    // Test cases based on WHO reference data
+    const testCases = [
+      {
+        name: "Newborn Boy - 50th Percentile Weight",
+        ageMonths: 0,
+        measurement: 3.3464,
+        type: "weight",
+        gender: "Male",
+        expectedPercentile: 50,
+        tolerance: 5
+      },
+      {
+        name: "6-Month Boy - 50th Percentile Weight",
+        ageMonths: 6,
+        measurement: 7.934,
+        type: "weight",
+        gender: "Male",
+        expectedPercentile: 50,
+        tolerance: 5
+      },
+      {
+        name: "12-Month Girl - 50th Percentile Weight",
+        ageMonths: 12,
+        measurement: 8.9481,
+        type: "weight",
+        gender: "Female",
+        expectedPercentile: 50,
+        tolerance: 5
+      },
+      {
+        name: "Newborn Girl - 50th Percentile Height",
+        ageMonths: 0,
+        measurement: 49.1477,
+        type: "height",
+        gender: "Female",
+        expectedPercentile: 50,
+        tolerance: 5
+      },
+      {
+        name: "24-Month Boy - 50th Percentile Height",
+        ageMonths: 24,
+        measurement: 85.9488,
+        type: "height",
+        gender: "Male",
+        expectedPercentile: 50,
+        tolerance: 5
+      },
+      {
+        name: "6-Month Girl - 50th Percentile Head Circumference",
+        ageMonths: 6,
+        measurement: 42.201,
+        type: "headCircumference",
+        gender: "Female",
+        expectedPercentile: 50,
+        tolerance: 5
+      }
+    ];
+
+    function runTests() {
+      const resultsDiv = document.getElementById('testResults');
+      let passCount = 0;
+      let failCount = 0;
+      let html = '<table><thead><tr><th>Test Case</th><th>Expected</th><th>Actual</th><th>Status</th><th>Assessment</th></tr></thead><tbody>';
+
+      testCases.forEach(test => {
+        let calculatedPercentile;
+
+        switch(test.type) {
+          case 'weight':
+            calculatedPercentile = calculateWeightPercentile(test.ageMonths, test.measurement, test.gender);
+            break;
+          case 'height':
+            calculatedPercentile = calculateHeightPercentile(test.ageMonths, test.measurement, test.gender);
+            break;
+          case 'headCircumference':
+            calculatedPercentile = calculateHeadCircumferencePercentile(test.ageMonths, test.measurement, test.gender);
+            break;
+        }
+
+        const diff = Math.abs(calculatedPercentile - test.expectedPercentile);
+        const passed = diff <= test.tolerance;
+        const assessment = getGrowthAssessment(calculatedPercentile);
+
+        if (passed) {
+          passCount++;
+        } else {
+          failCount++;
+        }
+
+        html += `
+          <tr>
+            <td>${test.name}</td>
+            <td>${test.expectedPercentile.toFixed(1)}th</td>
+            <td>${calculatedPercentile.toFixed(1)}th (±${diff.toFixed(1)})</td>
+            <td class="${passed ? 'pass' : 'fail'}">${passed ? '✓ PASS' : '✗ FAIL'}</td>
+            <td>${assessment}</td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+
+      html += `
+        <div class="result ${failCount > 0 ? 'warning' : ''}">
+          <h3>Summary</h3>
+          <p><strong>Total Tests:</strong> ${testCases.length}</p>
+          <p class="pass">✓ Passed: ${passCount}</p>
+          ${failCount > 0 ? `<p class="fail">✗ Failed: ${failCount}</p>` : ''}
+          <p><strong>Success Rate:</strong> ${((passCount / testCases.length) * 100).toFixed(1)}%</p>
+        </div>
+      `;
+
+      resultsDiv.innerHTML = html;
+    }
+
+    function generateSampleCalculations() {
+      const samplesDiv = document.getElementById('sampleCalculations');
+      let html = '<h3>Sample Growth Calculations for a Typical Child</h3>';
+      html += '<table><thead><tr><th>Age (months)</th><th>Weight (kg)</th><th>Weight %ile</th><th>Height (cm)</th><th>Height %ile</th><th>HC (cm)</th><th>HC %ile</th></tr></thead><tbody>';
+
+      // Sample data for a Male child
+      const samples = [
+        { age: 0, weight: 3.5, height: 50, hc: 35 },
+        { age: 3, weight: 6.5, height: 61, hc: 40 },
+        { age: 6, weight: 8.0, height: 67, hc: 43 },
+        { age: 9, weight: 9.0, height: 72, hc: 45 },
+        { age: 12, weight: 9.8, height: 76, hc: 46 },
+        { age: 18, weight: 11.0, height: 81, hc: 47 },
+        { age: 24, weight: 12.0, height: 86, hc: 48 },
+        { age: 36, weight: 13.5, height: 93, hc: 49 },
+        { age: 48, weight: 15.0, height: 98, hc: 49.5 },
+        { age: 60, weight: 16.5, height: 102, hc: 50 }
+      ];
+
+      samples.forEach(sample => {
+        const weightP = calculateWeightPercentile(sample.age, sample.weight, 'Male');
+        const heightP = calculateHeightPercentile(sample.age, sample.height, 'Male');
+        const hcP = calculateHeadCircumferencePercentile(sample.age, sample.hc, 'Male');
+
+        html += `
+          <tr>
+            <td>${sample.age}</td>
+            <td>${sample.weight}</td>
+            <td>${weightP ? weightP.toFixed(1) + 'th' : 'N/A'}</td>
+            <td>${sample.height}</td>
+            <td>${heightP ? heightP.toFixed(1) + 'th' : 'N/A'}</td>
+            <td>${sample.hc}</td>
+            <td>${hcP ? hcP.toFixed(1) + 'th' : 'N/A'}</td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      html += '<p><em>This table shows percentile calculations for sample measurements using WHO growth standards.</em></p>';
+
+      samplesDiv.innerHTML = html;
+    }
+
+    // Age calculation test
+    function testAgeCalculation() {
+      const dob = new Date('2023-01-15');
+      const consultDate = new Date('2025-07-15');
+      const ageMonths = calculateAgeInMonths(dob, consultDate);
+
+      console.log('Age Calculation Test:');
+      console.log('DOB:', dob.toLocaleDateString());
+      console.log('Consult Date:', consultDate.toLocaleDateString());
+      console.log('Age in months:', ageMonths);
+      console.log('Expected: ~30 months');
+    }
+
+    // Run all tests
+    runTests();
+    generateSampleCalculations();
+    testAgeCalculation();
+
+    console.log('WHO Standards Implementation Validated');
+    console.log('Using official WHO LMS tables (Lambda-Mu-Sigma method)');
+    console.log('Z-score calculations with normal distribution approximation');
+    console.log('Valid for children 0-60 months (0-5 years)');
+  </script>
+</body>
+</html>

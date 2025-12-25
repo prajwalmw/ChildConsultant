@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Child Dashboard - Aqiraa</title>
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/child-friendly.css">
+  <link href="../css/font-awesome.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      padding-top: 20px;
+      min-height: 100vh;
+      background-color: #f5f7fa;
+    }
+    .dashboard-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .dashboard-header h1 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    .child-info {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .child-info h3 {
+      color: #00c3c9;
+      margin-bottom: 15px;
+    }
+    .info-item {
+      display: inline-block;
+      margin-right: 30px;
+      margin-bottom: 10px;
+    }
+    .info-item strong {
+      color: #555;
+    }
+    .chart-section {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .chart-section h3 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    canvas {
+      max-height: 400px;
+    }
+    .back-button {
+      background-color: #f7a83d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .back-button:hover {
+      background-color: #e09734;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-card.green {
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+    .stat-card.blue {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+    .stat-card.orange {
+      background: linear-gradient(135deg, #f7a83d 0%, #e09734 100%);
+    }
+    .stat-card h4 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .stat-card .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+      <button class="back-button" onclick="goBack()">
+        <i class="fa fa-arrow-left"></i> Back to Child Selection
+      </button>
+
+      <div class="dashboard-header">
+        <h1 id="childNameHeader">Child Dashboard</h1>
+        <p id="parentNameHeader" style="color: #7f8c8d;"></p>
+      </div>
+
+      <div class="child-info" id="childInfoSection" style="display: none;">
+        <h3>Child Information</h3>
+        <div id="childInfoContent">
+          <p>Loading child information...</p>
+        </div>
+      </div>
+
+      <div id="loadingIndicator" style="text-align: center; padding: 60px;">
+        <div style="font-size: 24px; color: #00c3c9; margin-bottom: 20px;">
+          <i class="fa fa-spinner fa-spin"></i> Loading Dashboard...
+        </div>
+        <p style="color: #7f8c8d;">Please wait while we fetch the data</p>
+      </div>
+
+      <div class="stats-grid" id="statsGrid" style="display: none;">
+        <!-- Stats will be populated by JavaScript -->
+      </div>
+
+      <div class="chart-section" id="growthChartSection" style="display: none;">
+        <h3>Growth Percentiles Over Time</h3>
+        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 20px;">
+          Tracking weight, height, and head circumference percentiles across all consultations.
+          <br>
+          <strong>Legend:</strong> Solid line = Weight, Dashed line = Height, Dotted line = Head Circumference
+        </p>
+        <canvas id="growthChart"></canvas>
+      </div>
+
+      <div class="chart-section" id="measurementsChartSection" style="display: none;">
+        <h3>Actual Measurements Over Time</h3>
+        <canvas id="measurementsChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    // Import WHO standards module
+    import {
+      calculateWeightPercentile,
+      calculateHeightPercentile,
+      calculateHeadCircumferencePercentile,
+      calculateAgeInMonths
+    } from "../js/who-standards.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+      authDomain: "child-consultant.firebaseapp.com",
+      projectId: "child-consultant",
+      storageBucket: "child-consultant.appspot.com",
+      messagingSenderId: "985386588549",
+      appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentPatientId = null;
+    let currentParentId = null;
+    let childName = '';
+
+    // Get query parameters
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function goBack() {
+      window.location.href = `child_selection.html?parentId=${currentParentId}`;
+    }
+
+    // Helper function to create parent key
+    function slugifyName(text) {
+      return text.toLowerCase().trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    }
+
+    function createParentKey(parentName, parentId) {
+      const nameSlug = slugifyName(parentName || 'unknown-parent');
+      return `${nameSlug}_${parentId}`;
+    }
+
+    // Parse Firestore timestamp to Date object
+    function parseDate(timestamp) {
+      if (!timestamp) return null;
+      if (timestamp.toDate) return timestamp.toDate();
+      if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
+      return new Date(timestamp);
+    }
+
+    // WHO standards functions are now imported from who-standards.js module
+
+    // Load child dashboard data
+    async function loadChildDashboard() {
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const childInfoSection = document.getElementById('childInfoSection');
+      const statsGrid = document.getElementById('statsGrid');
+
+      try {
+        console.log('Loading child dashboard...');
+
+        currentPatientId = getQueryParam('patientId');
+        currentParentId = getQueryParam('parentId');
+        childName = decodeURIComponent(getQueryParam('childName') || 'Child');
+
+        console.log('Patient ID:', currentPatientId);
+        console.log('Parent ID:', currentParentId);
+        console.log('Child Name:', childName);
+
+        if (!currentPatientId || !currentParentId) {
+          if (loadingIndicator) loadingIndicator.style.display = 'none';
+          alert('Missing required parameters');
+          goBack();
+          return;
+        }
+
+        // Update header
+        document.getElementById('childNameHeader').textContent = `${childName}'s Dashboard`;
+
+        // Get parent info
+        const parentDocRef = doc(db, 'users', currentParentId);
+        const parentDoc = await getDoc(parentDocRef);
+        const parentData = parentDoc.data();
+        document.getElementById('parentNameHeader').textContent = `Parent: ${parentData.name || parentData.displayName || 'Unknown'}`;
+
+        const parentKey = createParentKey(parentData.name || parentData.displayName || 'unknown', currentParentId);
+
+        // Get child data
+        const childDocRef = doc(db, 'patients', parentKey, 'children', currentPatientId);
+        const childDoc = await getDoc(childDocRef);
+
+        if (!childDoc.exists()) {
+          alert('Child not found');
+          return;
+        }
+
+        const childData = childDoc.data();
+
+        // Display child info - use correct field names from registration form
+        const dob = parseDate(childData.dob || childData.dateOfBirth);
+        const age = calculateAge(dob);
+        const initialWeight = childData.initialWeight || childData.weight;
+        const initialHeight = childData.initialHeight || childData.height;
+
+        document.getElementById('childInfoContent').innerHTML = `
+          <div class="info-item"><strong>Name:</strong> ${childData.name}</div>
+          <div class="info-item"><strong>Gender:</strong> ${childData.gender || 'N/A'}</div>
+          <div class="info-item"><strong>Date of Birth:</strong> ${dob ? dob.toLocaleDateString() : 'N/A'}</div>
+          <div class="info-item"><strong>Age:</strong> ${age}</div>
+          <div class="info-item"><strong>Initial Weight:</strong> ${initialWeight ? initialWeight + ' kg' : 'N/A'}</div>
+          <div class="info-item"><strong>Initial Height:</strong> ${initialHeight ? initialHeight + ' cm' : 'N/A'}</div>
+        `;
+
+        // Fetch consultations
+        const consultationsRef = collection(db, 'patients', parentKey, 'children', currentPatientId, 'consultations');
+        const consultationsQuery = query(consultationsRef, orderBy('date', 'asc'));
+        const consultationsSnapshot = await getDocs(consultationsQuery);
+
+        const consultations = [];
+        consultationsSnapshot.docs.forEach(docSnap => {
+          const data = docSnap.data();
+          consultations.push({
+            date: data.date,
+            weight: data.weight,
+            height: data.height,
+            headCircumference: data.headCircumference,
+            temperature: data.temperature
+          });
+        });
+
+        // Display stats
+        displayStats(consultations, childData);
+
+        // Hide loading indicator and show content
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (childInfoSection) childInfoSection.style.display = 'block';
+        if (statsGrid) statsGrid.style.display = 'grid';
+
+        // Show chart sections
+        const growthChartSection = document.getElementById('growthChartSection');
+        const measurementsChartSection = document.getElementById('measurementsChartSection');
+        if (growthChartSection) growthChartSection.style.display = 'block';
+        if (measurementsChartSection) measurementsChartSection.style.display = 'block';
+
+        // Draw charts
+        drawGrowthPercentileChart(consultations, childData);
+        drawMeasurementsChart(consultations);
+
+        console.log('Dashboard loaded successfully');
+
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+
+        // Hide loading indicator
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+
+        // Show error message
+        alert('Error loading dashboard data: ' + error.message);
+        const childInfoContent = document.getElementById('childInfoContent');
+        if (childInfoContent) {
+          if (childInfoSection) childInfoSection.style.display = 'block';
+          childInfoContent.innerHTML = `<p style="color: #e74c3c;">Error loading data: ${error.message}</p>`;
+        }
+      }
+    }
+
+    function calculateAge(dob) {
+      if (!dob) return 'N/A';
+      const now = new Date();
+      let years = now.getFullYear() - dob.getFullYear();
+      let months = now.getMonth() - dob.getMonth();
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+      if (years === 0) return `${months} months`;
+      return `${years} yrs, ${months} mos`;
+    }
+
+    function displayStats(consultations, childData) {
+      const statsGrid = document.getElementById('statsGrid');
+      const totalConsultations = consultations.length;
+      const latestConsult = consultations[consultations.length - 1];
+
+      let statsHTML = `
+        <div class="stat-card green">
+          <h4>Total Consultations</h4>
+          <p class="stat-value">${totalConsultations}</p>
+        </div>
+      `;
+
+      if (latestConsult) {
+        if (latestConsult.weight) {
+          statsHTML += `
+            <div class="stat-card blue">
+              <h4>Latest Weight</h4>
+              <p class="stat-value">${latestConsult.weight} kg</p>
+            </div>
+          `;
+        }
+        if (latestConsult.height) {
+          statsHTML += `
+            <div class="stat-card orange">
+              <h4>Latest Height</h4>
+              <p class="stat-value">${latestConsult.height} cm</p>
+            </div>
+          `;
+        }
+        if (latestConsult.headCircumference) {
+          statsHTML += `
+            <div class="stat-card">
+              <h4>Latest Head Circ.</h4>
+              <p class="stat-value">${latestConsult.headCircumference} cm</p>
+            </div>
+          `;
+        }
+      }
+
+      statsGrid.innerHTML = statsHTML;
+    }
+
+    function drawGrowthPercentileChart(consultations, childData) {
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded');
+        document.getElementById('growthChart').parentElement.innerHTML += '<p style="color: #e74c3c; text-align: center;">Error: Chart library not loaded</p>';
+        return;
+      }
+
+      const dataPoints = consultations.map(consult => {
+        // Convert Firestore dates to Date objects for WHO calculations
+        // Use correct field name from registration form
+        const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+        const consultDate = parseDate(consult.date);
+
+        const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+        return {
+          x: ageMonths,
+          weightP: calculateWeightPercentile(ageMonths, consult.weight, childData.gender),
+          heightP: calculateHeightPercentile(ageMonths, consult.height, childData.gender),
+          hcP: calculateHeadCircumferencePercentile(ageMonths, consult.headCircumference, childData.gender)
+        };
+      }).filter(dp => dp.x !== null);
+
+      const datasets = [];
+
+      // Weight percentile
+      if (dataPoints.some(dp => dp.weightP !== null)) {
+        datasets.push({
+          label: 'Weight Percentile',
+          data: dataPoints.map(dp => ({ x: dp.x, y: dp.weightP })).filter(d => d.y !== null),
+          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: 'rgba(255, 99, 132, 0.1)',
+          tension: 0.3,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        });
+      }
+
+      // Height percentile
+      if (dataPoints.some(dp => dp.heightP !== null)) {
+        datasets.push({
+          label: 'Height Percentile',
+          data: dataPoints.map(dp => ({ x: dp.x, y: dp.heightP })).filter(d => d.y !== null),
+          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(54, 162, 235, 0.1)',
+          borderDash: [5, 5],
+          tension: 0.3,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        });
+      }
+
+      // Head circumference percentile
+      if (dataPoints.some(dp => dp.hcP !== null)) {
+        datasets.push({
+          label: 'Head Circumference Percentile',
+          data: dataPoints.map(dp => ({ x: dp.x, y: dp.hcP })).filter(d => d.y !== null),
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          borderDash: [2, 2],
+          tension: 0.3,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        });
+      }
+
+      const ctx = document.getElementById('growthChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: { datasets: datasets },
+        options: {
+          responsive: true,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title: (items) => `Age: ${items[0].parsed.x} months`,
+                label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(1)}th percentile`
+              }
+            },
+            legend: { display: true, position: 'top' }
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Age (months)' },
+              ticks: { stepSize: 3 }
+            },
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: { display: true, text: 'Percentile' },
+              ticks: { callback: (value) => value + 'th' }
+            }
+          }
+        }
+      });
+    }
+
+    function drawMeasurementsChart(consultations) {
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded');
+        document.getElementById('measurementsChart').parentElement.innerHTML += '<p style="color: #e74c3c; text-align: center;">Error: Chart library not loaded</p>';
+        return;
+      }
+
+      const labels = consultations.map((c, i) => `Visit ${i + 1}`);
+
+      const datasets = [];
+
+      // Weight
+      const weights = consultations.map(c => c.weight).filter(w => w !== null && w !== undefined);
+      if (weights.length > 0) {
+        datasets.push({
+          label: 'Weight (kg)',
+          data: consultations.map(c => c.weight),
+          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          yAxisID: 'y1'
+        });
+      }
+
+      // Height
+      const heights = consultations.map(c => c.height).filter(h => h !== null && h !== undefined);
+      if (heights.length > 0) {
+        datasets.push({
+          label: 'Height (cm)',
+          data: consultations.map(c => c.height),
+          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          yAxisID: 'y2'
+        });
+      }
+
+      // Head Circumference
+      const hcs = consultations.map(c => c.headCircumference).filter(hc => hc !== null && hc !== undefined);
+      if (hcs.length > 0) {
+        datasets.push({
+          label: 'Head Circumference (cm)',
+          data: consultations.map(c => c.headCircumference),
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          yAxisID: 'y2'
+        });
+      }
+
+      const ctx = document.getElementById('measurementsChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true, position: 'top' }
+          },
+          scales: {
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: { display: true, text: 'Weight (kg)' }
+            },
+            y2: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: { display: true, text: 'Height / HC (cm)' },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      });
+    }
+
+    // Check authentication and load dashboard
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        alert('Please sign in to view the dashboard');
+        window.location.href = '../login.html';
+        return;
+      }
+
+      loadChildDashboard();
+    });
+  </script>
+</body>
+</html>

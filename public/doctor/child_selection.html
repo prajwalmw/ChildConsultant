@@ -30,13 +30,15 @@
         .child-table .action-buttons-container {
             display: flex;
             gap: 5px; /* Spacing between buttons */
-            min-width: 250px; 
+            min-width: 380px;
             margin: 0;
         }
         .child-table .action-buttons-container .btn {
-            flex-grow: 1; 
-            width: auto; 
+            flex-grow: 1;
+            width: auto;
             margin-bottom: 0 !important;
+            font-size: 12px;
+            padding: 6px 10px;
         }
         .child-table .btn-consult {
             background-color: #4CAF50;
@@ -51,6 +53,13 @@
         }
         .child-table .btn-view:hover {
             background-color: #e09734;
+        }
+        .child-table .btn-dashboard {
+            background-color: #3498db;
+            color: white;
+        }
+        .child-table .btn-dashboard:hover {
+            background-color: #2980b9;
         }
         .selected-child {
             background-color: #e6ffec !important; /* Light green highlight */
@@ -294,7 +303,17 @@
         }
 
         /**
-         * Handles the redirection for a new consultation, linking it to the immediate previous visit 
+         * Opens the child-specific dashboard page
+         * @param {string} patientId The ID of the child/patient
+         * @param {string} childName The name of the child
+         */
+        function viewChildDashboard(patientId, childName) {
+            const url = `child_dashboard.html?patientId=${patientId}&parentId=${currentParentId}&childName=${encodeURIComponent(childName)}`;
+            window.location.href = url;
+        }
+
+        /**
+         * Handles the redirection for a new consultation, linking it to the immediate previous visit
          * and passing the age.
          * @param {string} patientId The ID of the patient.
          * @param {string} patientAge The calculated age string from the row.
@@ -396,10 +415,11 @@
                                 <td>${patientId}</td>
                                 <td>${dob ? dob.toLocaleDateString() : 'N/A'}</td>
                                 <td>${ageDisplay}</td>
-                                <td style="min-width: 260px;">
+                                <td style="min-width: 400px;">
                                     <div class="action-buttons-container">
-                                        <button type="button" class="btn btn-consult btn-sm" onclick="startConsultationAndLink('${patientId}', '${ageForHeader}')">Start Consultation</button>
-                                        <button type="button" class="btn btn-view btn-sm view-records-btn" data-patient-id="${patientId}" data-patient-name="${child.name}">View Records</button>
+                                        <button type="button" class="btn btn-consult btn-sm" onclick="startConsultationAndLink('${patientId}', '${ageForHeader}')">START CONSULTATION</button>
+                                        <button type="button" class="btn btn-view btn-sm view-records-btn" data-patient-id="${patientId}" data-patient-name="${child.name}">VIEW RECORDS</button>
+                                        <button type="button" class="btn btn-dashboard btn-sm" onclick="viewChildDashboard('${patientId}', '${child.name}')">VIEW DASHBOARD</button>
                                     </div>
                                 </td>
                             </tr>
