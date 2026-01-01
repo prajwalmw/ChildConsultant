@@ -513,6 +513,40 @@ h3 {
   color: var(--baby-green-dark) !important;
 }
 
+.row > div:nth-child(4) .service-block {
+  border-color: var(--baby-purple);
+}
+
+.row > div:nth-child(4) .service-block::before {
+  background: var(--baby-purple);
+}
+
+.row > div:nth-child(4) .service-block:hover {
+  box-shadow: 0 15px 40px rgba(225, 190, 231, 0.6);
+  border-color: var(--baby-purple-dark);
+}
+
+.row > div:nth-child(4) .service-title {
+  color: var(--baby-purple-dark) !important;
+}
+
+.row > div:nth-child(5) .service-block {
+  border-color: var(--baby-mint);
+}
+
+.row > div:nth-child(5) .service-block::before {
+  background: var(--baby-mint);
+}
+
+.row > div:nth-child(5) .service-block:hover {
+  box-shadow: 0 15px 40px rgba(178, 223, 219, 0.6);
+  border-color: var(--baby-blue-dark);
+}
+
+.row > div:nth-child(5) .service-title {
+  color: var(--baby-blue-dark) !important;
+}
+
 .service-img {
   border-radius: 20px;
   overflow: hidden;
