@@ -180,7 +180,8 @@ h3 {
    3. SOFT BABY HERO SECTION
    ============================================ */
 .hero-section {
-  background: var(--baby-yellow);
+  background: url(../images/yellow_sparkle_bg.jpeg) no-repeat center;
+  background-size: cover;
   min-height: 600px;
   position: relative;
   overflow: hidden;
