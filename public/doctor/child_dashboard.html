@@ -517,6 +517,75 @@
         </div>
       </div>
 
+      <!-- Sleep Duration & Routine Chart -->
+      <div class="hydration-card" id="sleepCard" style="display: none;">
+        <div class="hydration-card-header">
+          <h3>😴 Sleep Duration & Bedtime Routine</h3>
+          <div class="hydration-toggle">
+            <button class="hydration-toggle-btn active" onclick="switchSleepView('current')">Current</button>
+            <button class="hydration-toggle-btn" onclick="switchSleepView('overview')">Overview</button>
+          </div>
+        </div>
+        <p class="subtitle">Sleep duration and routine consistency compared to <strong>AASM (American Academy of Sleep Medicine)</strong> guidelines</p>
+
+        <!-- Current View (Gauge Chart) -->
+        <div class="hydration-view active" id="sleepCurrentView">
+          <div class="bullet-chart-container">
+            <div class="bullet-chart" id="sleepBulletChart">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="hydration-values" id="sleepValues">
+            <!-- Will be populated by JavaScript -->
+          </div>
+
+          <div class="hydration-legend">
+            <div class="hydration-legend-item">
+              <div class="hydration-legend-color" style="background: linear-gradient(to right, #e74c3c, #ec7063);"></div>
+              <span>Insufficient (&lt;80% of recommended)</span>
+            </div>
+            <div class="hydration-legend-item">
+              <div class="hydration-legend-color" style="background: linear-gradient(to right, #f39c12, #f5b041);"></div>
+              <span>Below Ideal (80-90%)</span>
+            </div>
+            <div class="hydration-legend-item">
+              <div class="hydration-legend-color" style="background: linear-gradient(to right, #27ae60, #52be80);"></div>
+              <span>Optimal (Within Recommended Range)</span>
+            </div>
+            <div class="hydration-legend-item">
+              <div class="hydration-legend-color" style="background: linear-gradient(to right, #3498db, #5dade2);"></div>
+              <span>Excessive (&gt;120% of recommended)</span>
+            </div>
+          </div>
+
+          <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <strong>📋 Clinical Standards - AASM (American Academy of Sleep Medicine) Guidelines:</strong><br>
+            <div style="margin-top: 10px; font-size: 13px; color: #856404;">
+              • <strong>Ages 4-12 months:</strong> 12-16 hours (including naps)<br>
+              • <strong>Ages 1-2 years:</strong> 11-14 hours (including naps)<br>
+              • <strong>Ages 3-5 years:</strong> 10-13 hours (may include naps)<br>
+              • <strong>Ages 6-12 years:</strong> 9-12 hours<br>
+              • <strong>Ages 13-18 years:</strong> 8-10 hours<br>
+              <em>Source: American Academy of Sleep Medicine & National Sleep Foundation</em>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overview View (Line Chart) -->
+        <div class="hydration-view" id="sleepOverviewView">
+          <div style="margin: 20px 0;">
+            <canvas id="sleepOverviewChart" style="max-height: 400px;"></canvas>
+          </div>
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <strong>How to Read:</strong> Blue line shows child's actual sleep duration across all consultations. Green shaded band shows AASM recommended sleep range based on age. Orange markers show bedtime consistency (earlier/later shifts indicate routine changes).
+          </div>
+          <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <strong>📋 Legal Disclaimer:</strong> Sleep recommendations are based on American Academy of Sleep Medicine (AASM) clinical guidelines and National Sleep Foundation standards. These are evidence-based recommendations for healthy child development. Individual sleep needs may vary. Consult with healthcare provider for personalized assessment.
+          </div>
+        </div>
+      </div>
+
       <div class="chart-section" id="growthChartSection" style="display: none;">
         <h3>Child Growth Percentiles vs WHO Standards</h3>
         <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 20px;">
@@ -1197,6 +1266,10 @@
             height: data.height,
             headCircumference: data.headCircumference,
             waterIntake: data.waterIntake,
+            sleepDuration: data.sleepDuration,
+            bedtime: data.bedtime,
+            wakeTime: data.wakeTime,
+            sleepQuality: data.sleepQuality,
             temperature: data.temperature
           });
         });
@@ -1341,6 +1414,9 @@
 
       // Display hydration chart
       displayHydrationChart(consultations, childData);
+
+      // Display sleep chart
+      displaySleepChart(consultations, childData);
     }
 
     // Calculate WHO recommended daily water intake based on age and weight
@@ -1654,11 +1730,271 @@
               title: { display: true, text: 'Consultation Visits' }
             },
             y: {
-              beginAtZero: true,
+              beginAtZero: false,
               title: { display: true, text: 'Water Intake (ml)' },
               ticks: {
                 callback: (value) => value + ' ml'
+              },
+              suggestedMin: Math.floor(Math.min(...hydrationData.map(d => Math.min(d.lowerBound, d.actualIntake))) - 100),
+              suggestedMax: Math.ceil(Math.max(...hydrationData.map(d => Math.max(d.upperBound, d.actualIntake))) + 100)
+            }
+          }
+        }
+      });
+    }
+
+    // Calculate AASM recommended sleep duration based on age
+    function calculateAASMSleepRequirement(ageMonths) {
+      if (ageMonths < 12) {
+        return { min: 12, max: 16, ideal: 14 }; // 4-12 months
+      } else if (ageMonths < 36) {
+        return { min: 11, max: 14, ideal: 12.5 }; // 1-2 years
+      } else if (ageMonths < 72) {
+        return { min: 10, max: 13, ideal: 11.5 }; // 3-5 years
+      } else if (ageMonths < 156) {
+        return { min: 9, max: 12, ideal: 10.5 }; // 6-12 years
+      } else {
+        return { min: 8, max: 10, ideal: 9 }; // 13-18 years
+      }
+    }
+
+    // Display sleep chart (called from displayStats)
+    function displaySleepChart(consultations, childData) {
+      const sleepCard = document.getElementById('sleepCard');
+      if (!consultations || consultations.length === 0) return;
+
+      const latestConsult = consultations[consultations.length - 1];
+
+      // Only show if sleep data is available
+      if (!latestConsult.sleepDuration || latestConsult.sleepDuration <= 0) {
+        if (sleepCard) sleepCard.style.display = 'none';
+        return;
+      }
+
+      const actualSleep = latestConsult.sleepDuration;
+      const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+      const consultDate = parseDate(latestConsult.date);
+      const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+      const recommended = calculateAASMSleepRequirement(ageMonths);
+
+      const percentage = (actualSleep / recommended.ideal) * 100;
+
+      // Determine status
+      let status = '', statusColor = '';
+      if (actualSleep < recommended.min) {
+        status = 'Insufficient Sleep';
+        statusColor = '#e74c3c';
+      } else if (actualSleep < recommended.min + (recommended.max - recommended.min) * 0.3) {
+        status = 'Below Ideal';
+        statusColor = '#f39c12';
+      } else if (actualSleep <= recommended.max) {
+        status = 'Optimal Sleep';
+        statusColor = '#27ae60';
+      } else {
+        status = 'Excessive Sleep';
+        statusColor = '#3498db';
+      }
+
+      // Render bullet chart
+      const maxScale = recommended.max * 1.3;
+      const insufficientWidth = (recommended.min * 0.8 / maxScale) * 100;
+      const belowWidth = ((recommended.min - recommended.min * 0.8) / maxScale) * 100;
+      const optimalWidth = ((recommended.max - recommended.min) / maxScale) * 100;
+      const excessiveWidth = 100 - (insufficientWidth + belowWidth + optimalWidth);
+
+      const actualWidth = (actualSleep / maxScale) * 100;
+      const targetPosition = (recommended.ideal / maxScale) * 100;
+
+      const bulletChart = document.getElementById('sleepBulletChart');
+      if (bulletChart) {
+        bulletChart.innerHTML = `
+          <div class="bullet-ranges">
+            <div class="bullet-range poor" style="width: ${insufficientWidth}%;">
+              ${insufficientWidth > 15 ? 'Insufficient' : ''}
+            </div>
+            <div class="bullet-range below" style="width: ${belowWidth}%;">
+              ${belowWidth > 15 ? 'Below' : ''}
+            </div>
+            <div class="bullet-range good" style="width: ${optimalWidth}%;">
+              ${optimalWidth > 15 ? 'Optimal' : ''}
+            </div>
+            <div class="bullet-range excellent" style="width: ${excessiveWidth}%;">
+              ${excessiveWidth > 15 ? 'Excessive' : ''}
+            </div>
+          </div>
+          <div class="bullet-measure" style="width: ${actualWidth}%; left: 0;"></div>
+          <div class="bullet-marker" style="left: ${targetPosition}%;"></div>
+        `;
+      }
+
+      // Render values
+      const sleepValues = document.getElementById('sleepValues');
+      if (sleepValues) {
+        sleepValues.innerHTML = `
+          <div class="hydration-value-item">
+            <div class="hydration-value-label">Actual Sleep</div>
+            <div class="hydration-value-number">${actualSleep.toFixed(1)}<span class="hydration-value-unit"> hrs</span></div>
+            <div class="hydration-value-label" style="color: ${statusColor}; margin-top: 5px;">${status}</div>
+          </div>
+          <div class="hydration-value-item">
+            <div class="hydration-value-label">AASM Recommended</div>
+            <div class="hydration-value-number">${recommended.min}-${recommended.max}<span class="hydration-value-unit"> hrs</span></div>
+            <div class="hydration-value-label" style="margin-top: 5px;">Ideal: ${recommended.ideal} hrs</div>
+          </div>
+          <div class="hydration-value-item">
+            <div class="hydration-value-label">Sleep Quality</div>
+            <div class="hydration-value-number" style="font-size: 18px;">${latestConsult.sleepQuality || 'N/A'}</div>
+            <div class="hydration-value-label" style="margin-top: 5px;">Bedtime: ${latestConsult.bedtime || 'N/A'}</div>
+          </div>
+        `;
+      }
+
+      if (sleepCard) sleepCard.style.display = 'block';
+      window.sleepConsultationsData = consultations;
+      window.sleepChildData = childData;
+    }
+
+    // Switch sleep view
+    window.switchSleepView = function(view) {
+      const currentView = document.getElementById('sleepCurrentView');
+      const overviewView = document.getElementById('sleepOverviewView');
+      const buttons = document.querySelectorAll('#sleepCard .hydration-toggle-btn');
+
+      if (view === 'current') {
+        currentView.classList.add('active');
+        overviewView.classList.remove('active');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+      } else {
+        currentView.classList.remove('active');
+        overviewView.classList.add('active');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+        drawSleepOverviewChart();
+      }
+    }
+
+    // Draw sleep overview chart
+    function drawSleepOverviewChart() {
+      if (typeof Chart === 'undefined') return;
+
+      const consultations = window.sleepConsultationsData || [];
+      const childData = window.sleepChildData || {};
+      if (!consultations || consultations.length === 0) return;
+
+      const sleepData = consultations
+        .map((consult, index) => {
+          if (!consult.sleepDuration || consult.sleepDuration <= 0) return null;
+
+          const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+          const consultDate = parseDate(consult.date);
+          const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+          const recommended = calculateAASMSleepRequirement(ageMonths);
+
+          return {
+            visitNumber: index + 1,
+            date: consultDate,
+            actualSleep: consult.sleepDuration,
+            minSleep: recommended.min,
+            maxSleep: recommended.max,
+            idealSleep: recommended.ideal
+          };
+        })
+        .filter(d => d !== null);
+
+      if (sleepData.length === 0) {
+        document.getElementById('sleepOverviewChart').parentElement.innerHTML =
+          '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No sleep data available across consultations.</p>';
+        return;
+      }
+
+      const labels = sleepData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+      const ctx = document.getElementById('sleepOverviewChart');
+
+      if (window.sleepOverviewChartInstance) {
+        window.sleepOverviewChartInstance.destroy();
+      }
+
+      window.sleepOverviewChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'AASM Max Recommended',
+              data: sleepData.map(d => d.maxSleep),
+              backgroundColor: 'rgba(39, 174, 96, 0.2)',
+              borderColor: 'rgba(39, 174, 96, 0.5)',
+              borderWidth: 1,
+              borderDash: [5, 5],
+              fill: '+1',
+              pointRadius: 0,
+              datalabels: { display: false }
+            },
+            {
+              label: 'AASM Min Recommended',
+              data: sleepData.map(d => d.minSleep),
+              backgroundColor: 'transparent',
+              borderColor: 'rgba(39, 174, 96, 0.5)',
+              borderWidth: 1,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0,
+              datalabels: { display: false }
+            },
+            {
+              label: "Child's Actual Sleep",
+              data: sleepData.map(d => d.actualSleep),
+              borderColor: '#3498db',
+              backgroundColor: '#3498db',
+              borderWidth: 3,
+              pointRadius: 8,
+              pointHoverRadius: 12,
+              pointStyle: 'circle',
+              pointBorderWidth: 2,
+              pointBorderColor: 'white',
+              tension: 0.3,
+              datalabels: {
+                display: true,
+                align: 'top',
+                offset: 8,
+                color: '#3498db',
+                font: { weight: 'bold', size: 11 },
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: 4,
+                padding: 4,
+                formatter: (value) => `${value.toFixed(1)} hrs`
               }
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            datalabels: { display: false },
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                filter: (item) => item.text !== 'AASM Min Recommended'
+              }
+            },
+            title: {
+              display: true,
+              text: 'Sleep Duration Tracking Across All Consultations',
+              font: { size: 16, weight: 'bold' },
+              color: '#2c3e50'
+            }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Consultation Visits' } },
+            y: {
+              beginAtZero: false,
+              title: { display: true, text: 'Sleep Duration (hours)' },
+              ticks: { callback: (value) => value + ' hrs' },
+              suggestedMin: Math.floor(Math.min(...sleepData.map(d => Math.min(d.minSleep, d.actualSleep))) - 2),
+              suggestedMax: Math.ceil(Math.max(...sleepData.map(d => Math.max(d.maxSleep, d.actualSleep))) + 2)
             }
           }
         }

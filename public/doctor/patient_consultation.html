@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../css/child-friendly.css">
     <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
+
     <style>
         .animsition-box {
             padding-top: 100px;
@@ -246,6 +247,12 @@
                 symptomDuration: form['symptom-duration'].value,
                 vitalsNotes: form['vitals-notes'].value,
 
+                // Sleep Health
+                sleepDuration: parseFloat(form['sleep-duration'].value) || null,
+                bedtime: form['bedtime'].value || null,
+                wakeTime: form['wake-time'].value || null,
+                sleepQuality: form['sleep-quality'].value || null,
+
                 // S.O.A.P.
                 subjective: form['subjective'].value,
                 objective: form['objective'].value,
@@ -369,7 +376,44 @@
                             <label for="vitals-notes">Vitals / Examination Notes</label>
                             <textarea class="form-control" id="vitals-notes" rows="3" placeholder="Enter any notes on physical examination or vital readings..."></textarea>
                         </div>
-                        
+
+                        <div class="section-separator">
+                            <h3>Sleep Health</h3>
+                            <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">
+                                <i class="fa fa-moon-o"></i> Assessment based on American Academy of Sleep Medicine (AASM) guidelines
+                            </p>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label for="sleep-duration">Total Sleep Duration (hours per day)</label>
+                                <input type="number" step="0.5" class="form-control" id="sleep-duration" placeholder="e.g., 10.5">
+                                <small class="form-text text-muted">Include nighttime sleep + daytime naps</small>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="bedtime">Typical Bedtime</label>
+                                <input type="time" class="form-control" id="bedtime">
+                                <small class="form-text text-muted">Usual time child goes to bed</small>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="wake-time">Typical Wake Time</label>
+                                <input type="time" class="form-control" id="wake-time">
+                                <small class="form-text text-muted">Usual time child wakes up</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="sleep-quality">Sleep Quality</label>
+                                <select class="form-control" id="sleep-quality">
+                                    <option value="">Select sleep quality...</option>
+                                    <option value="Excellent">Excellent - Sleeps through night, no disturbances</option>
+                                    <option value="Good">Good - Occasional wake-ups (1-2 times)</option>
+                                    <option value="Fair">Fair - Frequent wake-ups (3-5 times)</option>
+                                    <option value="Poor">Poor - Very restless, wakes up many times</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="section-separator">
                             <h3>S.O.A.P. Notes</h3>
                         </div>
