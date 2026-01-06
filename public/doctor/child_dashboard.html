@@ -149,24 +149,23 @@
       </div>
 
       <div class="chart-section" id="growthChartSection" style="display: none;">
-        <h3>Growth Percentiles Over Time</h3>
+        <h3>Child Growth Percentiles vs WHO Standards</h3>
         <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 20px;">
-          Tracking weight, height, and head circumference percentiles across all consultations.
+          <strong>How to Read:</strong> Horizontal reference lines show WHO standard percentiles (3rd, 15th, 50th, 85th, 97th). The <strong style="color: #c0392b;">colored dots with percentile values</strong> show where your child's measurements fall on the WHO scale.
           <br>
-          <strong>Legend:</strong> Solid line = Weight, Dashed line = Height, Dotted line = Head Circumference
+          <strong>Clinical Interpretation:</strong> Normal = child tracking between 3rd-97th percentile lines. The 50th percentile (bold teal line) represents the median/average. Values staying between the outer lines indicate healthy growth.
+          <br>
+          <strong>Legend:</strong> Red = Weight Percentile, Blue = Height Percentile, Teal = Head Circumference Percentile
         </p>
         <canvas id="growthChart"></canvas>
       </div>
 
-      <div class="chart-section" id="measurementsChartSection" style="display: none;">
-        <h3>Actual Measurements Over Time</h3>
-        <canvas id="measurementsChart"></canvas>
-      </div>
     </div>
   </div>
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
   <script type="module">
     // Import Firebase modules
@@ -181,6 +180,159 @@
       calculateHeadCircumferencePercentile,
       calculateAgeInMonths
     } from "../js/who-standards.js";
+
+    // WHO LMS data tables for reference curves
+    const WHO_WEIGHT_AGE_BOYS = [
+      { month: 0, L: 0.3487, M: 3.3464, S: 0.14602 },
+      { month: 1, L: 0.2297, M: 4.4709, S: 0.13395 },
+      { month: 2, L: 0.1970, M: 5.5675, S: 0.12385 },
+      { month: 3, L: 0.1738, M: 6.3762, S: 0.11727 },
+      { month: 4, L: 0.1553, M: 7.0023, S: 0.11316 },
+      { month: 5, L: 0.1395, M: 7.5105, S: 0.11080 },
+      { month: 6, L: 0.1257, M: 7.9340, S: 0.10958 },
+      { month: 7, L: 0.1134, M: 8.2970, S: 0.10902 },
+      { month: 8, L: 0.1021, M: 8.6151, S: 0.10882 },
+      { month: 9, L: 0.0917, M: 8.9014, S: 0.10881 },
+      { month: 10, L: 0.0820, M: 9.1649, S: 0.10891 },
+      { month: 11, L: 0.0730, M: 9.4122, S: 0.10906 },
+      { month: 12, L: 0.0644, M: 9.6479, S: 0.10925 },
+      { month: 15, L: 0.0425, M: 10.3009, S: 0.10986 },
+      { month: 18, L: 0.0220, M: 10.8632, S: 0.11066 },
+      { month: 21, L: 0.0031, M: 11.3499, S: 0.11158 },
+      { month: 24, L: -0.0146, M: 11.7796, S: 0.11256 },
+      { month: 27, L: -0.0311, M: 12.1679, S: 0.11358 },
+      { month: 30, L: -0.0464, M: 12.5244, S: 0.11461 },
+      { month: 33, L: -0.0608, M: 12.8561, S: 0.11567 },
+      { month: 36, L: -0.0743, M: 13.1681, S: 0.11673 },
+      { month: 42, L: -0.0993, M: 13.7434, S: 0.11889 },
+      { month: 48, L: -0.1211, M: 14.2793, S: 0.12103 },
+      { month: 54, L: -0.1402, M: 14.7836, S: 0.12314 },
+      { month: 60, L: -0.1570, M: 15.2632, S: 0.12521 },
+      { month: 66, L: -0.1719, M: 15.7290, S: 0.12730 },
+      { month: 72, L: -0.1854, M: 16.1879, S: 0.12939 },
+      { month:78, L: -0.1978, M: 16.6427, S: 0.13150 },
+      { month: 84, L: -0.2091, M: 17.0954, S: 0.13362 },
+      { month: 90, L: -0.2194, M: 17.5475, S: 0.13575 },
+      { month: 96, L: -0.2288, M: 18.0000, S: 0.13788 },
+      { month: 102, L: -0.2375, M: 18.4537, S: 0.14001 },
+      { month: 108, L: -0.2454, M: 18.9092, S: 0.14213 },
+      { month: 114, L: -0.2527, M: 19.3671, S: 0.14424 },
+      { month: 120, L: -0.2594, M: 19.8278, S: 0.14633 }
+    ];
+
+    const WHO_WEIGHT_AGE_GIRLS = [
+      { month: 0, L: 0.3809, M: 3.2322, S: 0.14171 },
+      { month: 1, L: 0.1714, M: 4.1873, S: 0.13724 },
+      { month: 2, L: 0.0962, M: 5.1282, S: 0.13000 },
+      { month: 3, L: 0.0402, M: 5.8458, S: 0.12619 },
+      { month: 4, L: -0.0050, M: 6.4237, S: 0.12402 },
+      { month: 5, L: -0.0430, M: 6.8985, S: 0.12274 },
+      { month: 6, L: -0.0756, M: 7.2970, S: 0.12204 },
+      { month: 7, L: -0.1039, M: 7.6422, S: 0.12178 },
+      { month: 8, L: -0.1288, M: 7.9487, S: 0.12181 },
+      { month: 9, L: -0.1507, M: 8.2254, S: 0.12199 },
+      { month: 10, L: -0.1700, M: 8.4800, S: 0.12223 },
+      { month: 11, L: -0.1872, M: 8.7192, S: 0.12247 },
+      { month: 12, L: -0.2024, M: 8.9481, S: 0.12268 },
+      { month: 15, L: -0.2379, M: 9.5900, S: 0.12309 },
+      { month: 18, L: -0.2680, M: 10.1452, S: 0.12339 },
+      { month: 21, L: -0.2936, M: 10.6331, S: 0.12363 },
+      { month: 24, L: -0.3154, M: 11.0686, S: 0.12384 },
+      { month: 27, L: -0.3340, M: 11.4631, S: 0.12403 },
+      { month: 30, L: -0.3499, M: 11.8251, S: 0.12421 },
+      { month: 33, L: -0.3634, M: 12.1615, S: 0.12439 },
+      { month: 36, L: -0.3749, M: 12.4775, S: 0.12456 },
+      { month: 42, L: -0.3943, M: 13.0719, S: 0.12494 },
+      { month: 48, L: -0.4098, M: 13.6357, S: 0.12533 },
+      { month: 54, L: -0.4225, M: 14.1746, S: 0.12574 },
+      { month: 60, L: -0.4330, M: 14.6936, S: 0.12618 },
+      { month: 66, L: -0.4419, M: 15.1989, S: 0.12664 },
+      { month: 72, L: -0.4495, M: 15.6936, S: 0.12711 },
+      { month: 78, L: -0.4559, M: 16.1799, S: 0.12759 },
+      { month: 84, L: -0.4612, M: 16.6594, S: 0.12807 },
+      { month: 90, L: -0.4656, M: 17.1334, S: 0.12856 },
+      { month: 96, L: -0.4692, M: 17.6030, S: 0.12905 },
+      { month: 102, L: -0.4720, M: 18.0691, S: 0.12955 },
+      { month: 108, L: -0.4742, M: 18.5326, S: 0.13004 },
+      { month: 114, L: -0.4758, M: 18.9942, S: 0.13053 },
+      { month: 120, L: -0.4770, M: 19.4544, S: 0.13101 }
+    ];
+
+    const WHO_HEIGHT_AGE_BOYS = [
+      { month: 0, L: 1, M: 49.8842, S: 0.03795 },
+      { month: 1, L: 1, M: 54.7244, S: 0.03557 },
+      { month: 2, L: 1, M: 58.4249, S: 0.03424 },
+      { month: 3, L: 1, M: 61.4292, S: 0.03328 },
+      { month: 4, L: 1, M: 63.8859, S: 0.03257 },
+      { month: 5, L: 1, M: 65.9026, S: 0.03204 },
+      { month: 6, L: 1, M: 67.6236, S: 0.03165 },
+      { month: 7, L: 1, M: 69.1645, S: 0.03139 },
+      { month: 8, L: 1, M: 70.5994, S: 0.03124 },
+      { month: 9, L: 1, M: 71.9687, S: 0.03117 },
+      { month: 10, L: 1, M: 73.2812, S: 0.03118 },
+      { month: 11, L: 1, M: 74.5388, S: 0.03125 },
+      { month: 12, L: 1, M: 75.7488, S: 0.03137 },
+      { month: 15, L: 1, M: 78.7252, S: 0.03181 },
+      { month: 18, L: 1, M: 81.3904, S: 0.03236 },
+      { month: 21, L: 1, M: 83.7827, S: 0.03297 },
+      { month: 24, L: 1, M: 85.9488, S: 0.03360 },
+      { month: 27, L: 1, M: 87.9186, S: 0.03424 },
+      { month: 30, L: 1, M: 89.7154, S: 0.03487 },
+      { month: 33, L: 1, M: 91.3576, S: 0.03549 },
+      { month: 36, L: 1, M: 92.8606, S: 0.03609 },
+      { month: 42, L: 1, M: 95.6264, S: 0.03722 },
+      { month: 48, L: 1, M: 98.1251, S: 0.03827 },
+      { month: 54, L: 1, M: 100.3931, S: 0.03925 },
+      { month: 60, L: 1, M: 102.4604, S: 0.04018 },
+      { month: 66, L: 1, M: 104.3699, S: 0.04107 },
+      { month: 72, L: 1, M: 106.1472, S: 0.04193 },
+      { month: 78, L: 1, M: 107.8126, S: 0.04276 },
+      { month: 84, L: 1, M: 109.3833, S: 0.04357 },
+      { month: 90, L: 1, M: 110.8736, S: 0.04436 },
+      { month: 96, L: 1, M: 112.2952, S: 0.04514 },
+      { month: 102, L: 1, M: 113.6575, S: 0.04590 },
+      { month: 108, L: 1, M: 114.9686, S: 0.04665 },
+      { month: 114, L: 1, M: 116.2354, S: 0.04738 },
+      { month: 120, L: 1, M: 117.4638, S: 0.04810 }
+    ];
+
+    const WHO_HEIGHT_AGE_GIRLS = [
+      { month: 0, L: 1, M: 49.1477, S: 0.03790 },
+      { month: 1, L: 1, M: 53.6872, S: 0.03626 },
+      { month: 2, L: 1, M: 57.0673, S: 0.03497 },
+      { month: 3, L: 1, M: 59.8029, S: 0.03379 },
+      { month: 4, L: 1, M: 62.0899, S: 0.03285 },
+      { month: 5, L: 1, M: 64.0301, S: 0.03212 },
+      { month: 6, L: 1, M: 65.7311, S: 0.03154 },
+      { month: 7, L: 1, M: 67.2873, S: 0.03109 },
+      { month: 8, L: 1, M: 68.7498, S: 0.03075 },
+      { month: 9, L: 1, M: 70.1435, S: 0.03048 },
+      { month: 10, L: 1, M: 71.4818, S: 0.03029 },
+      { month: 11, L: 1, M: 72.7714, S: 0.03015 },
+      { month: 12, L: 1, M: 74.0151, S: 0.03007 },
+      { month: 15, L: 1, M: 76.9768, S: 0.03010 },
+      { month: 18, L: 1, M: 79.6178, S: 0.03032 },
+      { month: 21, L: 1, M: 81.9843, S: 0.03064 },
+      { month: 24, L: 1, M: 84.1176, S: 0.03100 },
+      { month: 27, L: 1, M: 86.0477, S: 0.03137 },
+      { month: 30, L: 1, M: 87.7990, S: 0.03174 },
+      { month: 33, L: 1, M: 89.3917, S: 0.03211 },
+      { month: 36, L: 1, M: 90.8431, S: 0.03247 },
+      { month: 42, L: 1, M: 93.5252, S: 0.03318 },
+      { month: 48, L: 1, M: 95.9568, S: 0.03386 },
+      { month: 54, L: 1, M: 98.1679, S: 0.03452 },
+      { month: 60, L: 1, M: 100.1863, S: 0.03516 },
+      { month: 66, L: 1, M: 102.0281, S: 0.03578 },
+      { month: 72, L: 1, M: 103.7193, S: 0.03638 },
+      { month: 78, L: 1, M: 105.2796, S: 0.03696 },
+      { month: 84, L: 1, M: 106.7258, S: 0.03753 },
+      { month: 90, L: 1, M: 108.0717, S: 0.03808 },
+      { month: 96, L: 1, M: 109.3294, S: 0.03862 },
+      { month: 102, L: 1, M: 110.5089, S: 0.03915 },
+      { month: 108, L: 1, M: 111.6189, S: 0.03967 },
+      { month: 114, L: 1, M: 112.6670, S: 0.04018 },
+      { month: 120, L: 1, M: 113.6597, S: 0.04068 }
+    ];
 
     // Firebase Configuration
     const firebaseConfig = {
@@ -232,6 +384,374 @@
     }
 
     // WHO standards functions are now imported from who-standards.js module
+
+    // Generate WHO reference percentile curve data
+    function generateWHOCurve(dataTable, percentile) {
+      const data = [];
+      dataTable.forEach(point => {
+        const { L, M, S } = point;
+        let measurement;
+
+        const zScores = { 3: -1.88, 15: -1.04, 50: 0, 85: 1.04, 97: 1.88 };
+        const zScore = zScores[percentile];
+
+        // Calculate measurement from z-score using inverse LMS
+        if (L === 0) {
+          measurement = M * Math.exp(S * zScore);
+        } else {
+          measurement = M * Math.pow(1 + L * S * zScore, 1 / L);
+        }
+
+        data.push({ x: point.month, y: measurement });
+      });
+
+      return data;
+    }
+
+    // Draw Weight-for-Age Chart
+    function drawWeightForAgeChart(consultations, childData) {
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded');
+        return;
+      }
+
+      console.log('Drawing Weight-for-Age Chart');
+      console.log('Consultations:', consultations);
+      console.log('Child Data:', childData);
+
+      const datasets = [];
+      const percentiles = [3, 15, 50, 85, 97];
+      const referenceColors = {
+        3: 'rgba(255, 99, 132, 0.15)',
+        15: 'rgba(255, 159, 64, 0.15)',
+        50: 'rgba(75, 192, 192, 0.3)',
+        85: 'rgba(54, 162, 235, 0.15)',
+        97: 'rgba(153, 102, 255, 0.15)'
+      };
+      const referenceBorders = {
+        3: 'rgba(255, 99, 132, 0.9)',
+        15: 'rgba(255, 159, 64, 0.9)',
+        50: 'rgba(75, 192, 192, 1)',
+        85: 'rgba(54, 162, 235, 0.9)',
+        97: 'rgba(153, 102, 255, 0.9)'
+      };
+
+      // Add WHO reference curves based on child's gender
+      const weightTable = childData.gender === 'Male' ? WHO_WEIGHT_AGE_BOYS : WHO_WEIGHT_AGE_GIRLS;
+      percentiles.forEach(p => {
+        const curve = generateWHOCurve(weightTable, p);
+        datasets.push({
+          label: `WHO ${p}th percentile`,
+          data: curve,
+          borderColor: referenceBorders[p],
+          backgroundColor: referenceColors[p],
+          borderWidth: p === 50 ? 3 : 2,
+          borderDash: p === 50 ? [] : [5, 5],
+          fill: false,
+          pointRadius: 0,
+          tension: 0.4,
+          datalabels: {
+            display: false
+          }
+        });
+      });
+
+      // Add actual child weight data
+      const weightData = consultations.map(consult => {
+        const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+        const consultDate = parseDate(consult.date);
+        const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+        console.log(`Weight data point: age=${ageMonths}, weight=${consult.weight}`);
+        return { x: ageMonths, y: consult.weight };
+      }).filter(d => d.y && d.y > 0);
+
+      console.log('Filtered weight data:', weightData);
+
+      if (weightData.length === 0) {
+        console.warn('No valid weight data to display');
+      }
+
+      datasets.push({
+        label: `${childData.name}'s Weight`,
+        data: weightData,
+        borderColor: 'rgba(255, 0, 0, 1)',
+        backgroundColor: 'rgba(255, 0, 0, 1)',
+        borderWidth: 4,
+        pointRadius: 10,
+        pointHoverRadius: 14,
+        pointStyle: 'circle',
+        pointBorderWidth: 3,
+        pointBorderColor: 'rgba(255, 255, 255, 1)',
+        tension: 0.3,
+        showLine: true,
+        datalabels: {
+          display: true,
+          align: (context) => {
+            // Alternate between top and bottom for better spacing
+            return context.dataIndex % 2 === 0 ? 'top' : 'bottom';
+          },
+          offset: 10,
+          color: '#e74c3c',
+          font: {
+            weight: 'bold',
+            size: 13
+          },
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: 4,
+          padding: 4,
+          formatter: (value) => `${value.y.toFixed(1)} kg`
+        }
+      });
+
+      const ctx = document.getElementById('weightForAgeChart').getContext('2d');
+
+      // Calculate which percentile band the child is tracking
+      let growthStatus = '';
+      if (weightData.length > 0) {
+        const latestWeight = weightData[weightData.length - 1];
+        const latestAge = latestWeight.x;
+
+        // Find corresponding WHO percentile values at this age
+        const whoPoint = weightTable.find(p => Math.abs(p.month - latestAge) < 3) || weightTable[weightTable.length - 1];
+        const p50Value = whoPoint.M; // 50th percentile value
+
+        const weightRatio = latestWeight.y / p50Value;
+
+        if (weightRatio >= 0.45 && weightRatio <= 0.55) {
+          growthStatus = 'Tracking 50th Percentile - Excellent Growth!';
+        } else if (weightRatio >= 0.40 && weightRatio <= 0.65) {
+          growthStatus = 'Steady Growth - Within Normal Range';
+        } else if (weightRatio < 0.40) {
+          growthStatus = 'Below Average - Monitor Closely';
+        } else {
+          growthStatus = 'Above Average - Monitor Development';
+        }
+      }
+
+      new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        plugins: [ChartDataLabels],
+        options: {
+          responsive: true,
+          interaction: {
+            mode: 'nearest',
+            intersect: false,
+            axis: 'x'
+          },
+          plugins: {
+            datalabels: {
+              display: false // Default off for all datasets unless specifically enabled
+            },
+            title: {
+              display: true,
+              text: ['Weight-for-Age Growth Chart (WHO Standards)', growthStatus],
+              font: { size: 16, weight: 'bold' },
+              color: growthStatus.includes('Excellent') || growthStatus.includes('Steady') ? '#27ae60' : '#e67e22'
+            },
+            tooltip: {
+              enabled: true,
+              mode: 'nearest',
+              intersect: false,
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: true,
+              callbacks: {
+                title: (items) => `Age: ${items[0].parsed.x.toFixed(1)} months`,
+                label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(2)} kg`
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Age (months)' },
+              min: 0,
+              max: 120,
+              ticks: { stepSize: 12 }
+            },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Weight (kg)' },
+              ticks: { callback: (value) => value + ' kg' }
+            }
+          }
+        }
+      });
+    }
+
+    // Draw Height-for-Age Chart
+    function drawHeightForAgeChart(consultations, childData) {
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded');
+        return;
+      }
+
+      console.log('Drawing Height-for-Age Chart');
+      console.log('Consultations:', consultations);
+      console.log('Child Data:', childData);
+
+      const datasets = [];
+      const percentiles = [3, 15, 50, 85, 97];
+      const referenceColors = {
+        3: 'rgba(255, 99, 132, 0.9)',
+        15: 'rgba(255, 159, 64, 0.9)',
+        50: 'rgba(75, 192, 192, 1)',
+        85: 'rgba(54, 162, 235, 0.9)',
+        97: 'rgba(153, 102, 255, 0.9)'
+      };
+
+      // Add WHO reference curves based on child's gender
+      const heightTable = childData.gender === 'Male' ? WHO_HEIGHT_AGE_BOYS : WHO_HEIGHT_AGE_GIRLS;
+      percentiles.forEach(p => {
+        const curve = generateWHOCurve(heightTable, p);
+        datasets.push({
+          label: `WHO ${p}th percentile`,
+          data: curve,
+          borderColor: referenceColors[p],
+          backgroundColor: 'transparent',
+          borderWidth: p === 50 ? 3 : 2,
+          borderDash: p === 50 ? [] : [5, 5],
+          fill: false,
+          pointRadius: 0,
+          tension: 0.4,
+          datalabels: {
+            display: false
+          }
+        });
+      });
+
+      // Add actual child height data
+      const heightData = consultations.map(consult => {
+        const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+        const consultDate = parseDate(consult.date);
+        const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+        console.log(`Height data point: age=${ageMonths}, height=${consult.height}`);
+        return { x: ageMonths, y: consult.height };
+      }).filter(d => d.y && d.y > 0);
+
+      console.log('Filtered height data:', heightData);
+
+      if (heightData.length === 0) {
+        console.warn('No valid height data to display');
+      }
+
+      datasets.push({
+        label: `${childData.name}'s Height`,
+        data: heightData,
+        borderColor: 'rgba(0, 0, 255, 1)',
+        backgroundColor: 'rgba(0, 0, 255, 1)',
+        borderWidth: 4,
+        pointRadius: 10,
+        pointHoverRadius: 14,
+        pointStyle: 'circle',
+        pointBorderWidth: 3,
+        pointBorderColor: 'rgba(255, 255, 255, 1)',
+        tension: 0.3,
+        showLine: true,
+        datalabels: {
+          display: true,
+          align: (context) => {
+            // Alternate between bottom and top (opposite of weight chart for better separation)
+            return context.dataIndex % 2 === 0 ? 'bottom' : 'top';
+          },
+          offset: 10,
+          color: '#2980b9',
+          font: {
+            weight: 'bold',
+            size: 13
+          },
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: 4,
+          padding: 4,
+          formatter: (value) => `${value.y.toFixed(1)} cm`
+        }
+      });
+
+      const ctx = document.getElementById('heightForAgeChart').getContext('2d');
+
+      // Calculate which percentile band the child is tracking for height
+      let heightGrowthStatus = '';
+      if (heightData.length > 0) {
+        const latestHeight = heightData[heightData.length - 1];
+        const latestAge = latestHeight.x;
+
+        // Find corresponding WHO percentile values at this age
+        const whoPoint = heightTable.find(p => Math.abs(p.month - latestAge) < 3) || heightTable[heightTable.length - 1];
+        const p50Value = whoPoint.M; // 50th percentile value
+
+        const heightRatio = latestHeight.y / p50Value;
+
+        if (heightRatio >= 0.97 && heightRatio <= 1.03) {
+          heightGrowthStatus = 'Tracking 50th Percentile - Excellent Growth!';
+        } else if (heightRatio >= 0.92 && heightRatio <= 1.08) {
+          heightGrowthStatus = 'Steady Growth - Within Normal Range';
+        } else if (heightRatio < 0.92) {
+          heightGrowthStatus = 'Below Average - Monitor Closely';
+        } else {
+          heightGrowthStatus = 'Above Average - Monitor Development';
+        }
+      }
+
+      new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        plugins: [ChartDataLabels],
+        options: {
+          responsive: true,
+          interaction: {
+            mode: 'nearest',
+            intersect: false,
+            axis: 'x'
+          },
+          plugins: {
+            datalabels: {
+              display: false // Default off for all datasets unless specifically enabled
+            },
+            title: {
+              display: true,
+              text: ['Height-for-Age Growth Chart (WHO Standards)', heightGrowthStatus],
+              font: { size: 16, weight: 'bold' },
+              color: heightGrowthStatus.includes('Excellent') || heightGrowthStatus.includes('Steady') ? '#27ae60' : '#e67e22'
+            },
+            tooltip: {
+              enabled: true,
+              mode: 'nearest',
+              intersect: false,
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: true,
+              callbacks: {
+                title: (items) => `Age: ${items[0].parsed.x.toFixed(1)} months`,
+                label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(2)} cm`
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Age (months)' },
+              min: 0,
+              max: 120,
+              ticks: { stepSize: 12 }
+            },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Height (cm)' },
+              ticks: { callback: (value) => value + ' cm' }
+            }
+          }
+        }
+      });
+    }
 
     // Load child dashboard data
     async function loadChildDashboard() {
@@ -319,15 +839,12 @@
         if (childInfoSection) childInfoSection.style.display = 'block';
         if (statsGrid) statsGrid.style.display = 'grid';
 
-        // Show chart sections
+        // Show chart section
         const growthChartSection = document.getElementById('growthChartSection');
-        const measurementsChartSection = document.getElementById('measurementsChartSection');
         if (growthChartSection) growthChartSection.style.display = 'block';
-        if (measurementsChartSection) measurementsChartSection.style.display = 'block';
 
-        // Draw charts
+        // Draw WHO Growth Percentile Chart (Global Clinical Standard)
         drawGrowthPercentileChart(consultations, childData);
-        drawMeasurementsChart(consultations);
 
         console.log('Dashboard loaded successfully');
 
@@ -410,11 +927,8 @@
       }
 
       const dataPoints = consultations.map(consult => {
-        // Convert Firestore dates to Date objects for WHO calculations
-        // Use correct field name from registration form
         const dobDate = parseDate(childData.dob || childData.dateOfBirth);
         const consultDate = parseDate(consult.date);
-
         const ageMonths = calculateAgeInMonths(dobDate, consultDate);
         return {
           x: ageMonths,
@@ -426,17 +940,52 @@
 
       const datasets = [];
 
+      // Add WHO reference lines for key percentiles
+      const percentileLevels = [3, 15, 50, 85, 97];
+      percentileLevels.forEach(p => {
+        datasets.push({
+          label: `WHO ${p}th Percentile`,
+          data: [
+            { x: 0, y: p },
+            { x: 120, y: p }
+          ],
+          borderColor: p === 50 ? 'rgba(75, 192, 192, 0.7)' : 'rgba(189, 195, 199, 0.5)',
+          backgroundColor: 'transparent',
+          borderWidth: p === 50 ? 2.5 : 1,
+          borderDash: p === 50 ? [] : [8, 4],
+          fill: false,
+          pointRadius: 0,
+          tension: 0,
+          datalabels: { display: false }
+        });
+      });
+
       // Weight percentile
       if (dataPoints.some(dp => dp.weightP !== null)) {
         datasets.push({
           label: 'Weight Percentile',
           data: dataPoints.map(dp => ({ x: dp.x, y: dp.weightP })).filter(d => d.y !== null),
-          borderColor: 'rgba(255, 99, 132, 1)',
-          backgroundColor: 'rgba(255, 99, 132, 0.1)',
+          borderColor: 'rgba(231, 76, 60, 1)',
+          backgroundColor: 'rgba(231, 76, 60, 1)',
+          borderWidth: 3,
           tension: 0.3,
           fill: false,
-          pointRadius: 5,
-          pointHoverRadius: 7
+          pointRadius: 10,
+          pointHoverRadius: 14,
+          pointStyle: 'circle',
+          pointBorderWidth: 3,
+          pointBorderColor: 'rgba(255, 255, 255, 1)',
+          datalabels: {
+            display: true,
+            align: 'top',
+            offset: 10,
+            color: '#c0392b',
+            font: { weight: 'bold', size: 12 },
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: 4,
+            padding: 4,
+            formatter: (value) => `${value.y.toFixed(0)}th`
+          }
         });
       }
 
@@ -445,13 +994,27 @@
         datasets.push({
           label: 'Height Percentile',
           data: dataPoints.map(dp => ({ x: dp.x, y: dp.heightP })).filter(d => d.y !== null),
-          borderColor: 'rgba(54, 162, 235, 1)',
-          backgroundColor: 'rgba(54, 162, 235, 0.1)',
-          borderDash: [5, 5],
+          borderColor: 'rgba(52, 152, 219, 1)',
+          backgroundColor: 'rgba(52, 152, 219, 1)',
+          borderWidth: 3,
           tension: 0.3,
           fill: false,
-          pointRadius: 5,
-          pointHoverRadius: 7
+          pointRadius: 10,
+          pointHoverRadius: 14,
+          pointStyle: 'circle',
+          pointBorderWidth: 3,
+          pointBorderColor: 'rgba(255, 255, 255, 1)',
+          datalabels: {
+            display: true,
+            align: 'bottom',
+            offset: 10,
+            color: '#2980b9',
+            font: { weight: 'bold', size: 12 },
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: 4,
+            padding: 4,
+            formatter: (value) => `${value.y.toFixed(0)}th`
+          }
         });
       }
 
@@ -460,13 +1023,27 @@
         datasets.push({
           label: 'Head Circumference Percentile',
           data: dataPoints.map(dp => ({ x: dp.x, y: dp.hcP })).filter(d => d.y !== null),
-          borderColor: 'rgba(75, 192, 192, 1)',
-          backgroundColor: 'rgba(75, 192, 192, 0.1)',
-          borderDash: [2, 2],
+          borderColor: 'rgba(22, 160, 133, 1)',
+          backgroundColor: 'rgba(22, 160, 133, 1)',
+          borderWidth: 3,
           tension: 0.3,
           fill: false,
-          pointRadius: 5,
-          pointHoverRadius: 7
+          pointRadius: 10,
+          pointHoverRadius: 14,
+          pointStyle: 'circle',
+          pointBorderWidth: 3,
+          pointBorderColor: 'rgba(255, 255, 255, 1)',
+          datalabels: {
+            display: true,
+            align: 'left',
+            offset: 10,
+            color: '#16a085',
+            font: { weight: 'bold', size: 12 },
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: 4,
+            padding: 4,
+            formatter: (value) => `${value.y.toFixed(0)}th`
+          }
         });
       }
 
@@ -477,25 +1054,49 @@
         options: {
           responsive: true,
           plugins: {
+            datalabels: { display: false },
             tooltip: {
               callbacks: {
-                title: (items) => `Age: ${items[0].parsed.x} months`,
-                label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(1)}th percentile`
+                title: (items) => `Age: ${items[0].parsed.x.toFixed(1)} months`,
+                label: (context) => {
+                  if (context.dataset.label.includes('WHO')) {
+                    return `${context.dataset.label}`;
+                  }
+                  return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}th percentile`;
+                }
               }
             },
-            legend: { display: true, position: 'top' }
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                filter: (item) => {
+                  // Show 50th percentile reference and child's measurements
+                  return item.text.includes('WHO 50th') || !item.text.includes('WHO');
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Child Growth Percentiles vs WHO Standards',
+              font: { size: 16, weight: 'bold' },
+              color: '#2c3e50'
+            }
           },
           scales: {
             x: {
               type: 'linear',
               title: { display: true, text: 'Age (months)' },
-              ticks: { stepSize: 3 }
+              ticks: { stepSize: 6 }
             },
             y: {
-              beginAtZero: true,
+              min: 0,
               max: 100,
               title: { display: true, text: 'Percentile' },
-              ticks: { callback: (value) => value + 'th' }
+              ticks: {
+                stepSize: 10,
+                callback: (value) => value + 'th'
+              }
             }
           }
         }
