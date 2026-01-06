@@ -11,9 +11,15 @@
 
   <style>
     body {
-      padding-top: 20px;
+      padding: 0;
+      margin: 0;
       min-height: 100vh;
       background-color: #f5f7fa;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
     }
     .dashboard-header {
       text-align: center;
@@ -60,12 +66,21 @@
       background-color: #f7a83d;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      margin-bottom: 20px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
     .back-button:hover {
       background-color: #e09734;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+    }
+    .back-button i {
+      margin-right: 8px;
     }
     .stats-grid {
       display: grid;
@@ -826,7 +841,7 @@
       return urlParams.get(param);
     }
 
-    function goBack() {
+    window.goBack = function() {
       window.location.href = `child_selection.html?parentId=${currentParentId}`;
     }
 
@@ -1583,7 +1598,7 @@
     window.switchHydrationView = function(view) {
       const currentView = document.getElementById('hydrationCurrentView');
       const overviewView = document.getElementById('hydrationOverviewView');
-      const buttons = document.querySelectorAll('.hydration-toggle-btn');
+      const buttons = document.querySelectorAll('#hydrationCard .hydration-toggle-btn');
 
       if (view === 'current') {
         currentView.classList.add('active');
