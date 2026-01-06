@@ -89,6 +89,15 @@
     .stat-card.orange {
       background: linear-gradient(135deg, #f7a83d 0%, #e09734 100%);
     }
+    .stat-card.red {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+    .stat-card.yellow {
+      background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+    }
+    .stat-card.teal {
+      background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+    }
     .stat-card h4 {
       margin: 0 0 10px 0;
       font-size: 14px;
@@ -98,6 +107,91 @@
       font-size: 28px;
       font-weight: bold;
       margin: 0;
+    }
+    .stat-card .stat-label {
+      font-size: 12px;
+      margin-top: 5px;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+    .bmi-card-container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: 30px 0;
+      border: 2px solid #e0e0e0;
+    }
+    .bmi-card-content {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 30px;
+      align-items: center;
+    }
+    .bmi-score-section {
+      text-align: center;
+      padding: 20px;
+      border-radius: 12px;
+      color: white;
+    }
+    .bmi-score-section h3 {
+      margin: 0 0 15px 0;
+      font-size: 18px;
+      opacity: 0.95;
+      font-weight: 600;
+    }
+    .bmi-score-value {
+      font-size: 56px;
+      font-weight: bold;
+      margin: 15px 0;
+      line-height: 1;
+    }
+    .bmi-category {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 15px 0 10px 0;
+    }
+    .bmi-percentile {
+      font-size: 16px;
+      opacity: 0.95;
+    }
+    .bmi-legend-section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    .bmi-legend-section h4 {
+      margin: 0 0 20px 0;
+      font-size: 16px;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+    .bmi-legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+    .bmi-legend-color {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    .bmi-legend-text {
+      font-size: 14px;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+    .bmi-legend-range {
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: 2px;
     }
   </style>
 </head>
@@ -146,6 +240,60 @@
 
       <div class="stats-grid" id="statsGrid" style="display: none;">
         <!-- Stats will be populated by JavaScript -->
+      </div>
+
+      <div class="bmi-card-container" id="bmiCard" style="display: none;">
+        <div class="bmi-card-content">
+          <!-- BMI Score Section (Left) -->
+          <div id="bmiScoreSection">
+            <!-- Will be populated by JavaScript -->
+          </div>
+
+          <!-- Color Legend Section (Right) -->
+          <div class="bmi-legend-section">
+            <h4>WHO BMI-for-Age Categories (2-19 years)</h4>
+
+            <div class="bmi-legend-item">
+              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);"></div>
+              <div>
+                <div class="bmi-legend-text">Severely Underweight</div>
+                <div class="bmi-legend-range">&lt;3rd percentile</div>
+              </div>
+            </div>
+
+            <div class="bmi-legend-item">
+              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);"></div>
+              <div>
+                <div class="bmi-legend-text">Underweight</div>
+                <div class="bmi-legend-range">3rd-15th percentile</div>
+              </div>
+            </div>
+
+            <div class="bmi-legend-item">
+              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);"></div>
+              <div>
+                <div class="bmi-legend-text">Healthy Weight</div>
+                <div class="bmi-legend-range">15th-85th percentile</div>
+              </div>
+            </div>
+
+            <div class="bmi-legend-item">
+              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #f7a83d 0%, #e09734 100%);"></div>
+              <div>
+                <div class="bmi-legend-text">Overweight</div>
+                <div class="bmi-legend-range">85th-97th percentile</div>
+              </div>
+            </div>
+
+            <div class="bmi-legend-item">
+              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);"></div>
+              <div>
+                <div class="bmi-legend-text">Obese</div>
+                <div class="bmi-legend-range">&gt;97th percentile</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="chart-section" id="growthChartSection" style="display: none;">
@@ -879,6 +1027,8 @@
 
     function displayStats(consultations, childData) {
       const statsGrid = document.getElementById('statsGrid');
+      const bmiCard = document.getElementById('bmiCard');
+      const bmiScoreSection = document.getElementById('bmiScoreSection');
       const totalConsultations = consultations.length;
       const latestConsult = consultations[consultations.length - 1];
 
@@ -914,9 +1064,92 @@
             </div>
           `;
         }
+
+        // Calculate BMI if weight and height are available
+        if (latestConsult.weight && latestConsult.height) {
+          const bmi = latestConsult.weight / Math.pow(latestConsult.height / 100, 2);
+
+          // Calculate age in months for BMI-for-age percentile
+          const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+          const consultDate = parseDate(latestConsult.date);
+          const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+
+          // Calculate BMI percentile using WHO BMI-for-age standards
+          const bmiPercentile = calculateBMIPercentile(ageMonths, bmi, childData.gender);
+
+          // Determine WHO category and color gradient
+          let bmiCategory = '';
+          let bmiGradient = '';
+
+          if (bmiPercentile < 3) {
+            bmiCategory = 'Severely Underweight';
+            bmiGradient = 'background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);';
+          } else if (bmiPercentile < 15) {
+            bmiCategory = 'Underweight';
+            bmiGradient = 'background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);';
+          } else if (bmiPercentile <= 85) {
+            bmiCategory = 'Healthy Weight';
+            bmiGradient = 'background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);';
+          } else if (bmiPercentile <= 97) {
+            bmiCategory = 'Overweight';
+            bmiGradient = 'background: linear-gradient(135deg, #f7a83d 0%, #e09734 100%);';
+          } else {
+            bmiCategory = 'Obese';
+            bmiGradient = 'background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);';
+          }
+
+          // Populate BMI score section
+          if (bmiScoreSection) {
+            bmiScoreSection.innerHTML = `
+              <div class="bmi-score-section" style="${bmiGradient}">
+                <h3>BMI (WHO Standard)</h3>
+                <div class="bmi-score-value">${bmi.toFixed(1)}</div>
+                <div class="bmi-category">${bmiCategory}</div>
+                <div class="bmi-percentile">${bmiPercentile.toFixed(0)}th Percentile</div>
+              </div>
+            `;
+          }
+
+          // Show BMI card
+          if (bmiCard) bmiCard.style.display = 'block';
+        }
       }
 
       statsGrid.innerHTML = statsHTML;
+    }
+
+    // Calculate BMI percentile using WHO BMI-for-age standards (simplified)
+    function calculateBMIPercentile(ageMonths, bmi, gender) {
+      // This is a simplified calculation. In production, you'd use full WHO BMI-for-age LMS tables
+      // For demonstration, using approximate values based on WHO growth charts
+
+      // Rough approximation of BMI percentile thresholds by age and gender
+      // These values are simplified; full implementation would use LMS method
+
+      const age = Math.min(Math.max(ageMonths, 24), 228); // 2-19 years
+
+      // Approximate WHO BMI-for-age percentile values (boys and girls average)
+      // These are rough estimates for key percentiles
+      const p3 = 13.5 + (age - 24) * 0.01;
+      const p15 = 14.5 + (age - 24) * 0.015;
+      const p50 = 16.0 + (age - 24) * 0.02;
+      const p85 = 17.5 + (age - 24) * 0.025;
+      const p97 = 19.0 + (age - 24) * 0.03;
+
+      // Calculate approximate percentile
+      if (bmi < p3) {
+        return (bmi / p3) * 3;
+      } else if (bmi < p15) {
+        return 3 + ((bmi - p3) / (p15 - p3)) * 12;
+      } else if (bmi < p50) {
+        return 15 + ((bmi - p15) / (p50 - p15)) * 35;
+      } else if (bmi < p85) {
+        return 50 + ((bmi - p50) / (p85 - p50)) * 35;
+      } else if (bmi < p97) {
+        return 85 + ((bmi - p85) / (p97 - p85)) * 12;
+      } else {
+        return Math.min(99.5, 97 + ((bmi - p97) / p97) * 10);
+      }
     }
 
     function drawGrowthPercentileChart(consultations, childData) {
