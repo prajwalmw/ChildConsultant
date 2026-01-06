@@ -409,56 +409,85 @@
         <!-- Stats will be populated by JavaScript -->
       </div>
 
-      <div class="bmi-card-container" id="bmiCard" style="display: none;">
-        <div class="bmi-card-content">
-          <!-- BMI Score Section (Left) -->
-          <div id="bmiScoreSection">
-            <!-- Will be populated by JavaScript -->
+      <!-- BMI Chart with Toggle -->
+      <div class="hydration-card" id="bmiCard" style="display: none;">
+        <div class="hydration-card-header">
+          <h3>📊 BMI (Body Mass Index)</h3>
+          <div class="hydration-toggle">
+            <button class="hydration-toggle-btn active" onclick="switchBMIView('current')">Current</button>
+            <button class="hydration-toggle-btn" onclick="switchBMIView('overview')">Overview</button>
           </div>
+        </div>
+        <p class="subtitle">BMI tracking compared to <strong>WHO BMI-for-Age</strong> standards (2-19 years)</p>
 
-          <!-- Color Legend Section (Right) -->
-          <div class="bmi-legend-section">
-            <h4>WHO BMI-for-Age Categories (2-19 years)</h4>
-
-            <div class="bmi-legend-item">
-              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);"></div>
-              <div>
-                <div class="bmi-legend-text">Severely Underweight</div>
-                <div class="bmi-legend-range">&lt;3rd percentile</div>
-              </div>
+        <!-- Current View -->
+        <div class="hydration-view active" id="bmiCurrentView">
+          <div class="bmi-card-content">
+            <!-- BMI Score Section (Left) -->
+            <div id="bmiScoreSection">
+              <!-- Will be populated by JavaScript -->
             </div>
 
-            <div class="bmi-legend-item">
-              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);"></div>
-              <div>
-                <div class="bmi-legend-text">Underweight</div>
-                <div class="bmi-legend-range">3rd-15th percentile</div>
-              </div>
-            </div>
+            <!-- Color Legend Section (Right) -->
+            <div class="bmi-legend-section">
+              <h4>WHO BMI-for-Age Categories (2-19 years)</h4>
 
-            <div class="bmi-legend-item">
-              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);"></div>
-              <div>
-                <div class="bmi-legend-text">Healthy Weight</div>
-                <div class="bmi-legend-range">15th-85th percentile</div>
+              <div class="bmi-legend-item">
+                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);"></div>
+                <div>
+                  <div class="bmi-legend-text">Severely Underweight</div>
+                  <div class="bmi-legend-range">&lt;3rd percentile</div>
+                </div>
               </div>
-            </div>
 
-            <div class="bmi-legend-item">
-              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #f7a83d 0%, #e09734 100%);"></div>
-              <div>
-                <div class="bmi-legend-text">Overweight</div>
-                <div class="bmi-legend-range">85th-97th percentile</div>
+              <div class="bmi-legend-item">
+                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);"></div>
+                <div>
+                  <div class="bmi-legend-text">Underweight</div>
+                  <div class="bmi-legend-range">3rd-15th percentile</div>
+                </div>
               </div>
-            </div>
 
-            <div class="bmi-legend-item">
-              <div class="bmi-legend-color" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);"></div>
-              <div>
-                <div class="bmi-legend-text">Obese</div>
-                <div class="bmi-legend-range">&gt;97th percentile</div>
+              <div class="bmi-legend-item">
+                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);"></div>
+                <div>
+                  <div class="bmi-legend-text">Healthy Weight</div>
+                  <div class="bmi-legend-range">15th-85th percentile</div>
+                </div>
+              </div>
+
+              <div class="bmi-legend-item">
+                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #f7a83d 0%, #e09734 100%);"></div>
+                <div>
+                  <div class="bmi-legend-text">Overweight</div>
+                  <div class="bmi-legend-range">85th-97th percentile</div>
+                </div>
+              </div>
+
+              <div class="bmi-legend-item">
+                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);"></div>
+                <div>
+                  <div class="bmi-legend-text">Obese</div>
+                  <div class="bmi-legend-range">&gt;97th percentile</div>
+                </div>
               </div>
             </div>
+          </div>
+          <p style="text-align: center; color: #7f8c8d; font-size: 13px; margin-top: 15px; font-style: italic;">
+            📅 This reading is from the latest consultation
+          </p>
+        </div>
+
+        <!-- Overview View -->
+        <div class="hydration-view" id="bmiOverviewView">
+          <div style="margin: 20px 0;">
+            <canvas id="bmiOverviewChart" style="max-height: 400px;"></canvas>
+          </div>
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <strong>How to Read:</strong> Blue line shows child's actual BMI across all consultations. Colored horizontal bands show WHO BMI-for-Age percentile categories (green = healthy weight range).
+          </div>
+          <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <strong>📋 Clinical Standards:</strong> BMI categories are based on World Health Organization (WHO) BMI-for-Age percentiles for children and adolescents aged 2-19 years. These percentiles account for age and gender differences in body composition during growth and development.
           </div>
         </div>
       </div>
@@ -604,6 +633,7 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
   <script type="module">
     // Import Firebase modules
@@ -1405,8 +1435,12 @@
             `;
           }
 
-          // Show BMI card
-          if (bmiCard) bmiCard.style.display = 'block';
+          // Show BMI card and store data for overview chart
+          if (bmiCard) {
+            bmiCard.style.display = 'block';
+            window.bmiConsultationsData = consultations;
+            window.bmiChildData = childData;
+          }
         }
       }
 
@@ -1995,6 +2029,195 @@
               ticks: { callback: (value) => value + ' hrs' },
               suggestedMin: Math.floor(Math.min(...sleepData.map(d => Math.min(d.minSleep, d.actualSleep))) - 2),
               suggestedMax: Math.ceil(Math.max(...sleepData.map(d => Math.max(d.maxSleep, d.actualSleep))) + 2)
+            }
+          }
+        }
+      });
+    }
+
+    // Switch BMI view - globally accessible
+    window.switchBMIView = function(view) {
+      const currentView = document.getElementById('bmiCurrentView');
+      const overviewView = document.getElementById('bmiOverviewView');
+      const buttons = document.querySelectorAll('#bmiCard .hydration-toggle-btn');
+
+      if (view === 'current') {
+        currentView.classList.add('active');
+        overviewView.classList.remove('active');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+      } else {
+        currentView.classList.remove('active');
+        overviewView.classList.add('active');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+        drawBMIOverviewChart();
+      }
+    }
+
+    // Draw BMI overview chart
+    function drawBMIOverviewChart() {
+      if (typeof Chart === 'undefined') return;
+
+      const consultations = window.bmiConsultationsData || [];
+      const childData = window.bmiChildData || {};
+      if (!consultations || consultations.length === 0) return;
+
+      const bmiData = consultations
+        .map((consult, index) => {
+          if (!consult.weight || !consult.height || consult.weight <= 0 || consult.height <= 0) return null;
+
+          const bmi = consult.weight / ((consult.height / 100) ** 2);
+          const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+          const consultDate = parseDate(consult.date);
+          const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+          const bmiPercentile = calculateBMIPercentile(ageMonths, bmi, childData.gender);
+
+          return {
+            visitNumber: index + 1,
+            date: consultDate,
+            bmi: bmi,
+            percentile: bmiPercentile
+          };
+        })
+        .filter(d => d !== null);
+
+      if (bmiData.length === 0) {
+        document.getElementById('bmiOverviewChart').parentElement.innerHTML =
+          '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No BMI data available across consultations.</p>';
+        return;
+      }
+
+      const labels = bmiData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+      const ctx = document.getElementById('bmiOverviewChart');
+
+      if (window.bmiOverviewChartInstance) {
+        window.bmiOverviewChartInstance.destroy();
+      }
+
+      window.bmiOverviewChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Child's BMI",
+              data: bmiData.map(d => d.bmi),
+              borderColor: '#3498db',
+              backgroundColor: '#3498db',
+              borderWidth: 3,
+              pointRadius: 8,
+              pointHoverRadius: 12,
+              pointStyle: 'circle',
+              pointBorderWidth: 2,
+              pointBorderColor: 'white',
+              tension: 0.3,
+              datalabels: {
+                display: true,
+                align: 'top',
+                offset: 8,
+                color: '#3498db',
+                font: { weight: 'bold', size: 11 },
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: 4,
+                padding: 4,
+                formatter: (value) => value.toFixed(1)
+              }
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            datalabels: { display: false },
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            title: {
+              display: true,
+              text: 'BMI Tracking Across All Consultations',
+              font: { size: 16, weight: 'bold' },
+              color: '#2c3e50'
+            },
+            annotation: {
+              annotations: {
+                severelyUnderweight: {
+                  type: 'box',
+                  yMin: 0,
+                  yMax: 13.5,
+                  backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                  borderColor: 'rgba(231, 76, 60, 0.3)',
+                  borderWidth: 1,
+                  label: {
+                    display: true,
+                    content: 'Severely Underweight',
+                    position: 'start'
+                  }
+                },
+                underweight: {
+                  type: 'box',
+                  yMin: 13.5,
+                  yMax: 15,
+                  backgroundColor: 'rgba(241, 196, 15, 0.1)',
+                  borderColor: 'rgba(241, 196, 15, 0.3)',
+                  borderWidth: 1,
+                  label: {
+                    display: true,
+                    content: 'Underweight',
+                    position: 'start'
+                  }
+                },
+                healthy: {
+                  type: 'box',
+                  yMin: 15,
+                  yMax: 22,
+                  backgroundColor: 'rgba(76, 175, 80, 0.15)',
+                  borderColor: 'rgba(76, 175, 80, 0.3)',
+                  borderWidth: 1,
+                  label: {
+                    display: true,
+                    content: 'Healthy Weight',
+                    position: 'center'
+                  }
+                },
+                overweight: {
+                  type: 'box',
+                  yMin: 22,
+                  yMax: 25,
+                  backgroundColor: 'rgba(247, 168, 61, 0.1)',
+                  borderColor: 'rgba(247, 168, 61, 0.3)',
+                  borderWidth: 1,
+                  label: {
+                    display: true,
+                    content: 'Overweight',
+                    position: 'start'
+                  }
+                },
+                obese: {
+                  type: 'box',
+                  yMin: 25,
+                  yMax: 35,
+                  backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                  borderColor: 'rgba(52, 152, 219, 0.3)',
+                  borderWidth: 1,
+                  label: {
+                    display: true,
+                    content: 'Obese',
+                    position: 'start'
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Consultation Visits' } },
+            y: {
+              beginAtZero: false,
+              title: { display: true, text: 'BMI (kg/m²)' },
+              suggestedMin: Math.max(10, Math.floor(Math.min(...bmiData.map(d => d.bmi)) - 2)),
+              suggestedMax: Math.min(35, Math.ceil(Math.max(...bmiData.map(d => d.bmi)) + 2))
             }
           }
         }
