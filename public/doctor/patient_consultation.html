@@ -241,6 +241,7 @@
                 weight: parseFloat(form['weight'].value) || null,
                 height: parseFloat(form['height'].value) || null,
                 headCircumference: parseFloat(form['head-circumference'].value) || null,
+                waterIntake: parseFloat(form['water-intake'].value) || null,
                 temperature: form['temperature'].value,
                 symptomDuration: form['symptom-duration'].value,
                 vitalsNotes: form['vitals-notes'].value,
@@ -357,6 +358,11 @@
                             <div class="col-md-4 form-group">
                                 <label for="head-circumference">Head Circumference (cm)</label>
                                 <input type="number" step="0.1" class="form-control" id="head-circumference">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="water-intake">Daily Water Intake (ml)</label>
+                                <input type="number" step="50" class="form-control" id="water-intake" placeholder="e.g., 1200">
+                                <small class="form-text text-muted">Reference: 1 small glass = 200ml, 1 regular glass = 250ml, 1 large glass = 300ml</small>
                             </div>
                         </div>
                         <div class="form-group">

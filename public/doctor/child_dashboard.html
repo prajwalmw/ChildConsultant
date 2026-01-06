@@ -193,6 +193,173 @@
       color: #7f8c8d;
       margin-top: 2px;
     }
+    .hydration-card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: 30px 0;
+      border: 2px solid #e0e0e0;
+    }
+    .hydration-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .hydration-card h3 {
+      color: #2c3e50;
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .hydration-toggle {
+      display: flex;
+      gap: 0;
+      background: #ecf0f1;
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .hydration-toggle-btn {
+      padding: 8px 20px;
+      border: none;
+      background: transparent;
+      color: #7f8c8d;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+    .hydration-toggle-btn:hover {
+      color: #2c3e50;
+    }
+    .hydration-toggle-btn.active {
+      background: white;
+      color: #3498db;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .hydration-view {
+      display: none;
+    }
+    .hydration-view.active {
+      display: block;
+    }
+    .hydration-card .subtitle {
+      color: #7f8c8d;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+    .bullet-chart-container {
+      margin: 20px 0;
+    }
+    .bullet-chart {
+      position: relative;
+      height: 60px;
+      margin-bottom: 15px;
+    }
+    .bullet-ranges {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      display: flex;
+    }
+    .bullet-range {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+    .bullet-range.poor {
+      background: linear-gradient(to right, #e74c3c, #ec7063);
+    }
+    .bullet-range.below {
+      background: linear-gradient(to right, #f39c12, #f5b041);
+    }
+    .bullet-range.good {
+      background: linear-gradient(to right, #27ae60, #52be80);
+    }
+    .bullet-range.excellent {
+      background: linear-gradient(to right, #3498db, #5dade2);
+    }
+    .bullet-measure {
+      position: absolute;
+      height: 70%;
+      top: 15%;
+      background: #2c3e50;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .bullet-marker {
+      position: absolute;
+      height: 100%;
+      width: 3px;
+      background: #e74c3c;
+      top: 0;
+    }
+    .bullet-marker::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      background: #e74c3c;
+      border: 2px solid white;
+      border-radius: 50%;
+    }
+    .hydration-values {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 25px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+    .hydration-value-item {
+      text-align: center;
+      flex: 1;
+    }
+    .hydration-value-label {
+      font-size: 13px;
+      color: #7f8c8d;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .hydration-value-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .hydration-value-unit {
+      font-size: 14px;
+      color: #95a5a6;
+    }
+    .hydration-legend {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 15px;
+      padding: 15px;
+      background: #ecf0f1;
+      border-radius: 8px;
+    }
+    .hydration-legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #2c3e50;
+    }
+    .hydration-legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
   </style>
 </head>
 
@@ -292,6 +459,60 @@
                 <div class="bmi-legend-range">&gt;97th percentile</div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hydration Chart with Toggle -->
+      <div class="hydration-card" id="hydrationCard" style="display: none;">
+        <div class="hydration-card-header">
+          <h3>💧 Hydration Status (Intake vs WHO Standard)</h3>
+          <div class="hydration-toggle">
+            <button class="hydration-toggle-btn active" onclick="switchHydrationView('current')">Current</button>
+            <button class="hydration-toggle-btn" onclick="switchHydrationView('overview')">Overview</button>
+          </div>
+        </div>
+        <p class="subtitle">Daily water intake compared to WHO recommended levels based on age and weight</p>
+
+        <!-- Current View (Bullet Chart) -->
+        <div class="hydration-view active" id="hydrationCurrentView">
+          <div class="bullet-chart-container">
+            <div class="bullet-chart" id="bulletChart">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="hydration-values" id="hydrationValues">
+            <!-- Will be populated by JavaScript -->
+          </div>
+
+          <div class="hydration-legend">
+            <div class="hydration-legend-item">
+              <div class="hydration-legend-color" style="background: linear-gradient(to right, #e74c3c, #ec7063);"></div>
+              <span>Poor (&lt;60%)</span>
+            </div>
+            <div class="hydration-legend-item">
+              <div class="hydration-legend-color" style="background: linear-gradient(to right, #f39c12, #f5b041);"></div>
+              <span>Below Target (60-85%)</span>
+            </div>
+            <div class="hydration-legend-item">
+              <div class="hydration-legend-color" style="background: linear-gradient(to right, #27ae60, #52be80);"></div>
+              <span>Good (85-115%)</span>
+            </div>
+            <div class="hydration-legend-item">
+              <div class="hydration-legend-color" style="background: linear-gradient(to right, #3498db, #5dade2);"></div>
+              <span>Excellent (&gt;115%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overview View (Line Chart) -->
+        <div class="hydration-view" id="hydrationOverviewView">
+          <div style="margin: 20px 0;">
+            <canvas id="hydrationOverviewChart" style="max-height: 400px;"></canvas>
+          </div>
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <strong>How to Read:</strong> Blue line shows child's actual water intake across all consultations. Red line shows WHO recommended intake based on age and weight at each visit. Green shaded area (85-115%) indicates healthy hydration range.
           </div>
         </div>
       </div>
@@ -975,6 +1196,7 @@
             weight: data.weight,
             height: data.height,
             headCircumference: data.headCircumference,
+            waterIntake: data.waterIntake,
             temperature: data.temperature
           });
         });
@@ -1116,6 +1338,331 @@
       }
 
       statsGrid.innerHTML = statsHTML;
+
+      // Display hydration chart
+      displayHydrationChart(consultations, childData);
+    }
+
+    // Calculate WHO recommended daily water intake based on age and weight
+    function calculateWHOWaterRequirement(ageMonths, weight) {
+      // WHO/Pediatric guidelines for daily water intake
+      if (ageMonths < 12) {
+        // Infants 0-12 months: 150 ml/kg/day
+        return weight * 150;
+      } else if (ageMonths < 36) {
+        // Children 1-3 years: 100 ml/kg/day
+        return weight * 100;
+      } else if (ageMonths < 96) {
+        // Children 4-8 years: 50-60 ml/kg/day (using 55 ml/kg average)
+        return weight * 55;
+      } else if (ageMonths < 156) {
+        // Children 9-13 years: Based on standard recommendations
+        return ageMonths < 120 ? 1800 : 2100; // 1.8L for 9-10 yrs, 2.1L for 11-13 yrs
+      } else {
+        // Adolescents 14+ years: 2500-3000ml
+        return 2750;
+      }
+    }
+
+    // Display hydration bullet chart
+    function displayHydrationChart(consultations, childData) {
+      const hydrationCard = document.getElementById('hydrationCard');
+      const bulletChart = document.getElementById('bulletChart');
+      const hydrationValues = document.getElementById('hydrationValues');
+
+      if (!consultations || consultations.length === 0) return;
+
+      const latestConsult = consultations[consultations.length - 1];
+
+      // Only show if water intake data is available
+      if (!latestConsult.waterIntake || latestConsult.waterIntake <= 0) {
+        if (hydrationCard) hydrationCard.style.display = 'none';
+        return;
+      }
+
+      const actualIntake = latestConsult.waterIntake; // in ml
+
+      // Calculate WHO recommended intake
+      const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+      const consultDate = parseDate(latestConsult.date);
+      const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+      const weight = latestConsult.weight || 20; // Use consultation weight or default
+
+      const recommendedIntake = calculateWHOWaterRequirement(ageMonths, weight);
+      const percentage = (actualIntake / recommendedIntake) * 100;
+
+      // Determine status
+      let status = '';
+      let statusColor = '';
+      if (percentage < 60) {
+        status = 'Poor - Needs Attention';
+        statusColor = '#e74c3c';
+      } else if (percentage < 85) {
+        status = 'Below Target';
+        statusColor = '#f39c12';
+      } else if (percentage <= 115) {
+        status = 'Good - Well Hydrated';
+        statusColor = '#27ae60';
+      } else {
+        status = 'Excellent';
+        statusColor = '#3498db';
+      }
+
+      // Calculate range widths (based on percentage of max scale)
+      const maxScale = Math.max(recommendedIntake * 1.5, actualIntake * 1.1);
+      const poorWidth = (recommendedIntake * 0.6 / maxScale) * 100;
+      const belowWidth = (recommendedIntake * 0.25 / maxScale) * 100;
+      const goodWidth = (recommendedIntake * 0.30 / maxScale) * 100;
+      const excellentWidth = 100 - (poorWidth + belowWidth + goodWidth);
+
+      const actualWidth = (actualIntake / maxScale) * 100;
+      const targetPosition = (recommendedIntake / maxScale) * 100;
+
+      // Render bullet chart
+      if (bulletChart) {
+        bulletChart.innerHTML = `
+          <div class="bullet-ranges">
+            <div class="bullet-range poor" style="width: ${poorWidth}%;">
+              ${poorWidth > 15 ? 'Poor' : ''}
+            </div>
+            <div class="bullet-range below" style="width: ${belowWidth}%;">
+              ${belowWidth > 15 ? 'Below' : ''}
+            </div>
+            <div class="bullet-range good" style="width: ${goodWidth}%;">
+              ${goodWidth > 15 ? 'Good' : ''}
+            </div>
+            <div class="bullet-range excellent" style="width: ${excellentWidth}%;">
+              ${excellentWidth > 15 ? 'Excellent' : ''}
+            </div>
+          </div>
+          <div class="bullet-measure" style="width: ${actualWidth}%; left: 0;"></div>
+          <div class="bullet-marker" style="left: ${targetPosition}%;"></div>
+        `;
+      }
+
+      // Render values
+      if (hydrationValues) {
+        hydrationValues.innerHTML = `
+          <div class="hydration-value-item">
+            <div class="hydration-value-label">Actual Intake</div>
+            <div class="hydration-value-number">${actualIntake}<span class="hydration-value-unit"> ml</span></div>
+            <div class="hydration-value-label" style="color: ${statusColor}; margin-top: 5px;">${status}</div>
+          </div>
+          <div class="hydration-value-item">
+            <div class="hydration-value-label">WHO Recommended</div>
+            <div class="hydration-value-number">${recommendedIntake}<span class="hydration-value-unit"> ml</span></div>
+            <div class="hydration-value-label" style="margin-top: 5px;">Based on age & weight</div>
+          </div>
+          <div class="hydration-value-item">
+            <div class="hydration-value-label">Achievement</div>
+            <div class="hydration-value-number">${percentage.toFixed(0)}<span class="hydration-value-unit">%</span></div>
+            <div class="hydration-value-label" style="margin-top: 5px;">of recommended</div>
+          </div>
+        `;
+      }
+
+      // Show hydration card
+      if (hydrationCard) hydrationCard.style.display = 'block';
+
+      // Store consultations data globally for overview chart
+      window.hydrationConsultationsData = consultations;
+      window.hydrationChildData = childData;
+    }
+
+    // Switch between Current and Overview views - Make it globally accessible
+    window.switchHydrationView = function(view) {
+      const currentView = document.getElementById('hydrationCurrentView');
+      const overviewView = document.getElementById('hydrationOverviewView');
+      const buttons = document.querySelectorAll('.hydration-toggle-btn');
+
+      if (view === 'current') {
+        currentView.classList.add('active');
+        overviewView.classList.remove('active');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+      } else {
+        currentView.classList.remove('active');
+        overviewView.classList.add('active');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+
+        // Draw overview chart when switching to overview view
+        drawHydrationOverviewChart();
+      }
+    }
+
+    // Draw hydration overview line chart
+    function drawHydrationOverviewChart() {
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded');
+        return;
+      }
+
+      const consultations = window.hydrationConsultationsData || [];
+      const childData = window.hydrationChildData || {};
+
+      if (!consultations || consultations.length === 0) return;
+
+      // Filter consultations with water intake data
+      const hydrationData = consultations
+        .map((consult, index) => {
+          if (!consult.waterIntake || consult.waterIntake <= 0) return null;
+
+          const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+          const consultDate = parseDate(consult.date);
+          const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+          const weight = consult.weight || 20;
+          const recommendedIntake = calculateWHOWaterRequirement(ageMonths, weight);
+
+          return {
+            visitNumber: index + 1,
+            date: consultDate,
+            actualIntake: consult.waterIntake,
+            recommendedIntake: recommendedIntake,
+            lowerBound: recommendedIntake * 0.85,
+            upperBound: recommendedIntake * 1.15
+          };
+        })
+        .filter(d => d !== null);
+
+      if (hydrationData.length === 0) {
+        document.getElementById('hydrationOverviewChart').parentElement.innerHTML =
+          '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No hydration data available across consultations.</p>';
+        return;
+      }
+
+      const labels = hydrationData.map(d => {
+        const date = d.date;
+        return `Visit ${d.visitNumber}\n${date.toLocaleDateString()}`;
+      });
+
+      const ctx = document.getElementById('hydrationOverviewChart');
+
+      // Destroy existing chart if it exists
+      if (window.hydrationOverviewChartInstance) {
+        window.hydrationOverviewChartInstance.destroy();
+      }
+
+      window.hydrationOverviewChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            // Healthy range area (green shaded)
+            {
+              label: 'Healthy Range (85-115%)',
+              data: hydrationData.map(d => d.upperBound),
+              backgroundColor: 'rgba(39, 174, 96, 0.2)',
+              borderColor: 'rgba(39, 174, 96, 0.4)',
+              borderWidth: 1,
+              borderDash: [5, 5],
+              fill: '+1',
+              pointRadius: 0,
+              datalabels: { display: false }
+            },
+            {
+              label: 'Lower Bound',
+              data: hydrationData.map(d => d.lowerBound),
+              backgroundColor: 'transparent',
+              borderColor: 'rgba(39, 174, 96, 0.4)',
+              borderWidth: 1,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0,
+              datalabels: { display: false }
+            },
+            // WHO Recommended line
+            {
+              label: 'WHO Recommended',
+              data: hydrationData.map(d => d.recommendedIntake),
+              borderColor: '#e74c3c',
+              backgroundColor: '#e74c3c',
+              borderWidth: 3,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              pointStyle: 'circle',
+              tension: 0.3,
+              datalabels: {
+                display: true,
+                align: 'top',
+                offset: 8,
+                color: '#e74c3c',
+                font: { weight: 'bold', size: 10 },
+                formatter: (value) => `${Math.round(value)} ml`
+              }
+            },
+            // Actual Intake line
+            {
+              label: "Child's Actual Intake",
+              data: hydrationData.map(d => d.actualIntake),
+              borderColor: '#3498db',
+              backgroundColor: '#3498db',
+              borderWidth: 3,
+              pointRadius: 8,
+              pointHoverRadius: 12,
+              pointStyle: 'circle',
+              pointBorderWidth: 2,
+              pointBorderColor: 'white',
+              tension: 0.3,
+              datalabels: {
+                display: true,
+                align: 'bottom',
+                offset: 8,
+                color: '#3498db',
+                font: { weight: 'bold', size: 11 },
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: 4,
+                padding: 4,
+                formatter: (value) => `${Math.round(value)} ml`
+              }
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            datalabels: { display: false },
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                filter: (item) => {
+                  return item.text !== 'Lower Bound';
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Hydration Tracking Across All Consultations',
+              font: { size: 16, weight: 'bold' },
+              color: '#2c3e50'
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  if (context.dataset.label === 'Lower Bound' || context.dataset.label === 'Healthy Range (85-115%)') {
+                    return null;
+                  }
+                  return `${context.dataset.label}: ${Math.round(context.parsed.y)} ml`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Consultation Visits' }
+            },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Water Intake (ml)' },
+              ticks: {
+                callback: (value) => value + ' ml'
+              }
+            }
+          }
+        }
+      });
     }
 
     // Calculate BMI percentile using WHO BMI-for-age standards (simplified)
