@@ -14,9 +14,9 @@
       e.stopImmediatePropagation();
       console.log('Get Started button clicked!');
 
-      var contactForm = document.getElementById('contact-form');
-      if (contactForm) {
-        contactForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var packagesSection = document.getElementById('packages');
+      if (packagesSection) {
+        packagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
       return false;
     });
@@ -28,9 +28,9 @@
       btn.addEventListener('click', function(e) {
         console.log('Native click handler fired');
         e.preventDefault();
-        var contactForm = document.getElementById('contact-form');
-        if (contactForm) {
-          contactForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var packagesSection = document.getElementById('packages');
+        if (packagesSection) {
+          packagesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, true);
     }

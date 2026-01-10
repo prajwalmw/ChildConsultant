@@ -209,7 +209,7 @@
             <div class="hero-caption text-center" style="margin-top: -70px; position: relative; z-index: 10;">
               <h1 class="hero-title">Nurturing Little Minds</h1>
               <h3 class="hero-text">Comprehensive Care | Every Milestone | Every Child</h3>
-              <a href="#contact-form" id="get-started-btn" class="btn btn-white" onclick="document.getElementById('contact-form').scrollIntoView({behavior: 'smooth'}); return false;">Get Started</a>
+              <a href="javascript:void(0);" id="get-started-btn" class="btn btn-white" onclick="event.preventDefault(); var packagesSection = document.getElementById('packages'); if(packagesSection) { packagesSection.scrollIntoView({behavior: 'smooth', block: 'start'}); } else { console.error('Packages section not found'); }">Get Started</a>
             </div>
           </div>
         </div>
@@ -727,6 +727,237 @@
       </div>
     </div>
       </div>
+    <!-- Child Packages Section -->
+    <div id="packages" class="space-medium" style="background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%); padding: 60px 0 50px 0;">
+      <div class="container" style="max-width: 1400px;">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="section-title text-center" style="margin-bottom: 40px;">
+              <h1 style="font-size: 38px; color: #f41192; font-weight: 700; margin-bottom: 10px;">Choose Your Package</h1>
+              <p style="font-size: 16px; color: #666; margin-top: 8px;">Comprehensive child development programs for every family's needs</p>
+              <div style="width: 80px; height: 4px; background: linear-gradient(90deg, #f41192, #9e0ff1); margin: 15px auto 0; border-radius: 2px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="display: flex; justify-content: center; align-items: stretch; gap: 28px; flex-wrap: nowrap; margin: 0 auto; padding: 0 15px;">
+
+          <!-- BASIC Package -->
+          <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
+            <div class="package-card" style="background: linear-gradient(135deg, #E8E3FF 0%, #DDD6FE 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(158, 15, 241, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #9e0ff1;">
+              <div style="background: linear-gradient(135deg, #9e0ff1, #b97dd4); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
+                <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">BASIC</h2>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <p style="text-decoration: line-through; color: #9B59B6; font-size: 16px; margin-bottom: 3px;">₹9,600</p>
+                <h3 style="font-size: 32px; font-weight: 800; color: #9e0ff1; margin: 0; line-height: 1;">₹8,448</h3>
+              </div>
+
+              <div style="background: #FF6B9D; color: white; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">
+                Validity: 3 Months
+              </div>
+
+              <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
+                <p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #9e0ff1; margin-right: 6px;"></i>12 Sessions</p>
+                <p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #9e0ff1; margin-right: 6px;"></i>Customized personal counselling</p>
+                <p style="margin-bottom: 0; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #9e0ff1; margin-right: 6px;"></i>1<sup>st</sup> session with Senior Clinical Psychologist</p>
+              </div>
+
+              <div style="margin-bottom: 15px; margin-top: 12px;">
+                <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
+                  <div style="text-align: center;">
+                    <div style="display: flex; justify-content: center; align-items: baseline; gap: 6px; margin-bottom: 2px;">
+                      <span style="font-size: 13px; color: #666; text-decoration: line-through;">₹800</span>
+                      <span style="font-size: 28px; font-weight: 800; color: #9e0ff1; line-height: 1;">₹704</span>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin: 0;">per session</p>
+                  </div>
+                  <div style="background: linear-gradient(135deg, #4A90E2, #5BA3F5); color: white; border-radius: 50%; width: 70px; height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 6px 16px rgba(74, 144, 226, 0.35); flex-shrink: 0; margin-top: -5px;">
+                    <span style="font-size: 18px; line-height: 1; color: #ffffff;">12%</span><span style="font-size: 10px; margin-top: 2px; color: #ffffff;">Discount</span>
+                  </div>
+                </div>
+              </div>
+
+              <button onclick="window.open('https://calendly.com/aqiraa-care/30min', '_blank')" class="btn" style="background: linear-gradient(135deg, #9e0ff1, #b97dd4); color: white; padding: 11px 25px; border-radius: 22px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 12px rgba(158, 15, 241, 0.3); width: 100%;">
+                Book Now
+              </button>
+              <p style="font-size: 11px; color: #999; margin-top: 8px; margin-bottom: 0;">*Conditions Apply</p>
+            </div>
+          </div>
+
+          <!-- STANDARD Package -->
+          <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
+            <div class="package-card" style="background: linear-gradient(135deg, #D1F4F4 0%, #B8E6E6 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(3, 169, 244, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #03A9F4;">
+              <div style="background: linear-gradient(135deg, #03A9F4, #4FC3F7); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
+                <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">STANDARD</h2>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <p style="text-decoration: line-through; color: #0288D1; font-size: 16px; margin-bottom: 3px;">₹19,200</p>
+                <h3 style="font-size: 32px; font-weight: 800; color: #03A9F4; margin: 0; line-height: 1;">₹16,320</h3>
+              </div>
+
+              <div style="background: #FF9800; color: white; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">
+                Validity: 6 Months
+              </div>
+
+              <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
+                <p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #03A9F4; margin-right: 6px;"></i>24 Sessions</p>
+                <p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #03A9F4; margin-right: 6px;"></i>Customized personal counselling</p>
+                <p style="margin-bottom: 0; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #03A9F4; margin-right: 6px;"></i>1<sup>st</sup> session with Senior Clinical Psychologist</p>
+              </div>
+
+              <div style="margin-bottom: 15px; margin-top: 12px;">
+                <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
+                  <div style="text-align: center;">
+                    <div style="display: flex; justify-content: center; align-items: baseline; gap: 6px; margin-bottom: 2px;">
+                      <span style="font-size: 13px; color: #666; text-decoration: line-through;">₹800</span>
+                      <span style="font-size: 28px; font-weight: 800; color: #03A9F4; line-height: 1;">₹680</span>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin: 0;">per session</p>
+                  </div>
+                  <div style="background: linear-gradient(135deg, #E879B9, #FF9FCE); color: white; border-radius: 50%; width: 70px; height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 6px 16px rgba(232, 121, 185, 0.35); flex-shrink: 0; margin-top: -5px;">
+                    <span style="font-size: 18px; line-height: 1; color: #ffffff;">15%</span><span style="font-size: 10px; margin-top: 2px; color: #ffffff;">Discount</span>
+                  </div>
+                </div>
+              </div>
+
+              <button onclick="window.open('https://calendly.com/aqiraa-care/30min', '_blank')" class="btn" style="background: linear-gradient(135deg, #03A9F4, #4FC3F7); color: white; padding: 11px 25px; border-radius: 22px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 12px rgba(3, 169, 244, 0.3); width: 100%;">
+                Book Now
+              </button>
+              <p style="font-size: 11px; color: #999; margin-top: 8px; margin-bottom: 0;">*Conditions Apply</p>
+            </div>
+          </div>
+
+          <!-- PREMIUM Package -->
+          <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
+            <div class="package-card" style="background: linear-gradient(135deg, #FFE5E5 0%, #FFD6D6 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(244, 17, 146, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #f41192; position: relative; overflow: visible;">
+              <div style="position: absolute; top: -12px; right: -12px; background: #FF9800; color: #D32F2F; padding: 6px 12px; border-radius: 18px; font-weight: 700; font-size: 11px; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4); z-index: 10; white-space: nowrap;">
+                Best Seller ⭐
+              </div>
+              <div style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
+                <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">PREMIUM</h2>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <p style="text-decoration: line-through; color: #C2185B; font-size: 16px; margin-bottom: 3px;">₹28,800</p>
+                <h3 style="font-size: 32px; font-weight: 800; color: #f41192; margin: 0; line-height: 1;">₹23,616</h3>
+              </div>
+
+              <div style="background: #4CAF50; color: white; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">
+                Validity: 9 Months
+              </div>
+
+              <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
+                <p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #f41192; margin-right: 6px;"></i>36 Sessions</p>
+                <p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #f41192; margin-right: 6px;"></i>Customized personal counselling</p>
+                <p style="margin-bottom: 0; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #f41192; margin-right: 6px;"></i>1<sup>st</sup> session with Senior Clinical Psychologist</p>
+              </div>
+
+              <div style="margin-bottom: 15px; margin-top: 12px;">
+                <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
+                  <div style="text-align: center;">
+                    <div style="display: flex; justify-content: center; align-items: baseline; gap: 6px; margin-bottom: 2px;">
+                      <span style="font-size: 13px; color: #666; text-decoration: line-through;">₹800</span>
+                      <span style="font-size: 28px; font-weight: 800; color: #f41192; line-height: 1;">₹656</span>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin: 0;">per session</p>
+                  </div>
+                  <div style="background: linear-gradient(135deg, #FF6B9D, #FF8FAB); color: white; border-radius: 50%; width: 70px; height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 6px 16px rgba(255, 107, 157, 0.35); flex-shrink: 0; margin-top: -5px;">
+                    <span style="font-size: 18px; line-height: 1; color: #ffffff;">18%</span><span style="font-size: 10px; margin-top: 2px; color: #ffffff;">Discount</span>
+                  </div>
+                </div>
+              </div>
+
+              <button onclick="window.open('https://calendly.com/aqiraa-care/30min', '_blank')" class="btn" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 11px 25px; border-radius: 22px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 12px rgba(244, 17, 146, 0.3); width: 100%;">
+                Book Now
+              </button>
+              <p style="font-size: 11px; color: #999; margin-top: 8px; margin-bottom: 0;">*Conditions Apply</p>
+            </div>
+          </div>
+
+          <!-- ELITE Package -->
+          <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
+            <div class="package-card" style="background: linear-gradient(135deg, #FFF4E6 0%, #FFE0B2 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #FF9800;">
+              <div style="background: linear-gradient(135deg, #FF9800, #FFB74D); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
+                <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">ELITE</h2>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <p style="text-decoration: line-through; color: #E65100; font-size: 16px; margin-bottom: 3px;">₹38,400</p>
+                <h3 style="font-size: 32px; font-weight: 800; color: #FF9800; margin: 0; line-height: 1;">₹30,336</h3>
+              </div>
+
+              <div style="background: #E1BEE7; color: #6A1B9A; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">
+                Validity: 12 Months
+              </div>
+
+              <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
+                <p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #FF9800; margin-right: 6px;"></i>48 Sessions</p>
+                <p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #FF9800; margin-right: 6px;"></i>Customized personal counselling</p>
+                <p style="margin-bottom: 0; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: #FF9800; margin-right: 6px;"></i>1<sup>st</sup> session with Senior Clinical Psychologist</p>
+              </div>
+
+              <div style="margin-bottom: 15px; margin-top: 12px;">
+                <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
+                  <div style="text-align: center;">
+                    <div style="display: flex; justify-content: center; align-items: baseline; gap: 6px; margin-bottom: 2px;">
+                      <span style="font-size: 13px; color: #666; text-decoration: line-through;">₹800</span>
+                      <span style="font-size: 28px; font-weight: 800; color: #FF9800; line-height: 1;">₹632</span>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin: 0;">per session</p>
+                  </div>
+                  <div style="background: linear-gradient(135deg, #E1BEE7, #F3E5F5); color: #6A1B9A; border-radius: 50%; width: 70px; height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 6px 16px rgba(225, 190, 231, 0.35); flex-shrink: 0; margin-top: -5px;">
+                    <span style="font-size: 18px; line-height: 1; color: #6A1B9A;">21%</span><span style="font-size: 10px; margin-top: 2px; color: #6A1B9A;">Discount</span>
+                  </div>
+                </div>
+              </div>
+
+              <button onclick="window.open('https://calendly.com/aqiraa-care/30min', '_blank')" class="btn" style="background: linear-gradient(135deg, #FF9800, #FFB74D); color: white; padding: 11px 25px; border-radius: 22px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3); width: 100%;">
+                Book Now
+              </button>
+              <p style="font-size: 11px; color: #999; margin-top: 8px; margin-bottom: 0;">*Conditions Apply</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Additional Info Section -->
+        <div class="row" style="margin-top: 30px;">
+          <div class="col-lg-12 text-center">
+            <div style="background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%); padding: 20px 25px; border-radius: 12px; border-left: 4px solid #4CAF50;">
+              <h3 style="color: #2E7D32; font-size: 18px; font-weight: 700; margin-bottom: 10px;">✨ All Packages Include</h3>
+              <p style="font-size: 14px; color: #424242; line-height: 1.6; margin: 0;">
+                Comprehensive child development tracking • Progress reports after every session • Flexible scheduling • Direct access to specialists • Personalized care plans • 24/7 support via email
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <style>
+      .package-card {
+        position: relative;
+      }
+      .package-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 50px rgba(158, 15, 241, 0.25) !important;
+      }
+      .package-card button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(158, 15, 241, 0.5) !important;
+      }
+      @media (max-width: 768px) {
+        .package-card {
+          max-width: 100% !important;
+          margin-bottom: 30px;
+        }
+      }
+    </style>
+
     <section id="contact-form" style="background-color: #ffffff !important;">
       <div class="form-container">
         <h3>Get in Touch</h3>
