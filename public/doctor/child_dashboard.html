@@ -1327,12 +1327,12 @@
         if (childInfoSection) childInfoSection.style.display = 'block';
         if (statsGrid) statsGrid.style.display = 'grid';
 
-        // Show chart section
-        const growthChartSection = document.getElementById('growthChartSection');
-        if (growthChartSection) growthChartSection.style.display = 'block';
+        // Hide chart section (not needed)
+        // const growthChartSection = document.getElementById('growthChartSection');
+        // if (growthChartSection) growthChartSection.style.display = 'block';
 
         // Draw WHO Growth Percentile Chart (Global Clinical Standard)
-        drawGrowthPercentileChart(consultations, childData);
+        // drawGrowthPercentileChart(consultations, childData);
 
         console.log('Dashboard loaded successfully');
 
@@ -2280,6 +2280,150 @@
         return;
       }
 
+      // Get latest consultation data
+      const latestConsult = consultations[consultations.length - 1];
+      if (!latestConsult) return;
+
+      const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+      const consultDate = parseDate(latestConsult.date);
+      const ageMonths = calculateAgeInMonths(dobDate, consultDate);
+
+      // Calculate percentiles for latest measurements
+      const weightPercentile = calculateWeightPercentile(ageMonths, latestConsult.weight, childData.gender);
+      const heightPercentile = calculateHeightPercentile(ageMonths, latestConsult.height, childData.gender);
+      const hcPercentile = calculateHeadCircumferencePercentile(ageMonths, latestConsult.headCircumference, childData.gender);
+
+      // Format age for title
+      const ageYears = Math.floor(ageMonths / 12);
+      const ageRemainingMonths = ageMonths % 12;
+      let ageText = '';
+      if (ageYears > 0 && ageRemainingMonths > 0) {
+        ageText = `${ageYears} Years, ${ageRemainingMonths} Months`;
+      } else if (ageYears > 0) {
+        ageText = `${ageYears} Year${ageYears > 1 ? 's' : ''}`;
+      } else {
+        ageText = `${ageRemainingMonths} Month${ageRemainingMonths > 1 ? 's' : ''}`;
+      }
+
+      const ctx = document.getElementById('growthChart').getContext('2d');
+
+      // Destroy existing chart if any
+      if (window.growthChartInstance) {
+        window.growthChartInstance.destroy();
+      }
+
+      window.growthChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Weight', 'Height', 'Head Circumference'],
+          datasets: [{
+            label: 'Child Percentile',
+            data: [weightPercentile, heightPercentile, hcPercentile],
+            backgroundColor: ['#3498db', '#3498db', '#3498db'],
+            borderColor: ['#2980b9', '#2980b9', '#2980b9'],
+            borderWidth: 2,
+            barThickness: 60
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            title: {
+              display: true,
+              text: `Child Growth Status at ${ageText} (WHO-based)`,
+              font: { size: 18, weight: 'bold' },
+              color: '#2c3e50',
+              padding: { top: 10, bottom: 20 }
+            },
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => `${context.parsed.y.toFixed(1)}th percentile`
+              }
+            },
+            annotation: {
+              annotations: {
+                lowerHealthyLimit: {
+                  type: 'line',
+                  yMin: 15,
+                  yMax: 15,
+                  borderColor: '#e74c3c',
+                  borderWidth: 2,
+                  borderDash: [8, 4],
+                  label: {
+                    display: true,
+                    content: 'Lower Healthy Limit (15th)',
+                    position: 'end',
+                    backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                    color: 'white',
+                    font: { size: 11, weight: 'bold' }
+                  }
+                },
+                upperHealthyLimit: {
+                  type: 'line',
+                  yMin: 85,
+                  yMax: 85,
+                  borderColor: '#e74c3c',
+                  borderWidth: 2,
+                  borderDash: [8, 4],
+                  label: {
+                    display: true,
+                    content: 'Upper Healthy Limit (85th)',
+                    position: 'end',
+                    backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                    color: 'white',
+                    font: { size: 11, weight: 'bold' }
+                  }
+                },
+                healthyRangeBox: {
+                  type: 'box',
+                  yMin: 15,
+                  yMax: 85,
+                  backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                  borderWidth: 0
+                }
+              }
+            },
+            datalabels: {
+              display: true,
+              anchor: 'end',
+              align: 'top',
+              offset: 4,
+              font: { size: 14, weight: 'bold' },
+              color: '#2c3e50',
+              formatter: (value) => value ? `${value.toFixed(0)}th` : ''
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: 'Percentile',
+                font: { size: 14, weight: 'bold' }
+              },
+              ticks: {
+                callback: (value) => value + 'th'
+              }
+            },
+            x: {
+              title: {
+                display: false
+              },
+              ticks: {
+                font: { size: 12, weight: 'bold' }
+              }
+            }
+          }
+        }
+      });
+
+      // OLD CODE BELOW - COMMENTED OUT
+      /*
       const dataPoints = consultations.map(consult => {
         const dobDate = parseDate(childData.dob || childData.dateOfBirth);
         const consultDate = parseDate(consult.date);
@@ -2455,6 +2599,7 @@
           }
         }
       });
+      */
     }
 
     function drawMeasurementsChart(consultations) {
