@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Booking Confirmation - Aqiraa</title>
+  <link rel="icon" type="image/png" href="images/logo.png">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link href="css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%);
+      font-family: 'PT Sans', sans-serif;
+    }
+
+    .confirmation-container {
+      max-width: 800px;
+      margin: 80px auto 50px;
+      padding: 40px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 50px rgba(244, 17, 146, 0.15);
+    }
+
+    .success-icon {
+      text-align: center;
+      font-size: 80px;
+      color: #4CAF50;
+      margin-bottom: 20px;
+      animation: scaleIn 0.5s ease-in-out;
+    }
+
+    @keyframes scaleIn {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .confirmation-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .confirmation-header h1 {
+      color: #f41192;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .confirmation-header p {
+      color: #666;
+      font-size: 18px;
+    }
+
+    .booking-details {
+      background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #E0E0E0;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: #666;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .detail-value {
+      color: #333;
+      font-weight: 700;
+      font-size: 15px;
+      text-align: right;
+    }
+
+    .package-highlight {
+      background: linear-gradient(135deg, #f41192, #FF6B9D);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .package-highlight h2 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .next-steps {
+      background: #E8F5E9;
+      padding: 25px;
+      border-radius: 15px;
+      border-left: 4px solid #4CAF50;
+      margin-bottom: 30px;
+    }
+
+    .next-steps h3 {
+      color: #2E7D32;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .next-steps ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .next-steps li {
+      color: #424242;
+      padding: 8px 0;
+      font-size: 15px;
+    }
+
+    .next-steps li:before {
+      content: "✓ ";
+      color: #4CAF50;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .action-buttons {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f41192, #FF6B9D);
+      color: white;
+      padding: 15px 40px;
+      border-radius: 25px;
+      border: none;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin: 0 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 12px rgba(244, 17, 146, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(244, 17, 146, 0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #9e0ff1, #b97dd4);
+      color: white;
+      padding: 15px 40px;
+      border-radius: 25px;
+      border: none;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin: 0 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 12px rgba(158, 15, 241, 0.3);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(158, 15, 241, 0.4);
+      color: white;
+      text-decoration: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+      color: #666;
+    }
+
+    .error-message {
+      background: #FFEBEE;
+      color: #C62828;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      border-left: 4px solid #C62828;
+    }
+
+    @media (max-width: 768px) {
+      .confirmation-container {
+        margin: 20px;
+        padding: 25px;
+      }
+
+      .confirmation-header h1 {
+        font-size: 28px;
+      }
+
+      .detail-row {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .detail-value {
+        text-align: left;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn-primary, .btn-secondary {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="confirmation-container" id="confirmationContent">
+    <div class="loading">
+      <i class="fa fa-spinner fa-spin" style="font-size: 40px; color: #f41192;"></i>
+      <p>Loading your booking details...</p>
+    </div>
+  </div>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+      authDomain: "child-consultant.firebaseapp.com",
+      projectId: "child-consultant",
+      storageBucket: "child-consultant.appspot.com",
+      messagingSenderId: "985386588549",
+      appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // Get booking ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingId = urlParams.get('bookingId');
+
+    if (!bookingId) {
+      showError('Invalid booking reference. Please contact support.');
+    } else {
+      loadBookingDetails(bookingId);
+    }
+
+    function loadBookingDetails(bookingId) {
+      db.collection('bookings').doc(bookingId).get()
+        .then(doc => {
+          if (doc.exists) {
+            displayBookingDetails(doc.data(), bookingId);
+          } else {
+            showError('Booking not found. Please contact support.');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching booking:', error);
+          showError('Error loading booking details. Please contact support.');
+        });
+    }
+
+    function displayBookingDetails(booking, bookingId) {
+      const expiryDate = booking.expiryDate ? new Date(booking.expiryDate.toDate()).toLocaleDateString('en-IN') : 'N/A';
+      const bookingDate = booking.createdAt ? new Date(booking.createdAt.toDate()).toLocaleDateString('en-IN') : 'N/A';
+
+      const html = `
+        <div class="success-icon">✓</div>
+
+        <div class="confirmation-header">
+          <h1>Payment Successful!</h1>
+          <p>Thank you for choosing Aqiraa. Your booking has been confirmed.</p>
+        </div>
+
+        <div class="package-highlight">
+          <h2>${booking.packageName}</h2>
+        </div>
+
+        <div class="booking-details">
+          <div class="detail-row">
+            <span class="detail-label">Booking ID:</span>
+            <span class="detail-value">${bookingId}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Payment ID:</span>
+            <span class="detail-value">${booking.paymentId}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Amount Paid:</span>
+            <span class="detail-value">₹${booking.amount}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Total Sessions:</span>
+            <span class="detail-value">${booking.sessions} Sessions</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Sessions Remaining:</span>
+            <span class="detail-value">${booking.sessionsRemaining} Sessions</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Validity:</span>
+            <span class="detail-value">${booking.validity}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Valid Until:</span>
+            <span class="detail-value">${expiryDate}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Booking Date:</span>
+            <span class="detail-value">${bookingDate}</span>
+          </div>
+        </div>
+
+        <div class="next-steps">
+          <h3>📋 Next Steps</h3>
+          <ul>
+            <li>You will receive a confirmation email shortly with all the details</li>
+            <li>Our team will contact you within 24 hours to schedule your first session</li>
+            <li>Please keep your Booking ID safe for future reference</li>
+            <li>You can schedule sessions through our Calendly link or by contacting us directly</li>
+          </ul>
+        </div>
+
+        <div class="action-buttons">
+          <a href="https://calendly.com/aqiraa-care/30min" target="_blank" class="btn-primary">
+            <i class="fa fa-calendar"></i> Schedule First Session
+          </a>
+          <a href="index.html" class="btn-secondary">
+            <i class="fa fa-home"></i> Back to Home
+          </a>
+        </div>
+      `;
+
+      document.getElementById('confirmationContent').innerHTML = html;
+    }
+
+    function showError(message) {
+      const html = `
+        <div class="error-message">
+          <i class="fa fa-exclamation-triangle" style="font-size: 40px; margin-bottom: 15px;"></i>
+          <h3>Error</h3>
+          <p>${message}</p>
+        </div>
+        <div class="action-buttons" style="margin-top: 30px;">
+          <a href="index.html" class="btn-secondary">Back to Home</a>
+        </div>
+      `;
+      document.getElementById('confirmationContent').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
