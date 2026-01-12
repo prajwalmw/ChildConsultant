@@ -663,20 +663,69 @@
       </div>
 
     <!-- Book a Doctor Session Section -->
-    <div id="doctor-booking" class="space-medium" style="background: linear-gradient(135deg, #E8F5E9 0%, #F0F9FF 100%); padding: 80px 0;">
+    <div id="doctor-booking" class="space-medium" style="background: linear-gradient(135deg, #E8F5E9 0%, #F0F9FF 100%); padding: 60px 0 70px 0;">
       <div class="container" style="max-width: 1400px;">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <div class="section-title text-center" style="margin-bottom: 60px;">
-              <h1 style="font-size: 42px; color: #f41192; font-weight: 800; margin-bottom: 15px;">Book a Doctor Session</h1>
-              <p style="font-size: 18px; color: #666; margin-top: 12px; max-width: 700px; margin-left: auto; margin-right: auto;">Consult with our experienced child psychologists and psychiatrists</p>
-              <div style="width: 100px; height: 5px; background: linear-gradient(90deg, #f41192, #9e0ff1); margin: 20px auto 0; border-radius: 3px;"></div>
+            <div class="section-title text-center" style="margin-bottom: 40px;">
+              <h1 style="font-size: 42px; color: #f41192; font-weight: 800; margin-bottom: 12px;">Book a Doctor Session</h1>
+              <p style="font-size: 18px; color: #666; margin-top: 8px; max-width: 700px; margin-left: auto; margin-right: auto;">Consult with our experienced child psychologists and psychiatrists</p>
+              <div style="width: 100px; height: 5px; background: linear-gradient(90deg, #f41192, #9e0ff1); margin: 15px auto 0; border-radius: 3px;"></div>
             </div>
+          </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div style="max-width: 1300px; margin: 0 auto 20px auto; padding: 0;">
+          <div style="background: white; border-radius: 12px; padding: 15px 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #f41192; font-weight: 700; font-size: 15px;">
+              <i class="fa fa-filter"></i>
+              <span>Filter:</span>
+            </div>
+
+            <select id="filter-specialization" style="padding: 8px 12px; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 13px; color: #666; outline: none; cursor: pointer; background: white; min-width: 170px;">
+              <option value="">All Specializations</option>
+              <option value="Pediatrician">Pediatrician</option>
+              <option value="Child Psychologist">Child Psychologist</option>
+              <option value="Child Nutritionist">Child Nutritionist</option>
+            </select>
+
+            <select id="filter-experience" style="padding: 8px 12px; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 13px; color: #666; outline: none; cursor: pointer; background: white; min-width: 140px;">
+              <option value="">Experience</option>
+              <option value="5">5+ Years</option>
+              <option value="10">10+ Years</option>
+              <option value="15">15+ Years</option>
+            </select>
+
+            <select id="filter-price" style="padding: 8px 12px; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 13px; color: #666; outline: none; cursor: pointer; background: white; min-width: 140px;">
+              <option value="">Price Range</option>
+              <option value="0-500">Under ₹500</option>
+              <option value="500-1000">₹500 - ₹1000</option>
+              <option value="1000-1500">₹1000 - ₹1500</option>
+              <option value="1500-5000">Above ₹1500</option>
+            </select>
+
+            <select id="filter-rating" style="padding: 8px 12px; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 13px; color: #666; outline: none; cursor: pointer; background: white; min-width: 120px;">
+              <option value="">Rating</option>
+              <option value="4.5">4.5+ ⭐</option>
+              <option value="4.0">4.0+ ⭐</option>
+              <option value="3.5">3.5+ ⭐</option>
+            </select>
+
+            <button id="clear-filters" style="padding: 8px 16px; background: linear-gradient(135deg, #9e0ff1, #b97dd4); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform 0.2s ease; margin-left: auto;">
+              <i class="fa fa-times"></i> Clear
+            </button>
           </div>
         </div>
 
         <div id="doctors-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; max-width: 1300px; margin: 0 auto; padding: 0;">
           <!-- Doctor cards will be dynamically inserted here -->
+        </div>
+
+        <div id="no-results" style="display: none; text-align: center; padding: 50px; max-width: 1300px; margin: 0 auto;">
+          <i class="fa fa-search" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
+          <h3 style="color: #666; font-size: 24px; margin-bottom: 10px;">No doctors found</h3>
+          <p style="color: #999; font-size: 16px;">Try adjusting your filters to see more results</p>
         </div>
       </div>
     </div>
@@ -950,14 +999,27 @@
     </style>
 
     <script>
-      // Render doctor cards on page load
-      document.addEventListener('DOMContentLoaded', function() {
+      // Render doctor cards function
+      function renderDoctorCards(doctors) {
         const container = document.getElementById('doctors-container');
-        if (!container || !window.DOCTORS) return;
+        const noResults = document.getElementById('no-results');
 
-        window.DOCTORS.forEach((doctor, index) => {
+        if (!container || !doctors) return;
+
+        container.innerHTML = '';
+
+        if (doctors.length === 0) {
+          container.style.display = 'none';
+          noResults.style.display = 'block';
+          return;
+        }
+
+        container.style.display = 'grid';
+        noResults.style.display = 'none';
+
+        doctors.forEach((doctor, index) => {
           const cardHTML = `
-            <div class="doctor-card">
+            <div class="doctor-card" data-specialization="${doctor.title}" data-experience="${parseInt(doctor.experience)}" data-price="${doctor.sessionPrice}" data-rating="${doctor.rating}">
               ${index < 2 ? '<div class="doctor-recommend-badge"><i class="fa fa-star"></i> Top Rated</div>' : ''}
 
               <div class="doctor-card-left">
@@ -1004,6 +1066,61 @@
           `;
 
           container.innerHTML += cardHTML;
+        });
+      }
+
+      // Filter doctors function
+      function filterDoctors() {
+        const specialization = document.getElementById('filter-specialization').value;
+        const experience = document.getElementById('filter-experience').value;
+        const priceRange = document.getElementById('filter-price').value;
+        const rating = document.getElementById('filter-rating').value;
+
+        let filtered = window.DOCTORS.filter(doctor => {
+          // Filter by specialization
+          if (specialization && doctor.title !== specialization) return false;
+
+          // Filter by experience
+          if (experience) {
+            const docExp = parseInt(doctor.experience);
+            if (docExp < parseInt(experience)) return false;
+          }
+
+          // Filter by price range
+          if (priceRange) {
+            const [min, max] = priceRange.split('-').map(Number);
+            if (doctor.sessionPrice < min || doctor.sessionPrice > max) return false;
+          }
+
+          // Filter by rating
+          if (rating && doctor.rating < parseFloat(rating)) return false;
+
+          return true;
+        });
+
+        renderDoctorCards(filtered);
+      }
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        if (!window.DOCTORS) return;
+
+        // Render all doctors initially
+        renderDoctorCards(window.DOCTORS);
+
+        // Add filter event listeners
+        document.getElementById('filter-specialization').addEventListener('change', filterDoctors);
+        document.getElementById('filter-experience').addEventListener('change', filterDoctors);
+        document.getElementById('filter-price').addEventListener('change', filterDoctors);
+        document.getElementById('filter-rating').addEventListener('change', filterDoctors);
+
+        // Clear filters button
+        document.getElementById('clear-filters').addEventListener('click', function() {
+          document.getElementById('filter-specialization').value = '';
+          document.getElementById('filter-experience').value = '';
+          document.getElementById('filter-price').value = '';
+          document.getElementById('filter-rating').value = '';
+          renderDoctorCards(window.DOCTORS);
         });
       });
     </script>
