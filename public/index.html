@@ -693,7 +693,7 @@
         flex-direction: row;
         overflow: hidden;
         border: 1px solid #e8e8e8;
-        height: 220px;
+        height: 280px;
       }
 
       .doctor-card:hover {
@@ -704,46 +704,46 @@
 
       .doctor-recommend-badge {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 12px;
+        right: 12px;
         background: linear-gradient(135deg, #FFD700, #FFA500);
         color: white;
-        padding: 4px 10px;
-        border-radius: 15px;
-        font-size: 9px;
-        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 800;
         display: flex;
         align-items: center;
-        gap: 3px;
-        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        gap: 4px;
+        box-shadow: 0 3px 10px rgba(255, 165, 0, 0.4);
         z-index: 10;
         text-transform: uppercase;
-        letter-spacing: 0.3px;
+        letter-spacing: 0.5px;
       }
 
       .doctor-card-left {
-        background: linear-gradient(135deg, #f41192 0%, #FF6B9D 100%);
-        width: 190px;
+        background: linear-gradient(180deg, #B3E5FC 0%, #E1BEE7 100%);
+        width: 220px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 18px;
+        padding: 25px;
         position: relative;
       }
 
       .doctor-image-container {
         position: relative;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
       }
 
       .doctor-image {
-        width: 100px;
-        height: 100px;
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
         object-fit: cover;
-        border: 4px solid white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border: 5px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         background: white;
       }
 
@@ -766,28 +766,30 @@
         display: flex;
         align-items: center;
         gap: 5px;
-        color: white;
+        color: #333;
         font-size: 13px;
       }
 
       .doctor-rating-stars {
-        color: #FFD700;
+        color: #FFB300;
         font-size: 13px;
       }
 
       .doctor-rating-number {
         font-weight: 700;
         font-size: 14px;
+        color: #333;
       }
 
       .doctor-rating-count {
         font-size: 11px;
-        opacity: 0.9;
+        opacity: 0.7;
+        color: #666;
       }
 
       .doctor-card-right {
         flex: 1;
-        padding: 18px;
+        padding: 25px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -798,7 +800,7 @@
       }
 
       .doctor-name {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 700;
         color: #2E3B4E;
         margin-bottom: 3px;
@@ -806,18 +808,18 @@
       }
 
       .doctor-title {
-        font-size: 13px;
+        font-size: 15px;
         color: #f41192;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         font-weight: 600;
       }
 
       .doctor-details {
         display: flex;
         gap: 15px;
-        font-size: 11px;
+        font-size: 13px;
         color: #666;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
 
       .doctor-details span {
@@ -976,22 +978,24 @@
                   <p class="doctor-title">${doctor.title}</p>
                   <div class="doctor-details">
                     <span><i class="fa fa-clock-o"></i> ${doctor.experience}</span>
+                  </div>
+                  <div class="doctor-details">
                     <span><i class="fa fa-graduation-cap"></i> ${doctor.qualification}</span>
                   </div>
                 </div>
 
                 <div class="doctor-bottom-section">
                   <div class="doctor-price-box">
-                    <div class="doctor-price-label">Session Starting At</div>
+                    <div class="doctor-price-label">Session At</div>
                     <div class="doctor-price">₹${doctor.sessionPrice}</div>
                   </div>
 
                   <div class="doctor-buttons">
-                    <button onclick="bookDoctorSession('${doctor.id}')" class="btn-book-session">
-                      <i class="fa fa-calendar-check-o"></i> Book
-                    </button>
                     <button onclick="showDoctorProfile('${doctor.id}')" class="btn-view-profile">
                       <i class="fa fa-user-md"></i> Profile
+                    </button>
+                    <button onclick="bookDoctorSession('${doctor.id}')" class="btn-book-session">
+                      <i class="fa fa-calendar-check-o"></i> Book
                     </button>
                   </div>
                 </div>
@@ -1088,8 +1092,8 @@
 
           <!-- BASIC Package -->
           <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
-            <div class="package-card" style="background: linear-gradient(135deg, #E8E3FF 0%, #DDD6FE 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(158, 15, 241, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #9e0ff1;">
-              <div style="background: linear-gradient(135deg, #9e0ff1, #b97dd4); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
+            <div class="package-card" style="background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(158, 15, 241, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #C4B5FD;">
+              <div style="background: linear-gradient(135deg, #A78BFA, #C4B5FD); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
                 <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">BASIC</h2>
               </div>
 
@@ -1132,8 +1136,8 @@
 
           <!-- STANDARD Package -->
           <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
-            <div class="package-card" style="background: linear-gradient(135deg, #D1F4F4 0%, #B8E6E6 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(3, 169, 244, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #03A9F4;">
-              <div style="background: linear-gradient(135deg, #03A9F4, #4FC3F7); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
+            <div class="package-card" style="background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(3, 169, 244, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #7DD3FC;">
+              <div style="background: linear-gradient(135deg, #38BDF8, #7DD3FC); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
                 <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">STANDARD</h2>
               </div>
 
@@ -1176,11 +1180,11 @@
 
           <!-- PREMIUM Package -->
           <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
-            <div class="package-card" style="background: linear-gradient(135deg, #FFE5E5 0%, #FFD6D6 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(244, 17, 146, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #f41192; position: relative; overflow: visible;">
+            <div class="package-card" style="background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(244, 17, 146, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #F9A8D4; position: relative; overflow: visible;">
               <div style="position: absolute; top: -12px; right: -12px; background: #FF9800; color: #D32F2F; padding: 6px 12px; border-radius: 18px; font-weight: 700; font-size: 11px; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4); z-index: 10; white-space: nowrap;">
                 Best Seller ⭐
               </div>
-              <div style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
+              <div style="background: linear-gradient(135deg, #EC4899, #F9A8D4); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
                 <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">PREMIUM</h2>
               </div>
 
@@ -1223,8 +1227,8 @@
 
           <!-- ELITE Package -->
           <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
-            <div class="package-card" style="background: linear-gradient(135deg, #FFF4E6 0%, #FFE0B2 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #FF9800;">
-              <div style="background: linear-gradient(135deg, #FF9800, #FFB74D); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
+            <div class="package-card" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid #FCD34D;">
+              <div style="background: linear-gradient(135deg, #FBBF24, #FCD34D); color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
                 <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">ELITE</h2>
               </div>
 

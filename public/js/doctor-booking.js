@@ -3,29 +3,30 @@
 // Doctor profiles data
 const DOCTORS = [
   {
-    id: 'dr-ahalya-krishnan',
-    name: 'Dr. Ahalya Krishnan',
-    title: 'Child Psychologist',
-    experience: '8 Years',
-    qualification: 'M.Phil, Ph.D Psychology',
+    id: 'dr-pratima-shinde',
+    name: 'Dr. Pratima Shinde',
+    title: 'Pediatrician',
+    experience: '13 Years',
+    qualification: 'MBBS, DNB Pediatrics',
     rating: 4.9,
-    totalRatings: 285,
-    sessionPrice: 1200,
+    totalRatings: 342,
+    sessionPrice: 999,
     status: 'Online',
     image: 'https://xsgames.co/randomusers/assets/avatars/female/74.jpg',
-    calendlyUrl: 'https://calendly.com/aqiraa-care/dr-ahalya-krishnan',
-    about: 'Specialized child psychologist with over 8 years of experience in child development, behavioral therapy, and family counseling. Expert in addressing emotional and psychological challenges in children.',
+    calendlyUrl: 'https://calendly.com/aqiraa-care/dr-pratima-shinde',
+    about: 'Experienced pediatrician with 13 years of expertise in pediatric care, PICU & NICU management. Running independent pediatric clinic since 2018 with over 5000 teleconsultations provided to rural areas. Certified lactation professional specializing in comprehensive child healthcare.',
     expertise: [
-      'Child Behavior Therapy',
-      'ADHD & Autism Spectrum',
-      'Learning Disabilities',
-      'Anxiety & Depression',
-      'Family Counseling'
+      'General Pediatrics',
+      'PICU & NICU Care',
+      'Newborn & Infant Care',
+      'Lactation Counseling',
+      'Pediatric Teleconsultation',
+      'Child Growth Monitoring'
     ],
     languages: ['English', 'Hindi', 'Marathi'],
     ratingBreakdown: {
-      5: 92,
-      4: 6,
+      5: 93,
+      4: 5,
       3: 1,
       2: 0,
       1: 1
