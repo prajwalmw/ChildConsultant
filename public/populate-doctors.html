@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Populate Doctors - Aqiraa Admin</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #f41192;
+      margin-bottom: 20px;
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .error {
+      background: #f8d7da;
+      border-left: 4px solid #dc3545;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    button {
+      background: linear-gradient(135deg, #f41192, #FF6B9D);
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(244,17,146,0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(244,17,146,0.4);
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .log {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 14px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏥 Populate Doctors Database</h1>
+
+    <div class="warning">
+      <strong>⚠️ Important:</strong> This will add doctor records to the Firestore database.
+      Run this only ONCE to populate the initial data. If doctors already exist, this may create duplicates.
+    </div>
+
+    <p><strong>This script will:</strong></p>
+    <ul>
+      <li>Create a "doctors" collection in Firestore</li>
+      <li>Add 4 doctor profiles with complete details</li>
+      <li>Set up proper fields for filtering and sorting</li>
+    </ul>
+
+    <button id="populateBtn" onclick="populateDoctors()">
+      Populate Doctors Database
+    </button>
+
+    <div id="result"></div>
+    <div id="log" class="log" style="display: none;"></div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+      authDomain: "child-consultant.firebaseapp.com",
+      projectId: "child-consultant",
+      storageBucket: "child-consultant.appspot.com",
+      messagingSenderId: "985386588549",
+      appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // Doctor data
+    const DOCTORS = [
+      {
+        id: 'dr-pratima-shinde',
+        name: 'Dr. Pratima Shinde',
+        title: 'Pediatrician',
+        experience: '9 Years',
+        experienceYears: 9,
+        qualification: 'MBBS, DNB Pediatrics',
+        rating: 4.9,
+        totalRatings: 342,
+        sessionPrice: 999,
+        status: 'Online',
+        image: 'https://xsgames.co/randomusers/assets/avatars/female/74.jpg',
+        calendlyUrl: 'https://calendly.com/aqiraa-care/dr-pratima-shinde',
+        about: 'Experienced pediatrician with 9 years of expertise in pediatric care, PICU & NICU management. Running independent pediatric clinic since 2018 with over 5000 teleconsultations provided to rural areas. Certified lactation professional specializing in comprehensive child healthcare.',
+        expertise: [
+          'General Pediatrics',
+          'PICU & NICU Care',
+          'Newborn & Infant Care',
+          'Lactation Counseling',
+          'Pediatric Teleconsultation',
+          'Child Growth Monitoring'
+        ],
+        languages: ['English', 'Hindi', 'Marathi'],
+        ratingBreakdown: {
+          5: 93,
+          4: 5,
+          3: 1,
+          2: 0,
+          1: 1
+        },
+        isTopRated: true,
+        displayOrder: 1,
+        active: true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      },
+      {
+        id: 'dr-ishani-deshmukh',
+        name: 'Dr. Ishani Deshmukh',
+        title: 'Child Nutritionist',
+        experience: '6 Years',
+        experienceYears: 6,
+        qualification: 'M.Sc Nutrition, RD',
+        rating: 4.8,
+        totalRatings: 210,
+        sessionPrice: 900,
+        status: 'Online',
+        image: 'https://xsgames.co/randomusers/assets/avatars/female/67.jpg',
+        calendlyUrl: 'https://calendly.com/aqiraa-care/dr-ishani-deshmukh',
+        about: 'Registered dietitian and child nutritionist specializing in pediatric nutrition, growth monitoring, and customized meal planning for children with specific dietary needs.',
+        expertise: [
+          'Pediatric Nutrition',
+          'Growth & Development',
+          'Picky Eaters Solutions',
+          'Food Allergies Management',
+          'Weight Management'
+        ],
+        languages: ['English', 'Hindi', 'Telugu'],
+        ratingBreakdown: {
+          5: 88,
+          4: 10,
+          3: 1,
+          2: 0,
+          1: 1
+        },
+        isTopRated: true,
+        displayOrder: 2,
+        active: true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      },
+      {
+        id: 'dr-tanvi-malhotra',
+        name: 'Dr. Tanvi Malhotra',
+        title: 'Pediatrician',
+        experience: '12 Years',
+        experienceYears: 12,
+        qualification: 'MBBS, MD Pediatrics',
+        rating: 4.9,
+        totalRatings: 340,
+        sessionPrice: 1000,
+        status: 'Online',
+        image: 'https://xsgames.co/randomusers/assets/avatars/female/71.jpg',
+        calendlyUrl: 'https://calendly.com/aqiraa-care/dr-tanvi-malhotra',
+        about: 'Senior pediatrician with 12 years of experience in child healthcare, preventive medicine, vaccination, and management of common childhood illnesses.',
+        expertise: [
+          'General Pediatrics',
+          'Vaccination & Immunization',
+          'Newborn Care',
+          'Growth Monitoring',
+          'Infectious Diseases'
+        ],
+        languages: ['English', 'Hindi', 'Gujarati'],
+        ratingBreakdown: {
+          5: 94,
+          4: 4,
+          3: 1,
+          2: 0,
+          1: 1
+        },
+        isTopRated: false,
+        displayOrder: 3,
+        active: true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      },
+      {
+        id: 'dr-nandini-iyer',
+        name: 'Dr. Nandini Iyer',
+        title: 'Pediatrician',
+        experience: '10 Years',
+        experienceYears: 10,
+        qualification: 'MBBS, DNB Pediatrics',
+        rating: 4.7,
+        totalRatings: 265,
+        sessionPrice: 950,
+        status: 'Online',
+        image: 'https://xsgames.co/randomusers/assets/avatars/female/65.jpg',
+        calendlyUrl: 'https://calendly.com/aqiraa-care/dr-nandini-iyer',
+        about: 'Experienced pediatrician specializing in developmental pediatrics, chronic disease management, and comprehensive child healthcare with a compassionate approach.',
+        expertise: [
+          'Developmental Pediatrics',
+          'Chronic Disease Management',
+          'Allergy & Asthma',
+          'Well-Child Checkups',
+          'Nutrition Counseling'
+        ],
+        languages: ['English', 'Hindi', 'Punjabi'],
+        ratingBreakdown: {
+          5: 82,
+          4: 14,
+          3: 2,
+          2: 1,
+          1: 1
+        },
+        isTopRated: false,
+        displayOrder: 4,
+        active: true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }
+    ];
+
+    function addLog(message, type = 'info') {
+      const logDiv = document.getElementById('log');
+      logDiv.style.display = 'block';
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#333';
+      entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+      logDiv.appendChild(entry);
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    async function populateDoctors() {
+      const btn = document.getElementById('populateBtn');
+      const resultDiv = document.getElementById('result');
+
+      btn.disabled = true;
+      btn.textContent = 'Populating...';
+      resultDiv.innerHTML = '';
+      document.getElementById('log').innerHTML = '';
+
+      addLog('Starting doctor population process...');
+
+      try {
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const doctor of DOCTORS) {
+          try {
+            await db.collection('doctors').doc(doctor.id).set(doctor);
+            addLog(`✓ Added ${doctor.name} (${doctor.id})`, 'success');
+            successCount++;
+          } catch (error) {
+            addLog(`✗ Failed to add ${doctor.name}: ${error.message}`, 'error');
+            errorCount++;
+          }
+        }
+
+        if (errorCount === 0) {
+          resultDiv.innerHTML = `
+            <div class="success">
+              <strong>✓ Success!</strong><br>
+              Successfully populated ${successCount} doctors to Firestore.<br><br>
+              <strong>Next steps:</strong>
+              <ol>
+                <li>Go to <a href="index.html">Homepage</a> to see the doctors</li>
+                <li>Check the <a href="https://console.firebase.google.com/project/child-consultant/firestore" target="_blank">Firestore Console</a></li>
+                <li>Delete or rename this file for security</li>
+              </ol>
+            </div>
+          `;
+        } else {
+          resultDiv.innerHTML = `
+            <div class="warning">
+              <strong>⚠️ Partial Success</strong><br>
+              Successfully added ${successCount} doctors, but ${errorCount} failed.<br>
+              Check the log below for details.
+            </div>
+          `;
+        }
+      } catch (error) {
+        addLog(`Fatal error: ${error.message}`, 'error');
+        resultDiv.innerHTML = `
+          <div class="error">
+            <strong>✗ Error!</strong><br>
+            ${error.message}<br><br>
+            Please check your Firebase configuration and try again.
+          </div>
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Populate Doctors Database';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,125 +1,87 @@
 // Doctor Booking System
 
-// Doctor profiles data
-const DOCTORS = [
-  {
-    id: 'dr-pratima-shinde',
-    name: 'Dr. Pratima Shinde',
-    title: 'Pediatrician',
-    experience: '13 Years',
-    qualification: 'MBBS, DNB Pediatrics',
-    rating: 4.9,
-    totalRatings: 342,
-    sessionPrice: 999,
-    status: 'Online',
-    image: 'https://xsgames.co/randomusers/assets/avatars/female/74.jpg',
-    calendlyUrl: 'https://calendly.com/aqiraa-care/dr-pratima-shinde',
-    about: 'Experienced pediatrician with 13 years of expertise in pediatric care, PICU & NICU management. Running independent pediatric clinic since 2018 with over 5000 teleconsultations provided to rural areas. Certified lactation professional specializing in comprehensive child healthcare.',
-    expertise: [
-      'General Pediatrics',
-      'PICU & NICU Care',
-      'Newborn & Infant Care',
-      'Lactation Counseling',
-      'Pediatric Teleconsultation',
-      'Child Growth Monitoring'
-    ],
-    languages: ['English', 'Hindi', 'Marathi'],
-    ratingBreakdown: {
-      5: 93,
-      4: 5,
-      3: 1,
-      2: 0,
-      1: 1
+// Global variable to store doctors data
+let DOCTORS = [];
+
+// Fetch doctors from Firestore
+async function fetchDoctorsFromFirestore() {
+  try {
+    // Fetch all doctors and filter/sort in memory
+    const snapshot = await firebase.firestore()
+      .collection('doctors')
+      .get();
+
+    // Filter active doctors and sort by displayOrder
+    DOCTORS = snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .filter(doc => doc.active === true)
+      .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
+
+    console.log(`Loaded ${DOCTORS.length} doctors from Firestore`);
+    return DOCTORS;
+  } catch (error) {
+    console.error('Error fetching doctors:', error);
+    // Return empty array if fetch fails
+    return [];
+  }
+}
+
+// Initialize doctors and render cards
+async function initializeDoctors() {
+  // Show loading state
+  const container = document.getElementById('doctors-container');
+  if (container) {
+    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #666;"><i class="fa fa-spinner fa-spin" style="font-size: 40px; color: #f41192; margin-bottom: 15px;"></i><p>Loading doctors...</p></div>';
+  }
+
+  // Fetch doctors from Firestore
+  await fetchDoctorsFromFirestore();
+
+  // Set global DOCTORS variable for filters to work
+  window.DOCTORS = DOCTORS;
+
+  // Render the doctor cards
+  if (DOCTORS.length > 0) {
+    // Check if renderDoctorCards function exists (defined in HTML)
+    if (typeof window.renderDoctorCards === 'function') {
+      window.renderDoctorCards(DOCTORS);
+    } else {
+      console.error('renderDoctorCards function not found');
     }
-  },
-  {
-    id: 'dr-ishani-deshmukh',
-    name: 'Dr. Ishani Deshmukh',
-    title: 'Child Nutritionist',
-    experience: '6 Years',
-    qualification: 'M.Sc Nutrition, RD',
-    rating: 4.8,
-    totalRatings: 210,
-    sessionPrice: 900,
-    status: 'Online',
-    image: 'https://xsgames.co/randomusers/assets/avatars/female/67.jpg',
-    calendlyUrl: 'https://calendly.com/aqiraa-care/dr-ishani-deshmukh',
-    about: 'Registered dietitian and child nutritionist specializing in pediatric nutrition, growth monitoring, and customized meal planning for children with specific dietary needs.',
-    expertise: [
-      'Pediatric Nutrition',
-      'Growth & Development',
-      'Picky Eaters Solutions',
-      'Food Allergies Management',
-      'Weight Management'
-    ],
-    languages: ['English', 'Hindi', 'Telugu'],
-    ratingBreakdown: {
-      5: 88,
-      4: 10,
-      3: 1,
-      2: 0,
-      1: 1
-    }
-  },
-  {
-    id: 'dr-tanvi-malhotra',
-    name: 'Dr. Tanvi Malhotra',
-    title: 'Pediatrician',
-    experience: '12 Years',
-    qualification: 'MBBS, MD Pediatrics',
-    rating: 4.9,
-    totalRatings: 340,
-    sessionPrice: 1000,
-    status: 'Online',
-    image: 'https://xsgames.co/randomusers/assets/avatars/female/71.jpg',
-    calendlyUrl: 'https://calendly.com/aqiraa-care/dr-tanvi-malhotra',
-    about: 'Senior pediatrician with 12 years of experience in child healthcare, preventive medicine, vaccination, and management of common childhood illnesses.',
-    expertise: [
-      'General Pediatrics',
-      'Vaccination & Immunization',
-      'Newborn Care',
-      'Growth Monitoring',
-      'Infectious Diseases'
-    ],
-    languages: ['English', 'Hindi', 'Gujarati'],
-    ratingBreakdown: {
-      5: 94,
-      4: 4,
-      3: 1,
-      2: 0,
-      1: 1
-    }
-  },
-  {
-    id: 'dr-nandini-iyer',
-    name: 'Dr. Nandini Iyer',
-    title: 'Pediatrician',
-    experience: '10 Years',
-    qualification: 'MBBS, DNB Pediatrics',
-    rating: 4.7,
-    totalRatings: 265,
-    sessionPrice: 950,
-    status: 'Online',
-    image: 'https://xsgames.co/randomusers/assets/avatars/female/65.jpg',
-    calendlyUrl: 'https://calendly.com/aqiraa-care/dr-nandini-iyer',
-    about: 'Experienced pediatrician specializing in developmental pediatrics, chronic disease management, and comprehensive child healthcare with a compassionate approach.',
-    expertise: [
-      'Developmental Pediatrics',
-      'Chronic Disease Management',
-      'Allergy & Asthma',
-      'Well-Child Checkups',
-      'Nutrition Counseling'
-    ],
-    languages: ['English', 'Hindi', 'Punjabi'],
-    ratingBreakdown: {
-      5: 82,
-      4: 14,
-      3: 2,
-      2: 1,
-      1: 1
+  } else {
+    if (container) {
+      container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #999;"><i class="fa fa-exclamation-circle" style="font-size: 40px; margin-bottom: 15px;"></i><p>No doctors available at the moment. Please check back later.</p></div>';
     }
   }
-];
+}
+
+// Initialize when DOM is ready - wait for both Firebase and DOM
+let domReady = false;
+let firebaseReady = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+  domReady = true;
+  tryInitialize();
+});
+
+// Also try after a short delay to ensure Firebase is loaded
+setTimeout(function() {
+  firebaseReady = true;
+  tryInitialize();
+}, 500);
+
+function tryInitialize() {
+  // Check if we're on a page with the doctors container and both DOM and Firebase are ready
+  if (domReady && firebaseReady && document.getElementById('doctors-container')) {
+    // Only initialize if not already initialized
+    if (DOCTORS.length === 0) {
+      initializeDoctors();
+    }
+  }
+}
 
 // Generate star rating HTML
 function generateStarRating(rating) {
@@ -182,12 +144,12 @@ function showDoctorProfile(doctorId) {
               </div>
 
               <div style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 15px 25px; border-radius: 15px; display: inline-block; margin-bottom: 15px;">
-                <div style="font-size: 14px; opacity: 0.9;">Session beginning at</div>
+                <div style="font-size: 14px; opacity: 0.9;">Appointment beginning at</div>
                 <div style="font-size: 28px; font-weight: 800;">₹${doctor.sessionPrice}</div>
               </div>
 
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="bookDoctorSession('${doctor.id}')" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 15px 35px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.3); flex: 1; min-width: 180px;">Book a Session</button>
+                <button onclick="bookDoctorSession('${doctor.id}')" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 15px 35px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.3); flex: 1; min-width: 180px;">Book an Appointment</button>
               </div>
             </div>
           </div>

@@ -89,13 +89,8 @@
             if (doc.exists) {
               const role = doc.data().role;
               if (navigation && role) {
-                if (role === 'admin') {
-                  // Admin sees Dashboard, Doctor Portal, and Manage Doctors
-                  menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
-                  menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
-                  menuHtml += '<li><a href="admin/manage-doctors.html" title="Manage Doctors" class="animsition-link">Manage Doctors</a></li>';
-                } else if (role === 'doctor') {
-                  // Doctors see Dashboard and Doctor Portal
+                if (role === 'admin' || role === 'doctor') {
+                  // Both admin and doctor see Dashboard and Doctor Portal
                   menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
                   menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
                 } else {
@@ -266,19 +261,415 @@
           </div>
         </div>
 
-    <!-- Subtle separator -->
-    <div style="padding: 40px 0; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,249,251,0.3) 100%);">
-      <div style="max-width: 1200px; margin: 0 auto; height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(244,17,146,0.1) 50%, transparent 100%);"></div>
+        <!-- What Aqiraa Offers Section -->
+        <div class="row" style="margin-top: 80px; margin-bottom: 60px;">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="section-title text-center" style="margin-bottom: 10px;">
+              <h2 style="font-size: 38px; color: #f41192; font-weight: 800;">✨ What Aqiraa Offers ✨</h2>
+              <p style="font-size: 16px; color: #666; margin-top: 15px;">Discover our comprehensive programs designed for your child's success</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-12">
+            <!-- Offers Carousel -->
+            <div class="offers-slider-wrapper" style="position: relative; max-width: 1200px; margin: 0 auto; padding: 40px 80px;">
+
+              <!-- Previous Button -->
+              <button onclick="previousSlide()" class="slider-btn prev-btn" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 10; background: linear-gradient(135deg, #f41192, #9e0ff1); border: none; width: 50px; height: 50px; border-radius: 50%; color: #ffffff !important; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(244, 17, 146, 0.4); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;">
+                ‹
+              </button>
+
+              <!-- Slides Container -->
+              <div class="slides-container" style="overflow: hidden; border-radius: 20px;">
+                <div class="slides-track" id="slidesTrack" style="display: flex; transition: transform 0.5s ease;">
+
+                  <!-- Slide 1: Dashboard -->
+                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #FFE5F1 0%, #FFF0F5 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(244, 17, 146, 0.15);">
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #FF6B9D, #FF8FAB); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3); border: 5px solid #fff;">📊</div>
+                    <h2 style="font-size: 36px; color: #f41192; margin-bottom: 20px; font-weight: 800;">Dashboard</h2>
+                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Track your child's growth and development with comprehensive analytics and real-time insights into their progress.</p>
+                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
+                  </div>
+
+                  <!-- Slide 2: 1:1 Session -->
+                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(76, 175, 80, 0.15);">
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #4CAF50, #66BB6A); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3); border: 5px solid #fff;">👥</div>
+                    <h2 style="font-size: 36px; color: #4CAF50; margin-bottom: 20px; font-weight: 800;">1:1 Session</h2>
+                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Personalized one-on-one consultations with expert pediatric specialists tailored to your child's unique needs.</p>
+                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
+                  </div>
+
+                  <!-- Slide 3: Interactive Programs -->
+                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(255, 152, 0, 0.15);">
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #FF9800, #FFB74D); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(255, 152, 0, 0.3); border: 5px solid #fff;">🎯</div>
+                    <h2 style="font-size: 36px; color: #FF9800; margin-bottom: 20px; font-weight: 800;">Interactive Programs</h2>
+                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Engaging activities and workshops designed to enhance cognitive abilities and social skills through fun learning.</p>
+                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
+                  </div>
+
+                  <!-- Slide 4: Diet Plan -->
+                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #E1F5FE 0%, #B3E5FC 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(3, 169, 244, 0.15);">
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #03A9F4, #4FC3F7); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(3, 169, 244, 0.3); border: 5px solid #fff;">🥗</div>
+                    <h2 style="font-size: 36px; color: #03A9F4; margin-bottom: 20px; font-weight: 800;">Customized Diet Plan</h2>
+                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Nutrition plans carefully tailored to your child's unique health needs for optimal growth and development.</p>
+                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
+                  </div>
+
+                  <!-- Slide 5: Fitness Programs -->
+                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(156, 39, 176, 0.15);">
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #9C27B0, #BA68C8); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(156, 39, 176, 0.3); border: 5px solid #fff;">⚡</div>
+                    <h2 style="font-size: 36px; color: #9C27B0; margin-bottom: 20px; font-weight: 800;">Physical Fitness Programs</h2>
+                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Fun and effective exercise routines designed to promote healthy physical growth and overall wellness.</p>
+                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Next Button -->
+              <button onclick="nextSlide()" class="slider-btn next-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10; background: linear-gradient(135deg, #f41192, #9e0ff1); border: none; width: 50px; height: 50px; border-radius: 50%; color: #ffffff !important; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(244, 17, 146, 0.4); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;">
+                ›
+              </button>
+
+              <!-- Dots Indicator -->
+              <div class="slider-dots" style="text-align: center; margin-top: 30px;">
+                <span class="dot active" onclick="goToSlide(0)" style="display: inline-block; width: 12px; height: 12px; background: linear-gradient(90deg, #f41192, #9e0ff1); border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
+                <span class="dot" onclick="goToSlide(1)" style="display: inline-block; width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
+                <span class="dot" onclick="goToSlide(2)" style="display: inline-block; width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
+                <span class="dot" onclick="goToSlide(3)" style="display: inline-block; width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
+                <span class="dot" onclick="goToSlide(4)" style="display: inline-block; width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <style>
+          .slider-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 12px 30px rgba(244, 17, 146, 0.6);
+          }
+
+          .slider-btn:active {
+            transform: translateY(-50%) scale(0.95);
+          }
+
+          .dot.active {
+            width: 30px !important;
+            border-radius: 6px !important;
+            background: linear-gradient(90deg, #f41192, #9e0ff1) !important;
+          }
+
+          .dot:hover {
+            transform: scale(1.2);
+          }
+
+          @media (max-width: 768px) {
+            .offers-slider-wrapper {
+              padding: 40px 60px !important;
+            }
+            .offer-slide h2 {
+              font-size: 28px !important;
+            }
+            .offer-slide p {
+              font-size: 16px !important;
+            }
+          }
+        </style>
+
+        <script>
+          let currentSlide = 0;
+          const totalSlides = 5;
+
+          function updateSlider() {
+            const track = document.getElementById('slidesTrack');
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+            // Update dots
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+              if (index === currentSlide) {
+                dot.classList.add('active');
+                dot.style.width = '30px';
+                dot.style.borderRadius = '6px';
+                dot.style.background = 'linear-gradient(90deg, #f41192, #9e0ff1)';
+              } else {
+                dot.classList.remove('active');
+                dot.style.width = '12px';
+                dot.style.borderRadius = '50%';
+                dot.style.background = '#ddd';
+              }
+            });
+          }
+
+          function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
+          }
+
+          function previousSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlider();
+          }
+
+          function goToSlide(index) {
+            currentSlide = index;
+            updateSlider();
+          }
+
+          // Auto-advance slides every 4 seconds
+          setInterval(nextSlide, 4000);
+        </script>
+
+      </div>
     </div>
 
-    <!-- Book a Doctor Appointment Section -->
-    <div id="doctor-booking" class="space-medium" style="background: linear-gradient(135deg, #FFF9FB 0%, #F0F4FF 100%); padding: 60px 0 70px 0;">
+    <div id="services" class="space-medium" style="background: linear-gradient(135deg, #FFF5F7 0%, #F0F9FF 100%); padding: 80px 0; border-top: 1px solid rgba(225, 190, 231, 0.3);">
+      <div class="container" style="max-width: 98%; width: 98%;">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="section-title">
+              <h1 style="color: #9e0ff1;">Childcare Speciality Services</h1>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 12px; margin: 0; width: 100%; align-items: stretch;">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
+          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_dietician.png"
+                  class="img-responsive" alt="Nutritionist Services"></a> </div>
+            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Nutritionist (Dietitian)</a></h2>
+              <p style="font-size: 14px; line-height: 1.4;">Expert nutrition guidance and personalized diet plans for your child's healthy growth and development.</p>
+              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
+          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_pediatrician.png"
+                  class="img-responsive pediatrician-img" alt="Pediatrician Services"></a> </div>
+            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Pediatrician</a></h2>
+              <p style="font-size: 14px; line-height: 1.4;">Comprehensive medical care for children from infancy through adolescence with compassionate doctors.</p>
+              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
+          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_therapist.png"
+                  class="img-responsive" alt="Psychology Services"></a> </div>
+            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Psychologist / Therapist</a></h2>
+              <p style="font-size: 14px; line-height: 1.4;">Professional counseling and therapy services to support your child's mental health and emotional wellbeing.</p>
+              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
+          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_educator.png"
+                  class="img-responsive" alt="Educator Services"></a> </div>
+            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Educator</a></h2>
+              <p style="font-size: 14px; line-height: 1.4;">Specialized educational support and learning programs tailored to your child's unique needs and abilities.</p>
+              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
+          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_yoga.png"
+                  class="img-responsive" alt="Yoga Therapy Services"></a> </div>
+            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Yoga Therapist</a></h2>
+              <p style="font-size: 14px; line-height: 1.4;">Therapeutic yoga sessions designed for children to enhance flexibility, mindfulness, and overall wellness.</p>
+              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
+            </div>
+          </div>
+        </div>
+      </div>
+        </div>
+    </div>
+
+    <!-- Focus Areas Section -->
+    <div id="focus-areas" class="space-medium focus-areas-section" style="background: linear-gradient(135deg, #FFE5F1 0%, #FFF4E6 50%, #E8F5E9 100%); padding: 100px 0; position: relative; overflow: hidden;">
+      <!-- Floating Decorative Shapes -->
+      <div class="floating-shapes">
+        <div class="shape shape-circle-1"></div>
+        <div class="shape shape-circle-2"></div>
+        <div class="shape shape-triangle-1"></div>
+        <div class="shape shape-star-1"></div>
+        <div class="shape shape-heart-1"></div>
+        <div class="shape shape-square-1"></div>
+      </div>
+
+      <div class="container" style="position: relative; z-index: 2;">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="section-title text-center" style="margin-bottom: 70px;">
+              <h1 style="font-size: 42px; color: #2C3E50; position: relative; display: inline-block;">
+                <span style="position: relative; z-index: 1;">Our Focus Areas for Children</span>
+                <span style="position: absolute; bottom: -10px; left: 0; right: 0; height: 15px; background: linear-gradient(90deg, #FFD93D, #FF6B9D); opacity: 0.3; border-radius: 10px; z-index: 0;"></span>
+              </h1>
+              <p style="margin-top: 20px; font-size: 18px; color: #546E7A;">Comprehensive development for every stage of childhood</p>
+            </div>
+          </div>
+        </div>
+        <!-- Circular Flow Layout -->
+        <div class="focus-areas-container">
+          <!-- Center Circle -->
+          <div class="center-circle">
+            <img src="images/logo.png" alt="Aqiraa" class="center-logo">
+          </div>
+
+          <!-- Card 1 - Top -->
+          <div class="focus-card-orbit focus-card-1" style="--angle: 0deg; --distance: 350px;">
+            <div class="focus-card-flip">
+              <div class="focus-card-front">
+                <div class="emoji-icon">💪</div>
+              </div>
+              <div class="focus-card-back">
+                <div class="emoji-icon-small">💪</div>
+                <h3 class="focus-title">Physical Growth</h3>
+                <p class="focus-description">Healthy milestones & motor skills</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 - Right Top -->
+          <div class="focus-card-orbit focus-card-2" style="--angle: 72deg; --distance: 350px;">
+            <div class="focus-card-flip">
+              <div class="focus-card-front">
+                <div class="emoji-icon">🥗</div>
+              </div>
+              <div class="focus-card-back">
+                <div class="emoji-icon-small">🥗</div>
+                <h3 class="focus-title">Nutritional Growth</h3>
+                <p class="focus-description">Balanced nutrition & healthy eating</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 - Right Bottom -->
+          <div class="focus-card-orbit focus-card-3" style="--angle: 144deg; --distance: 350px;">
+            <div class="focus-card-flip">
+              <div class="focus-card-front">
+                <div class="emoji-icon">🧠</div>
+              </div>
+              <div class="focus-card-back">
+                <div class="emoji-icon-small">🧠</div>
+                <h3 class="focus-title">Cognitive Development</h3>
+                <p class="focus-description">Brain power & learning strategies</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4 - Left Bottom -->
+          <div class="focus-card-orbit focus-card-4" style="--angle: 216deg; --distance: 350px;">
+            <div class="focus-card-flip">
+              <div class="focus-card-front">
+                <div class="emoji-icon">🎨</div>
+              </div>
+              <div class="focus-card-back">
+                <div class="emoji-icon-small">🎨</div>
+                <h3 class="focus-title">Creativity</h3>
+                <p class="focus-description">Imagination & artistic expression</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5 - Left Top -->
+          <div class="focus-card-orbit focus-card-5" style="--angle: 288deg; --distance: 350px;">
+            <div class="focus-card-flip">
+              <div class="focus-card-front">
+                <div class="emoji-icon">⭐</div>
+              </div>
+              <div class="focus-card-back">
+                <div class="emoji-icon-small">⭐</div>
+                <h3 class="focus-title">Personality & Character</h3>
+                <p class="focus-description">Confidence & emotional intelligence</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-medium">
+      <div class="container">
+      <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+          <div class="section-title text-center">
+            <h1>What Parents Say About Us</h1>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-scroll-container">
+        <div class="testimonial-scroll">
+          <div class="testimonial-card">
+            <div class="testimonial-block bg-light pinside30">
+              <div class="quote-box">
+                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+              </div>
+              <div class="testimonial-content mb30">
+                <p class="testimonial-text">"Aqiraa has been a blessing for my son's development. The holistic approach covering nutrition, cognitive skills, and emotional growth has made a remarkable difference. The team truly understands each child's unique needs."</p>
+                <h2 class="testimonial-name">- Meera Sharma</h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="testimonial-block bg-light pinside30">
+              <div class="quote-box">
+                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+              </div>
+              <div class="testimonial-content mb30">
+                <p class="testimonial-text">"The personalized care plan for my daughter has exceeded all expectations. From physical milestones to creative expression, Aqiraa's experts have guided us every step of the way. Highly recommended!"</p>
+                <h2 class="testimonial-name">- Ananya Desai</h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="testimonial-block bg-light pinside30">
+              <div class="quote-box">
+                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+              </div>
+              <div class="testimonial-content mb30">
+                <p class="testimonial-text">"As a working mother, finding comprehensive child development support was challenging. Aqiraa's integrated approach to my twins' growth—covering health, learning, and personality development—has been invaluable."</p>
+                <h2 class="testimonial-name">- Kavya Patel</h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="testimonial-block bg-light pinside30">
+              <div class="quote-box">
+                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
+              </div>
+              <div class="testimonial-content mb30">
+                <p class="testimonial-text">"The expert team at Aqiraa helped my son overcome developmental challenges with patience and professionalism. Their focus on complete child development—physical, mental, and emotional—truly sets them apart."</p>
+                <h2 class="testimonial-name">- Ishita Menon</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
+
+    <!-- Book a Doctor Session Section -->
+    <div id="doctor-booking" class="space-medium" style="background: linear-gradient(135deg, #E8F5E9 0%, #F0F9FF 100%); padding: 60px 0 70px 0;">
       <div class="container" style="max-width: 1400px;">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="section-title text-center" style="margin-bottom: 40px;">
-              <h1 style="font-size: 42px; color: #f41192; font-weight: 800; margin-bottom: 12px;">Book a Doctor Appointment</h1>
-              <p style="font-size: 18px; color: #666; margin-top: 8px; max-width: 700px; margin-left: auto; margin-right: auto;">Consult with our experienced panel of doctors and specialists</p>
+              <h1 style="font-size: 42px; color: #f41192; font-weight: 800; margin-bottom: 12px;">Book a Doctor Session</h1>
+              <p style="font-size: 18px; color: #666; margin-top: 8px; max-width: 700px; margin-left: auto; margin-right: auto;">Consult with our experienced child psychologists and psychiatrists</p>
               <div style="width: 100px; height: 5px; background: linear-gradient(90deg, #f41192, #9e0ff1); margin: 15px auto 0; border-radius: 3px;"></div>
             </div>
           </div>
@@ -710,35 +1101,27 @@
         renderDoctorCards(filtered);
       }
 
-      // Make renderDoctorCards global so doctor-booking.js can call it
-      window.renderDoctorCards = renderDoctorCards;
-
-      // Initialize filters on page load
+      // Initialize on page load
       document.addEventListener('DOMContentLoaded', function() {
-        // Add filter event listeners
-        const filterSpec = document.getElementById('filter-specialization');
-        const filterExp = document.getElementById('filter-experience');
-        const filterPrice = document.getElementById('filter-price');
-        const filterRating = document.getElementById('filter-rating');
-        const clearBtn = document.getElementById('clear-filters');
+        if (!window.DOCTORS) return;
 
-        if (filterSpec) filterSpec.addEventListener('change', filterDoctors);
-        if (filterExp) filterExp.addEventListener('change', filterDoctors);
-        if (filterPrice) filterPrice.addEventListener('change', filterDoctors);
-        if (filterRating) filterRating.addEventListener('change', filterDoctors);
+        // Render all doctors initially
+        renderDoctorCards(window.DOCTORS);
+
+        // Add filter event listeners
+        document.getElementById('filter-specialization').addEventListener('change', filterDoctors);
+        document.getElementById('filter-experience').addEventListener('change', filterDoctors);
+        document.getElementById('filter-price').addEventListener('change', filterDoctors);
+        document.getElementById('filter-rating').addEventListener('change', filterDoctors);
 
         // Clear filters button
-        if (clearBtn) {
-          clearBtn.addEventListener('click', function() {
-            if (filterSpec) filterSpec.value = '';
-            if (filterExp) filterExp.value = '';
-            if (filterPrice) filterPrice.value = '';
-            if (filterRating) filterRating.value = '';
-            if (window.DOCTORS && window.DOCTORS.length > 0) {
-              renderDoctorCards(window.DOCTORS);
-            }
-          });
-        }
+        document.getElementById('clear-filters').addEventListener('click', function() {
+          document.getElementById('filter-specialization').value = '';
+          document.getElementById('filter-experience').value = '';
+          document.getElementById('filter-price').value = '';
+          document.getElementById('filter-rating').value = '';
+          renderDoctorCards(window.DOCTORS);
+        });
       });
     </script>
 
@@ -808,408 +1191,6 @@
       </div>
     </div>
       </div>
-
-        <!-- What Aqiraa Offers Section -->
-        <div class="row" style="margin-top: 80px; margin-bottom: 60px;">
-          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <div class="section-title text-center" style="margin-bottom: 10px;">
-              <h2 style="font-size: 38px; color: #f41192; font-weight: 800;">✨ What Aqiraa Offers ✨</h2>
-              <p style="font-size: 16px; color: #666; margin-top: 15px;">Discover our comprehensive programs designed for your child's success</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-lg-12">
-            <!-- Offers Carousel -->
-            <div class="offers-slider-wrapper" style="position: relative; max-width: 1200px; margin: 0 auto; padding: 40px 80px;">
-
-              <!-- Previous Button -->
-              <button onclick="previousSlide()" class="slider-btn prev-btn" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 10; background: linear-gradient(135deg, #f41192, #9e0ff1); border: none; width: 50px; height: 50px; border-radius: 50%; color: #ffffff !important; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(244, 17, 146, 0.4); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;">
-                ‹
-              </button>
-
-              <!-- Slides Container -->
-              <div class="slides-container" style="overflow: hidden; border-radius: 20px;">
-                <div class="slides-track" id="slidesTrack" style="display: flex; transition: transform 0.5s ease;">
-
-                  <!-- Slide 1: Dashboard -->
-                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #FFE5F1 0%, #FFF0F5 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(244, 17, 146, 0.15);">
-                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #FF6B9D, #FF8FAB); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3); border: 5px solid #fff;">📊</div>
-                    <h2 style="font-size: 36px; color: #f41192; margin-bottom: 20px; font-weight: 800;">Dashboard</h2>
-                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Track your child's growth and development with comprehensive analytics and real-time insights into their progress.</p>
-                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
-                  </div>
-
-                  <!-- Slide 2: 1:1 Session -->
-                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(76, 175, 80, 0.15);">
-                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #4CAF50, #66BB6A); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3); border: 5px solid #fff;">👥</div>
-                    <h2 style="font-size: 36px; color: #4CAF50; margin-bottom: 20px; font-weight: 800;">1:1 Session</h2>
-                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Personalized one-on-one consultations with expert pediatric specialists tailored to your child's unique needs.</p>
-                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
-                  </div>
-
-                  <!-- Slide 3: Interactive Programs -->
-                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(255, 152, 0, 0.15);">
-                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #FF9800, #FFB74D); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(255, 152, 0, 0.3); border: 5px solid #fff;">🎯</div>
-                    <h2 style="font-size: 36px; color: #FF9800; margin-bottom: 20px; font-weight: 800;">Interactive Programs</h2>
-                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Engaging activities and workshops designed to enhance cognitive abilities and social skills through fun learning.</p>
-                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
-                  </div>
-
-                  <!-- Slide 4: Diet Plan -->
-                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #E1F5FE 0%, #B3E5FC 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(3, 169, 244, 0.15);">
-                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #03A9F4, #4FC3F7); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(3, 169, 244, 0.3); border: 5px solid #fff;">🥗</div>
-                    <h2 style="font-size: 36px; color: #03A9F4; margin-bottom: 20px; font-weight: 800;">Customized Diet Plan</h2>
-                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Nutrition plans carefully tailored to your child's unique health needs for optimal growth and development.</p>
-                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
-                  </div>
-
-                  <!-- Slide 5: Fitness Programs -->
-                  <div class="offer-slide" style="min-width: 100%; background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); padding: 60px 40px; text-align: center; border-radius: 20px; box-shadow: 0 15px 50px rgba(156, 39, 176, 0.15);">
-                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #9C27B0, #BA68C8); border-radius: 50%; margin: 0 auto 30px; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 10px 30px rgba(156, 39, 176, 0.3); border: 5px solid #fff;">⚡</div>
-                    <h2 style="font-size: 36px; color: #9C27B0; margin-bottom: 20px; font-weight: 800;">Physical Fitness Programs</h2>
-                    <p style="font-size: 18px; color: #555; line-height: 1.8; max-width: 600px; margin: 0 auto 30px;">Fun and effective exercise routines designed to promote healthy physical growth and overall wellness.</p>
-                    <div style="font-size: 28px;">⭐⭐⭐⭐⭐</div>
-                  </div>
-
-                </div>
-              </div>
-
-              <!-- Next Button -->
-              <button onclick="nextSlide()" class="slider-btn next-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10; background: linear-gradient(135deg, #f41192, #9e0ff1); border: none; width: 50px; height: 50px; border-radius: 50%; color: #ffffff !important; font-size: 24px; cursor: pointer; box-shadow: 0 8px 20px rgba(244, 17, 146, 0.4); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;">
-                ›
-              </button>
-
-              <!-- Dots Indicator -->
-              <div class="slider-dots" style="text-align: center; margin-top: 30px;">
-                <span class="dot active" onclick="goToSlide(0)" style="display: inline-block; width: 12px; height: 12px; background: linear-gradient(90deg, #f41192, #9e0ff1); border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
-                <span class="dot" onclick="goToSlide(1)" style="display: inline-block; width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
-                <span class="dot" onclick="goToSlide(2)" style="display: inline-block; width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
-                <span class="dot" onclick="goToSlide(3)" style="display: inline-block; width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
-                <span class="dot" onclick="goToSlide(4)" style="display: inline-block; width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: 0 6px; cursor: pointer; transition: all 0.3s ease;"></span>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <style>
-          .slider-btn:hover {
-            transform: translateY(-50%) scale(1.1);
-            box-shadow: 0 12px 30px rgba(244, 17, 146, 0.6);
-          }
-
-          .slider-btn:active {
-            transform: translateY(-50%) scale(0.95);
-          }
-
-          .dot.active {
-            width: 30px !important;
-            border-radius: 6px !important;
-            background: linear-gradient(90deg, #f41192, #9e0ff1) !important;
-          }
-
-          .dot:hover {
-            transform: scale(1.2);
-          }
-
-          @media (max-width: 768px) {
-            .offers-slider-wrapper {
-              padding: 40px 60px !important;
-            }
-            .offer-slide h2 {
-              font-size: 28px !important;
-            }
-            .offer-slide p {
-              font-size: 16px !important;
-            }
-          }
-        </style>
-
-        <script>
-          let currentSlide = 0;
-          const totalSlides = 5;
-
-          function updateSlider() {
-            const track = document.getElementById('slidesTrack');
-            track.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-            // Update dots
-            const dots = document.querySelectorAll('.dot');
-            dots.forEach((dot, index) => {
-              if (index === currentSlide) {
-                dot.classList.add('active');
-                dot.style.width = '30px';
-                dot.style.borderRadius = '6px';
-                dot.style.background = 'linear-gradient(90deg, #f41192, #9e0ff1)';
-              } else {
-                dot.classList.remove('active');
-                dot.style.width = '12px';
-                dot.style.borderRadius = '50%';
-                dot.style.background = '#ddd';
-              }
-            });
-          }
-
-          function nextSlide() {
-            currentSlide = (currentSlide + 1) % totalSlides;
-            updateSlider();
-          }
-
-          function previousSlide() {
-            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-            updateSlider();
-          }
-
-          function goToSlide(index) {
-            currentSlide = index;
-            updateSlider();
-          }
-
-          // Auto-advance slides every 4 seconds
-          setInterval(nextSlide, 4000);
-        </script>
-
-      </div>
-    </div>
-
-    <div id="services" class="space-medium" style="background: linear-gradient(135deg, #FFF5F7 0%, #F0F9FF 100%); padding: 80px 0; border-top: 1px solid rgba(225, 190, 231, 0.3);">
-      <div class="container" style="max-width: 98%; width: 98%;">
-        <div class="row">
-          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <div class="section-title">
-              <h1 style="color: #9e0ff1;">Childcare Speciality Services</h1>
-            </div>
-          </div>
-        </div>
-        <div class="row" style="display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 12px; margin: 0; width: 100%; align-items: stretch;">
-        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
-          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_dietician.png"
-                  class="img-responsive" alt="Nutritionist Services"></a> </div>
-            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Nutritionist (Dietitian)</a></h2>
-              <p style="font-size: 14px; line-height: 1.4;">Expert nutrition guidance and personalized diet plans for your child's healthy growth and development.</p>
-              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
-          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_pediatrician.png"
-                  class="img-responsive pediatrician-img" alt="Pediatrician Services"></a> </div>
-            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Pediatrician</a></h2>
-              <p style="font-size: 14px; line-height: 1.4;">Comprehensive medical care for children from infancy through adolescence with compassionate doctors.</p>
-              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
-          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_therapist.png"
-                  class="img-responsive" alt="Psychology Services"></a> </div>
-            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Psychologist / Therapist</a></h2>
-              <p style="font-size: 14px; line-height: 1.4;">Professional counseling and therapy services to support your child's mental health and emotional wellbeing.</p>
-              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
-          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_educator.png"
-                  class="img-responsive" alt="Educator Services"></a> </div>
-            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Educator</a></h2>
-              <p style="font-size: 14px; line-height: 1.4;">Specialized educational support and learning programs tailored to your child's unique needs and abilities.</p>
-              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
-          <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_yoga.png"
-                  class="img-responsive" alt="Yoga Therapy Services"></a> </div>
-            <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Yoga Therapist</a></h2>
-              <p style="font-size: 14px; line-height: 1.4;">Therapeutic yoga sessions designed for children to enhance flexibility, mindfulness, and overall wellness.</p>
-              <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
-            </div>
-          </div>
-        </div>
-      </div>
-        </div>
-    </div>
-
-    <!-- Focus Areas Section -->
-    <div id="focus-areas" class="space-medium focus-areas-section" style="background: linear-gradient(135deg, #FFE5F1 0%, #FFF4E6 50%, #E8F5E9 100%); padding: 100px 0; position: relative; overflow: hidden;">
-      <!-- Floating Decorative Shapes -->
-      <div class="floating-shapes">
-        <div class="shape shape-circle-1"></div>
-        <div class="shape shape-circle-2"></div>
-        <div class="shape shape-triangle-1"></div>
-        <div class="shape shape-star-1"></div>
-        <div class="shape shape-heart-1"></div>
-        <div class="shape shape-square-1"></div>
-      </div>
-
-      <div class="container" style="position: relative; z-index: 2;">
-        <div class="row">
-          <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <div class="section-title text-center" style="margin-bottom: 70px;">
-              <h1 style="font-size: 42px; color: #2C3E50; position: relative; display: inline-block;">
-                <span style="position: relative; z-index: 1;">Our Focus Areas for Children</span>
-                <span style="position: absolute; bottom: -10px; left: 0; right: 0; height: 15px; background: linear-gradient(90deg, #FFD93D, #FF6B9D); opacity: 0.3; border-radius: 10px; z-index: 0;"></span>
-              </h1>
-              <p style="margin-top: 20px; font-size: 18px; color: #546E7A;">Comprehensive development for every stage of childhood</p>
-            </div>
-          </div>
-        </div>
-        <!-- Circular Flow Layout -->
-        <div class="focus-areas-container">
-          <!-- Center Circle -->
-          <div class="center-circle">
-            <img src="images/logo.png" alt="Aqiraa" class="center-logo">
-          </div>
-
-          <!-- Card 1 - Top -->
-          <div class="focus-card-orbit focus-card-1" style="--angle: 0deg; --distance: 350px;">
-            <div class="focus-card-flip">
-              <div class="focus-card-front">
-                <div class="emoji-icon">💪</div>
-              </div>
-              <div class="focus-card-back">
-                <div class="emoji-icon-small">💪</div>
-                <h3 class="focus-title">Physical Growth</h3>
-                <p class="focus-description">Healthy milestones & motor skills</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 2 - Right Top -->
-          <div class="focus-card-orbit focus-card-2" style="--angle: 72deg; --distance: 350px;">
-            <div class="focus-card-flip">
-              <div class="focus-card-front">
-                <div class="emoji-icon">🥗</div>
-              </div>
-              <div class="focus-card-back">
-                <div class="emoji-icon-small">🥗</div>
-                <h3 class="focus-title">Nutritional Growth</h3>
-                <p class="focus-description">Balanced nutrition & healthy eating</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 3 - Right Bottom -->
-          <div class="focus-card-orbit focus-card-3" style="--angle: 144deg; --distance: 350px;">
-            <div class="focus-card-flip">
-              <div class="focus-card-front">
-                <div class="emoji-icon">🧠</div>
-              </div>
-              <div class="focus-card-back">
-                <div class="emoji-icon-small">🧠</div>
-                <h3 class="focus-title">Cognitive Development</h3>
-                <p class="focus-description">Brain power & learning strategies</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 4 - Left Bottom -->
-          <div class="focus-card-orbit focus-card-4" style="--angle: 216deg; --distance: 350px;">
-            <div class="focus-card-flip">
-              <div class="focus-card-front">
-                <div class="emoji-icon">🎨</div>
-              </div>
-              <div class="focus-card-back">
-                <div class="emoji-icon-small">🎨</div>
-                <h3 class="focus-title">Creativity</h3>
-                <p class="focus-description">Imagination & artistic expression</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 5 - Left Top -->
-          <div class="focus-card-orbit focus-card-5" style="--angle: 288deg; --distance: 350px;">
-            <div class="focus-card-flip">
-              <div class="focus-card-front">
-                <div class="emoji-icon">⭐</div>
-              </div>
-              <div class="focus-card-back">
-                <div class="emoji-icon-small">⭐</div>
-                <h3 class="focus-title">Personality & Character</h3>
-                <p class="focus-description">Confidence & emotional intelligence</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="space-medium">
-      <div class="container">
-      <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-          <div class="section-title text-center">
-            <h1>What Parents Say About Us</h1>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-scroll-container">
-        <div class="testimonial-scroll">
-          <div class="testimonial-card">
-            <div class="testimonial-block bg-light pinside30">
-              <div class="quote-box">
-                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
-              </div>
-              <div class="testimonial-content mb30">
-                <p class="testimonial-text">"Aqiraa has been a blessing for my son's development. The holistic approach covering nutrition, cognitive skills, and emotional growth has made a remarkable difference. The team truly understands each child's unique needs."</p>
-                <h2 class="testimonial-name">- Meera Sharma</h2>
-              </div>
-            </div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-block bg-light pinside30">
-              <div class="quote-box">
-                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
-              </div>
-              <div class="testimonial-content mb30">
-                <p class="testimonial-text">"The personalized care plan for my daughter has exceeded all expectations. From physical milestones to creative expression, Aqiraa's experts have guided us every step of the way. Highly recommended!"</p>
-                <h2 class="testimonial-name">- Ananya Desai</h2>
-              </div>
-            </div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-block bg-light pinside30">
-              <div class="quote-box">
-                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
-              </div>
-              <div class="testimonial-content mb30">
-                <p class="testimonial-text">"As a working mother, finding comprehensive child development support was challenging. Aqiraa's integrated approach to my twins' growth—covering health, learning, and personality development—has been invaluable."</p>
-                <h2 class="testimonial-name">- Kavya Patel</h2>
-              </div>
-            </div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-block bg-light pinside30">
-              <div class="quote-box">
-                <div class="testimonial-icon bg-default"> <i class="icon-left-quote text-white"></i> </div>
-              </div>
-              <div class="testimonial-content mb30">
-                <p class="testimonial-text">"The expert team at Aqiraa helped my son overcome developmental challenges with patience and professionalism. Their focus on complete child development—physical, mental, and emotional—truly sets them apart."</p>
-                <h2 class="testimonial-name">- Ishita Menon</h2>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-      </div>
-
 
     <!-- Child Packages Section -->
     <div id="packages" class="space-medium" style="background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%); padding: 60px 0 50px 0;">

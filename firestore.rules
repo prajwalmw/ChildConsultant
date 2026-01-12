@@ -87,6 +87,59 @@ service cloud.firestore {
     }
 
     // ============================================
+    // DOCTORS COLLECTION
+    // ============================================
+    match /doctors/{doctorId} {
+      // Anyone can read active doctors (public data)
+      allow read: if true;
+
+      // Only admins can write doctor data
+      allow write: if isAdmin();
+    }
+
+    // ============================================
+    // BOOKINGS COLLECTION (Package Bookings)
+    // ============================================
+    match /bookings/{bookingId} {
+      // Users can read their own bookings, admins can read all
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+
+      // Authenticated users can create bookings
+      allow create: if isSignedIn();
+
+      // Only admins can update/delete bookings
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // DOCTOR_BOOKINGS COLLECTION (Doctor Consultation Bookings)
+    // ============================================
+    match /doctor_bookings/{bookingId} {
+      // Users can read their own bookings, admins and doctors can read all
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin() || isDoctor());
+
+      // Authenticated users can create bookings
+      allow create: if isSignedIn();
+
+      // Only admins can update/delete bookings
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // FAILED_PAYMENTS COLLECTION (Payment Error Logs)
+    // ============================================
+    match /failed_payments/{paymentId} {
+      // Only admins can read failed payments
+      allow read: if isAdmin();
+
+      // Anyone can create failed payment logs (for error tracking)
+      allow create: if true;
+
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
     // DEFAULT DENY ALL OTHER COLLECTIONS
     // ============================================
     match /{document=**} {
