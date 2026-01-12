@@ -588,12 +588,19 @@
           </div>
 
           <div class="form-group">
-            <label>Doctor Photo <span class="required">*</span></label>
-            <input type="file" id="doctorImage" accept="image/*" required>
+            <label>Doctor Photo URL (Google Drive) <span class="required">*</span></label>
+            <input type="url" id="doctorImageUrl" placeholder="Paste any Google Drive link here..." required>
+            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+              📌 <strong>How to get Google Drive link:</strong><br>
+              1. Upload image to Google Drive<br>
+              2. Right-click → Share → Change to "Anyone with the link"<br>
+              3. Copy the link and paste here<br>
+              ✨ <strong>URL will be automatically converted to direct image link!</strong>
+            </small>
             <div id="imagePreview" style="margin-top: 10px; display: none;">
-              <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 10px; border: 2px solid #e9ecef;">
+              <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 10px; border: 2px solid #e9ecef; object-fit: cover;">
+              <p id="previewStatus" style="margin-top: 5px; font-size: 12px;"></p>
             </div>
-            <input type="hidden" id="doctorImageUrl">
           </div>
 
           <div class="form-group">
@@ -653,7 +660,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
   <script src="../js/manage-doctors.js"></script>
 </body>

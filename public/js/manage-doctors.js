@@ -17,7 +17,6 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 // Global variables
 let allDoctors = [];
@@ -186,11 +185,6 @@ function openAddModal() {
   document.getElementById('expertiseChips').innerHTML = '';
   document.getElementById('languageChips').innerHTML = '';
   document.getElementById('imagePreview').style.display = 'none';
-  document.getElementById('doctorImageUrl').value = '';
-
-  // Make image upload required for new doctors
-  document.getElementById('doctorImage').setAttribute('required', 'required');
-
   document.getElementById('doctorModal').classList.add('active');
 }
 
@@ -221,14 +215,14 @@ async function editDoctor(doctorId) {
     document.getElementById('doctorDisplayOrder').value = doctor.displayOrder || 999;
     document.getElementById('doctorImageUrl').value = doctor.image;
 
-    // Make image upload optional when editing
-    document.getElementById('doctorImage').removeAttribute('required');
-
     // Show existing image preview
     if (doctor.image) {
       document.getElementById('imagePreview').style.display = 'block';
       document.getElementById('previewImg').src = doctor.image;
+      document.getElementById('previewStatus').textContent = '✓ Image loaded successfully';
+      document.getElementById('previewStatus').style.color = '#4CAF50';
     }
+
     document.getElementById('doctorCalendly').value = doctor.calendlyUrl;
     document.getElementById('doctorAbout').value = doctor.about;
     document.getElementById('doctorStatus').value = doctor.status;
@@ -318,42 +312,90 @@ function removeChip(containerId, index) {
   }
 }
 
-// Handle image file selection and preview
+// Convert Google Drive URL to direct image URL
+function convertGoogleDriveUrl(url) {
+  // If already in correct format, return as is
+  if (url.includes('drive.google.com/uc?id=') || url.includes('drive.google.com/thumbnail?id=')) {
+    return url;
+  }
+
+  // Extract file ID from various Google Drive URL formats
+  let fileId = null;
+
+  // Format 1: https://drive.google.com/file/d/FILE_ID/view
+  const match1 = url.match(/\/file\/d\/([^\/\?]+)/);
+  if (match1) {
+    fileId = match1[1];
+  }
+
+  // Format 2: https://drive.google.com/open?id=FILE_ID
+  const match2 = url.match(/[?&]id=([^&]+)/);
+  if (match2) {
+    fileId = match2[1];
+  }
+
+  // If file ID found, convert to direct URL
+  // Using thumbnail endpoint which is more reliable for images
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+  }
+
+  // Return original URL if not a Google Drive link
+  return url;
+}
+
+// Handle image URL input and show preview
 document.addEventListener('DOMContentLoaded', function() {
-  const imageInput = document.getElementById('doctorImage');
+  const imageInput = document.getElementById('doctorImageUrl');
   if (imageInput) {
-    imageInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
+    imageInput.addEventListener('input', function(e) {
+      let imageUrl = e.target.value.trim();
+      const previewDiv = document.getElementById('imagePreview');
+      const previewImg = document.getElementById('previewImg');
+      const previewStatus = document.getElementById('previewStatus');
+
+      if (imageUrl) {
+        // Automatically convert Google Drive URL
+        const convertedUrl = convertGoogleDriveUrl(imageUrl);
+
+        // Update input if URL was converted
+        if (convertedUrl !== imageUrl) {
+          imageInput.value = convertedUrl;
+          imageUrl = convertedUrl;
+          previewStatus.textContent = '✓ URL automatically converted to direct link';
+          previewStatus.style.color = '#2196F3';
+        }
+
         // Show preview
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('imagePreview').style.display = 'block';
-          document.getElementById('previewImg').src = e.target.result;
+        previewDiv.style.display = 'block';
+        previewImg.src = imageUrl;
+
+        if (previewStatus.textContent !== '✓ URL automatically converted to direct link') {
+          previewStatus.textContent = 'Loading preview...';
+          previewStatus.style.color = '#666';
+        }
+
+        // Handle image load success
+        previewImg.onload = function() {
+          previewImg.style.border = '2px solid #4CAF50';
+          if (previewStatus.textContent !== '✓ URL automatically converted to direct link') {
+            previewStatus.textContent = '✓ Image loaded successfully';
+            previewStatus.style.color = '#4CAF50';
+          }
         };
-        reader.readAsDataURL(file);
+
+        // Handle image load error
+        previewImg.onerror = function() {
+          previewImg.style.border = '2px solid #f44336';
+          previewStatus.textContent = '✗ Could not load image. Check the URL or sharing settings.';
+          previewStatus.style.color = '#f44336';
+        };
+      } else {
+        previewDiv.style.display = 'none';
       }
     });
   }
 });
-
-// Upload image to Firebase Storage
-async function uploadDoctorImage(file, doctorId) {
-  try {
-    const storageRef = storage.ref();
-    const imageRef = storageRef.child(`doctor_photos/${doctorId}.${file.name.split('.').pop()}`);
-
-    // Upload file
-    const snapshot = await imageRef.put(file);
-
-    // Get download URL
-    const downloadURL = await snapshot.ref.getDownloadURL();
-    return downloadURL;
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    throw error;
-  }
-}
 
 // Handle form submit
 async function handleSubmit(event) {
@@ -373,22 +415,14 @@ async function handleSubmit(event) {
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-'));
 
-    // Handle image upload
-    let imageUrl = document.getElementById('doctorImageUrl').value; // Existing image URL
-    const imageFile = document.getElementById('doctorImage').files[0];
-
-    if (imageFile) {
-      // Upload new image
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading photo...';
-      imageUrl = await uploadDoctorImage(imageFile, doctorId);
-    } else if (!imageUrl && !editingDoctorId) {
-      alert('Please select a doctor photo');
+    // Get image URL from input
+    const imageUrl = document.getElementById('doctorImageUrl').value.trim();
+    if (!imageUrl) {
+      alert('Please enter the Google Drive image URL');
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Doctor';
       return;
     }
-
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving doctor data...';
 
     const doctorData = {
       name: doctorName,

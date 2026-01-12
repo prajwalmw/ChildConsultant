@@ -116,7 +116,7 @@ function showDoctorProfile(doctorId) {
         <div style="padding: 40px;">
           <div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">
             <div style="flex-shrink: 0;">
-              <img src="${doctor.image}" alt="${doctor.name}" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 5px solid #f41192;" onerror="this.src='images/default-doctor.png'">
+              <img src="${doctor.image}" alt="${doctor.name}" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 5px solid #f41192;" onerror="this.src='images/doctors/default_placeholder.jpg'">
               <div style="text-align: center; margin-top: 15px;">
                 <div style="font-size: 32px; font-weight: 800; color: #f41192;">${doctor.rating}</div>
                 <div>${generateStarRating(doctor.rating)}</div>
