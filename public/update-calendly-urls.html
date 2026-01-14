@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Update Calendly URLs</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+    h1 { color: #f41192; }
+    #status { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-top: 20px; }
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+  </style>
+</head>
+<body>
+  <h1>Update Calendly URLs for All Doctors</h1>
+  <p>This will update all doctors' calendlyUrl to: <strong>https://calendly.com/aqiraa-care/doctor-appointment</strong></p>
+  <button onclick="updateUrls()" style="background: #f41192; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Update All Doctors</button>
+  <div id="status"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+      authDomain: "child-consultant.firebaseapp.com",
+      projectId: "child-consultant",
+      storageBucket: "child-consultant.appspot.com",
+      messagingSenderId: "985386588549",
+      appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function updateUrls() {
+      const status = document.getElementById('status');
+      const newUrl = 'https://calendly.com/aqiraa-care/doctor-appointment';
+
+      status.innerHTML = '<p>Starting update...</p>';
+
+      try {
+        const snapshot = await db.collection('doctors').get();
+        status.innerHTML += `<p>Found ${snapshot.docs.length} doctors</p>`;
+
+        let updated = 0;
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+          await db.collection('doctors').doc(doc.id).update({
+            calendlyUrl: newUrl
+          });
+          status.innerHTML += `<p class="success">✓ Updated ${data.name} (was: ${data.calendlyUrl || 'empty'})</p>`;
+          updated++;
+        }
+
+        status.innerHTML += `<p class="success"><strong>Done! Updated ${updated} doctors.</strong></p>`;
+        status.innerHTML += '<p>You can now close this page and test the booking system.</p>';
+      } catch (error) {
+        status.innerHTML += `<p class="error">Error: ${error.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -205,7 +205,7 @@ function closeDoctorProfile() {
   }
 }
 
-// Book doctor session (opens Calendly, then Razorpay)
+// Book doctor session (opens Calendly popup, then Razorpay)
 function bookDoctorSession(doctorId) {
   const doctor = DOCTORS.find(d => d.id === doctorId);
   if (!doctor) return;
@@ -220,21 +220,96 @@ function bookDoctorSession(doctorId) {
   // Close the modal
   closeDoctorProfile();
 
-  // Open Calendly in a popup
-  window.open(doctor.calendlyUrl, 'calendly', 'width=800,height=600');
+  // Use single Calendly link for all doctors (or doctor's custom link if provided)
+  const calendlyUrl = doctor.calendlyUrl || 'https://calendly.com/aqiraa-care/doctor-appointment?month=2026-01';
 
-  // Show message to user
-  showCalendlyMessage(doctor);
+  console.log('Opening Calendly with URL:', calendlyUrl);
+
+  // Open Calendly popup widget (exact same as discovery session code)
+  Calendly.initPopupWidget({url: calendlyUrl});
+
+  // Listen for Calendly events
+  window.addEventListener('message', function(e) {
+    if (e.data.event && e.data.event === 'calendly.event_scheduled') {
+      // User successfully scheduled an appointment
+      console.log('Appointment scheduled:', e.data);
+
+      // Store the event details
+      sessionStorage.setItem('calendlyEvent', JSON.stringify(e.data.payload));
+
+      // Close Calendly popup
+      const calendlyOverlay = document.querySelector('.calendly-popup-close');
+      if (calendlyOverlay) calendlyOverlay.click();
+
+      // Show payment popup immediately and auto-trigger Razorpay
+      setTimeout(() => {
+        showPaymentInstructions(doctor, e.data.payload);
+        // Auto-open Razorpay after 1 second
+        setTimeout(() => {
+          proceedToDoctorPayment();
+        }, 1000);
+      }, 500);
+    }
+  });
 }
 
-// Show Calendly booking message
-function showCalendlyMessage(doctor) {
+// Show booking instructions (opens in new tab)
+function showBookingInstructions(doctor) {
+  const existingMsg = document.getElementById('bookingInstructions');
+  if (existingMsg) existingMsg.remove();
+
   const messageHTML = `
-    <div id="calendlyMessage" style="position: fixed; bottom: 30px; right: 30px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 9998; max-width: 400px; border-left: 5px solid #f41192;">
-      <button onclick="document.getElementById('calendlyMessage').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">×</button>
-      <h4 style="color: #f41192; margin-bottom: 10px; font-size: 18px;">Booking with ${doctor.name}</h4>
-      <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">After selecting your preferred date and time in Calendly, you'll be redirected to complete the payment of ₹${doctor.sessionPrice}.</p>
-      <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3);">Proceed to Payment</button>
+    <div id="bookingInstructions" style="position: fixed; bottom: 30px; right: 30px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 99999; max-width: 420px; border-left: 5px solid #f41192;">
+      <button onclick="document.getElementById('bookingInstructions').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">×</button>
+      <h4 style="color: #f41192; margin-bottom: 10px; font-size: 18px;">📅 Booking ${doctor.name}</h4>
+      <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
+        Select your preferred date and time in the new tab. After scheduling, return here to complete your payment of <strong>₹${doctor.sessionPrice}</strong>.
+      </p>
+      <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">I've Scheduled - Proceed to Payment</button>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', messageHTML);
+}
+
+// Show payment instructions after successful Calendly booking
+function showPaymentInstructions(doctor, eventDetails) {
+  const existingMsg = document.getElementById('paymentInstructions');
+  if (existingMsg) existingMsg.remove();
+
+  // Extract appointment details if available
+  let appointmentInfo = '';
+  console.log('Event details:', eventDetails);
+
+  if (eventDetails) {
+    // Try different possible paths for the start time
+    const startTimeStr = eventDetails.start_time ||
+                        (eventDetails.event && eventDetails.event.start_time) ||
+                        (eventDetails.invitee && eventDetails.invitee.start_time);
+
+    if (startTimeStr) {
+      const startTime = new Date(startTimeStr);
+      appointmentInfo = `
+        <div style="background: #f0f9ff; padding: 12px; border-radius: 10px; margin-bottom: 15px; border-left: 3px solid #f41192;">
+          <p style="margin: 0; font-size: 13px; color: #555;">
+            <strong>✓ Appointment Confirmed</strong><br>
+            📅 ${startTime.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}<br>
+            ⏰ ${startTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+        </div>
+      `;
+    }
+  }
+
+  const messageHTML = `
+    <div id="paymentInstructions" style="position: fixed; bottom: 30px; right: 30px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 99999; max-width: 420px; border-left: 5px solid #4CAF50;">
+      <button onclick="document.getElementById('paymentInstructions').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">×</button>
+      <h4 style="color: #4CAF50; margin-bottom: 10px; font-size: 18px;">🎉 Appointment Scheduled!</h4>
+      ${appointmentInfo}
+      <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
+        Complete your booking by paying <strong>₹${doctor.sessionPrice}</strong> to confirm your appointment with ${doctor.name}.
+      </p>
+      <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ₹${doctor.sessionPrice}</button>
     </div>
   `;
 
@@ -343,6 +418,8 @@ function handleDoctorPaymentSuccess(paymentResponse, doctor) {
 window.showDoctorProfile = showDoctorProfile;
 window.closeDoctorProfile = closeDoctorProfile;
 window.bookDoctorSession = bookDoctorSession;
+window.showBookingInstructions = showBookingInstructions;
+window.showPaymentInstructions = showPaymentInstructions;
 window.proceedToDoctorPayment = proceedToDoctorPayment;
 window.DOCTORS = DOCTORS;
 window.generateStarRating = generateStarRating;

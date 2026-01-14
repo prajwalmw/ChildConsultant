@@ -1552,7 +1552,7 @@
   <script src="js/razorpay-config.js"></script>
 
   <!-- Doctor Booking System -->
-  <script src="js/doctor-booking.js"></script>
+  <script src="js/doctor-booking.js?v=8"></script>
 
   <script>
     // Initialize EmailJS
@@ -1660,15 +1660,14 @@
     });
   </script>
 
-  <!-- Calendly badge widget begin -->
+  <!-- Calendly inline widget for doctor bookings -->
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
   <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
-  <script type="text/javascript">window.onload = function() { Calendly.initBadgeWidget({ url: 'https://calendly.com/aqiraa-care/30min', text: '✨ Book Free Discovery Session', color: '#f706c9', textColor: '#ffffff', branding: false }); }</script>
 
   <!-- Custom styling for gradient button -->
   <style>
-    .calendly-badge-widget .calendly-badge-content {
-      background: linear-gradient(135deg, #b97dd4 0%, #e879b9 100%) !important;
+    .hidden-calendly {
+      display: none !important;
       color: #ffffff !important;
       line-height: 1.6 !important;
       padding: 15px 25px !important;
