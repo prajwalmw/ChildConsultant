@@ -225,8 +225,25 @@ function bookDoctorSession(doctorId) {
 
   console.log('Opening Calendly with URL:', calendlyUrl);
 
-  // Open Calendly popup widget (exact same as discovery session code)
-  Calendly.initPopupWidget({url: calendlyUrl});
+  // Get logged-in user details
+  const user = firebase.auth().currentUser;
+  const prefillData = {};
+
+  if (user) {
+    if (user.displayName) {
+      prefillData.name = user.displayName;
+    }
+    if (user.email) {
+      prefillData.email = user.email;
+    }
+  }
+
+  // Open Calendly popup widget with pre-filled user data
+  // Note: The title "Doctor Appointment" comes from Calendly event settings and cannot be changed via API
+  Calendly.initPopupWidget({
+    url: calendlyUrl,
+    prefill: prefillData
+  });
 
   // Listen for Calendly events
   window.addEventListener('message', function(e) {
@@ -241,13 +258,9 @@ function bookDoctorSession(doctorId) {
       const calendlyOverlay = document.querySelector('.calendly-popup-close');
       if (calendlyOverlay) calendlyOverlay.click();
 
-      // Show payment popup immediately and auto-trigger Razorpay
+      // Auto-trigger Razorpay immediately (no intermediate dialog needed)
       setTimeout(() => {
-        showPaymentInstructions(doctor, e.data.payload);
-        // Auto-open Razorpay after 1 second
-        setTimeout(() => {
-          proceedToDoctorPayment();
-        }, 1000);
+        proceedToDoctorPayment();
       }, 500);
     }
   });
