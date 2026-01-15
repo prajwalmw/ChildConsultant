@@ -101,6 +101,7 @@
 
 
         // --- Role-Based Access and Initialization ---
+        let currentDoctorName = null;
         auth.onAuthStateChanged(user => {
             if (!user) {
                 window.location.href = '../login.html';
@@ -110,13 +111,16 @@
 
             db.collection('users').doc(user.uid).get()
                 .then(doc => {
-                    const role = doc.data()?.role;
+                    const userData = doc.data();
+                    const role = userData?.role;
+                    currentDoctorName = userData?.name || userData?.displayName || user.displayName || 'Unknown Doctor';
+
                     if (role !== 'admin' && role !== 'doctor') {
                         alert('Access Denied. Doctors and Admins only.');
                         window.location.href = '../index.html';
                     } else {
                         initializeForm();
-                        setupCancelButton(); 
+                        setupCancelButton();
                     }
                 })
                 .catch(error => {
@@ -236,6 +240,8 @@
 
             const consultationData = {
                 doctorId: currentDoctorId,
+                doctorName: currentDoctorName,
+                consultationDate: new Date(form['date-of-visit'].value),
                 date: new Date(form['date-of-visit'].value),
                 type: form['consultation-type'].value,
                 // Vitals

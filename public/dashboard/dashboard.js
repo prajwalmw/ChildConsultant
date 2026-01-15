@@ -1,6 +1,6 @@
 // dashboard.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import {
   calculateWeightPercentile,
@@ -845,6 +845,305 @@ async function checkUserAccess() {
   });
 }
 
+// Fetch doctor bookings from Firestore
+async function fetchDoctorBookings() {
+  const bookingsSnapshot = await getDocs(collection(db, 'doctor_bookings'));
+  const bookings = [];
+  bookingsSnapshot.forEach(doc => {
+    bookings.push({ id: doc.id, ...doc.data() });
+  });
+  return bookings;
+}
+
+// Fetch actual consultations from patients collection (for consultation count chart)
+async function fetchDoctorConsultations() {
+  const consultationsData = [];
+
+  try {
+    // Use collectionGroup to query all consultations across all parent/child hierarchies
+    // This works even when parent documents don't have fields
+    console.log('Querying all consultations using collectionGroup...');
+    const consultationsSnapshot = await getDocs(collectionGroup(db, 'consultations'));
+    console.log(`Found ${consultationsSnapshot.docs.length} total consultations`);
+
+    if (consultationsSnapshot.docs.length === 0) {
+      console.warn('No consultations found. Make sure consultations have been created via patient_consultation.html');
+      return [];
+    }
+
+    // Cache for doctor names and child names
+    const doctorNameCache = {};
+    const childNameCache = {};
+
+    for (const consultationDoc of consultationsSnapshot.docs) {
+      const consultation = consultationDoc.data();
+      const doctorId = consultation.doctorId || 'unknown';
+
+      // Get doctor name (from consultation data or fetch from users collection)
+      let doctorName = consultation.doctorName;
+
+      if (!doctorName && doctorId !== 'unknown') {
+        // Try to fetch from cache first
+        if (doctorNameCache[doctorId]) {
+          doctorName = doctorNameCache[doctorId];
+        } else {
+          // Fetch doctor name from users collection
+          try {
+            const doctorDoc = await getDoc(doc(db, 'users', doctorId));
+            if (doctorDoc.exists()) {
+              const doctorData = doctorDoc.data();
+              doctorName = doctorData.name || doctorData.displayName || 'Unknown Doctor';
+              doctorNameCache[doctorId] = doctorName;
+            } else {
+              doctorName = 'Unknown Doctor';
+              doctorNameCache[doctorId] = doctorName;
+            }
+          } catch (err) {
+            console.error(`Error fetching doctor ${doctorId}:`, err);
+            doctorName = 'Unknown Doctor';
+          }
+        }
+      } else if (!doctorName) {
+        doctorName = 'Unknown Doctor';
+      }
+
+      // Get child name from the consultation's parent path
+      // Path format: patients/{parentKey}/children/{childId}/consultations/{consultationId}
+      const pathParts = consultationDoc.ref.path.split('/');
+      const parentKey = pathParts[1];
+      const childId = pathParts[3];
+
+      let childName = 'Unknown Child';
+      const childCacheKey = `${parentKey}/${childId}`;
+
+      if (childNameCache[childCacheKey]) {
+        childName = childNameCache[childCacheKey];
+      } else {
+        try {
+          const childDoc = await getDoc(doc(db, 'patients', parentKey, 'children', childId));
+          if (childDoc.exists()) {
+            childName = childDoc.data().name || 'Unknown Child';
+            childNameCache[childCacheKey] = childName;
+          }
+        } catch (err) {
+          console.error(`Error fetching child ${childId}:`, err);
+        }
+      }
+
+      console.log(`  Consultation: ${consultationDoc.id}, Doctor: ${doctorName}, Child: ${childName}`);
+
+      consultationsData.push({
+        id: consultationDoc.id,
+        doctorId: doctorId,
+        doctorName: doctorName,
+        consultationDate: consultation.consultationDate || consultation.date,
+        childName: childName,
+        parentId: parentKey
+      });
+    }
+
+    console.log(`Total consultations found: ${consultationsData.length}`);
+    console.log('Consultation data:', consultationsData);
+  } catch (error) {
+    console.error('Error fetching doctor consultations:', error);
+  }
+
+  return consultationsData;
+}
+
+// Draw consultations per doctor chart
+function drawConsultationsPerDoctorChart(bookings) {
+  // Group bookings by doctor
+  const doctorConsultations = {};
+
+  bookings.forEach(booking => {
+    const doctorName = booking.doctorName || 'Unknown Doctor';
+    doctorConsultations[doctorName] = (doctorConsultations[doctorName] || 0) + 1;
+  });
+
+  // Sort doctors by consultation count
+  const sortedDoctors = Object.entries(doctorConsultations)
+    .sort((a, b) => b[1] - a[1]);
+
+  const doctorNames = sortedDoctors.map(entry => entry[0]);
+  const consultationCounts = sortedDoctors.map(entry => entry[1]);
+
+  // Generate colors for each doctor
+  const colors = [
+    'rgba(244, 17, 146, 0.8)',
+    'rgba(52, 152, 219, 0.8)',
+    'rgba(46, 204, 113, 0.8)',
+    'rgba(241, 196, 15, 0.8)',
+    'rgba(155, 89, 182, 0.8)',
+    'rgba(230, 126, 34, 0.8)',
+    'rgba(231, 76, 60, 0.8)',
+    'rgba(26, 188, 156, 0.8)'
+  ];
+
+  const ctx = document.getElementById('consultationsPerDoctorChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: doctorNames,
+      datasets: [{
+        label: 'Number of Consultations',
+        data: consultationCounts,
+        backgroundColor: colors.slice(0, doctorNames.length),
+        borderColor: colors.slice(0, doctorNames.length).map(c => c.replace('0.8', '1')),
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grace: '10%',
+          ticks: {
+            precision: 0,
+            font: {
+              size: 12
+            }
+          },
+          title: {
+            display: true,
+            text: 'Number of Consultations',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: 12
+            }
+          },
+          title: {
+            display: true,
+            text: 'Doctor Name',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// Draw revenue per doctor chart
+function drawRevenuePerDoctorChart(bookings) {
+  // Group revenue by doctor
+  const doctorRevenue = {};
+
+  bookings.forEach(booking => {
+    const doctorName = booking.doctorName || 'Unknown Doctor';
+    const revenue = booking.totalAmount || booking.amount || 0;
+    doctorRevenue[doctorName] = (doctorRevenue[doctorName] || 0) + revenue;
+  });
+
+  // Sort doctors by revenue
+  const sortedDoctors = Object.entries(doctorRevenue)
+    .sort((a, b) => b[1] - a[1]);
+
+  const doctorNames = sortedDoctors.map(entry => entry[0]);
+  const revenueAmounts = sortedDoctors.map(entry => entry[1]);
+
+  // Generate gradient colors
+  const colors = [
+    'rgba(39, 174, 96, 0.8)',
+    'rgba(46, 204, 113, 0.8)',
+    'rgba(26, 188, 156, 0.8)',
+    'rgba(52, 152, 219, 0.8)',
+    'rgba(155, 89, 182, 0.8)',
+    'rgba(142, 68, 173, 0.8)',
+    'rgba(241, 196, 15, 0.8)',
+    'rgba(230, 126, 34, 0.8)'
+  ];
+
+  const ctx = document.getElementById('revenuePerDoctorChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: doctorNames,
+      datasets: [{
+        label: 'Revenue Generated (₹)',
+        data: revenueAmounts,
+        backgroundColor: colors.slice(0, doctorNames.length),
+        borderColor: colors.slice(0, doctorNames.length).map(c => c.replace('0.8', '1')),
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return '₹' + context.parsed.y.toLocaleString('en-IN');
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '₹' + value.toLocaleString('en-IN');
+            },
+            font: {
+              size: 12
+            }
+          },
+          title: {
+            display: true,
+            text: 'Revenue (₹)',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: 12
+            }
+          },
+          title: {
+            display: true,
+            text: 'Doctor Name',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
 // Initialize dashboard
 async function initDashboard() {
   try {
@@ -883,6 +1182,14 @@ async function initDashboard() {
       return;
     }
 
+    // Fetch actual doctor consultations from patients collection
+    const doctorConsultations = await fetchDoctorConsultations();
+    console.log(`Fetched ${doctorConsultations.length} doctor consultations`);
+
+    // Fetch doctor bookings for revenue analytics
+    const doctorBookings = await fetchDoctorBookings();
+    console.log(`Fetched ${doctorBookings.length} doctor bookings`);
+
     const submissions = await fetchSubmissions();
     console.log(`Fetched ${submissions.length} submissions`);
 
@@ -890,11 +1197,32 @@ async function initDashboard() {
     const consultations = await fetchAllConsultations();
     console.log(`Fetched ${consultations.length} consultations`);
 
-    if (submissions.length === 0 && consultations.length === 0) {
+    if (submissions.length === 0 && consultations.length === 0 && doctorBookings.length === 0 && doctorConsultations.length === 0) {
       console.warn('No data found in the database');
       document.querySelector('.dashboard-container').innerHTML +=
         '<p style="text-align: center; color: #7f8c8d; margin-top: 40px;">No data available yet.</p>';
       return;
+    }
+
+    // Draw doctor analytics charts
+    // Consultations chart uses actual consultation data from patients collection
+    if (doctorConsultations.length > 0) {
+      drawConsultationsPerDoctorChart(doctorConsultations);
+    } else {
+      const consultationsChart = document.querySelector('#consultationsPerDoctorChart');
+      if (consultationsChart && consultationsChart.parentElement) {
+        consultationsChart.parentElement.innerHTML += '<p style="text-align: center; color: #7f8c8d; margin-top: 20px;">No consultations available yet.</p>';
+      }
+    }
+
+    // Revenue chart uses booking data (only available after Razorpay payments)
+    if (doctorBookings.length > 0) {
+      drawRevenuePerDoctorChart(doctorBookings);
+    } else {
+      const revenueChart = document.querySelector('#revenuePerDoctorChart');
+      if (revenueChart && revenueChart.parentElement) {
+        revenueChart.parentElement.innerHTML += '<p style="text-align: center; color: #7f8c8d; margin-top: 20px;">No revenue data available yet.</p>';
+      }
     }
 
     if (submissions.length > 0) {
