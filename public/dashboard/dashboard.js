@@ -832,7 +832,7 @@ async function checkUserAccess() {
         }
 
         const userData = userDoc.data();
-        if (userData.role !== 'admin' && userData.role !== 'doctor') {
+        if (userData.role !== 'admin') {
           reject(new Error('INSUFFICIENT_PERMISSIONS'));
           return;
         }
@@ -1169,7 +1169,7 @@ async function initDashboard() {
           window.location.href = '../login.html';
         }, 2000);
       } else if (error.message === 'INSUFFICIENT_PERMISSIONS') {
-        errorMessage = 'Access Denied: Admin or Doctor privileges required to view this dashboard.';
+        errorMessage = 'Access Denied: Admin privileges required to view this dashboard.';
         setTimeout(() => {
           window.location.href = '../index.html';
         }, 2000);

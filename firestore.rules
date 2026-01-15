@@ -66,9 +66,9 @@ service cloud.firestore {
     // ============================================
     // COLLECTION GROUP QUERIES
     // ============================================
-    // Allow collectionGroup queries on consultations for admins and doctors
+    // Allow collectionGroup queries on consultations for admins only (for dashboard)
     match /{path=**}/consultations/{consultationId} {
-      allow read: if isSignedIn() && (isAdmin() || isDoctor());
+      allow read: if isSignedIn() && isAdmin();
       allow write: if isSignedIn() && (isAdmin() || isDoctor());
     }
 
