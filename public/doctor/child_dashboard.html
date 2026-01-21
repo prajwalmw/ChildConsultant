@@ -424,6 +424,14 @@
         <!-- Stats will be populated by JavaScript -->
       </div>
 
+      <!-- ==================== PHYSICAL DEVELOPMENT SECTION ==================== -->
+      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #00c3c9;">
+        <i class="fa fa-child" style="color: #00c3c9; margin-right: 10px;"></i> Physical Development
+      </h2>
+      <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
+        Tracks growth metrics including BMI, weight, height, and head circumference based on WHO Child Growth Standards
+      </p>
+
       <!-- BMI Chart with Toggle -->
       <div class="hydration-card" id="bmiCard" style="display: none;">
         <div class="hydration-card-header">
@@ -506,6 +514,46 @@
           </div>
         </div>
       </div>
+
+      <!-- Motor Skills Coordination Score Card -->
+      <div class="hydration-card" id="motorSkillsCard" style="display: none;">
+        <div class="hydration-card-header">
+          <h3>⚡ Motor Skills Coordination Score</h3>
+          <div class="hydration-toggle">
+            <button class="hydration-toggle-btn active" onclick="switchMotorSkillsView('current')">Current</button>
+            <button class="hydration-toggle-btn" onclick="switchMotorSkillsView('history')">History</button>
+          </div>
+        </div>
+        <p class="subtitle">Age-specific motor development assessment based on <strong>WHO, CDC, and MABC-2</strong> clinical standards</p>
+
+        <!-- Current View -->
+        <div class="hydration-view active" id="motorSkillsCurrentView">
+          <div id="motorSkillsScoreSection">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- History View (Line Chart) -->
+        <div class="hydration-view" id="motorSkillsHistoryView">
+          <div style="margin: 20px 0;">
+            <canvas id="motorSkillsHistoryChart" style="max-height: 400px;"></canvas>
+          </div>
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <strong>How to Read:</strong> Lines show progression of motor skills scores over time. Each color represents a subcategory: Gross Motor, Fine Motor, Balance, and Strength.
+          </div>
+          <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <strong>📋 Clinical Standards:</strong> Motor skills assessments follow WHO Motor Development Milestones, CDC Developmental Milestones, and Movement Assessment Battery for Children (MABC-2) standards. Scores below 6.0 may indicate developmental delays requiring intervention.
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== NUTRITIONAL HEALTH SECTION ==================== -->
+      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #27ae60;">
+        <i class="fa fa-heart" style="color: #27ae60; margin-right: 10px;"></i> Nutritional Health
+      </h2>
+      <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
+        Monitors hydration levels (WHO standards) and sleep patterns (AASM guidelines) for optimal health and development
+      </p>
 
       <!-- Hydration Chart with Toggle -->
       <div class="hydration-card" id="hydrationCard" style="display: none;">
@@ -628,6 +676,42 @@
             <strong>📋 Legal Disclaimer:</strong> Sleep recommendations are based on American Academy of Sleep Medicine (AASM) clinical guidelines and National Sleep Foundation standards. These are evidence-based recommendations for healthy child development. Individual sleep needs may vary. Consult with healthcare provider for personalized assessment.
           </div>
         </div>
+      </div>
+
+      <!-- ==================== COGNITIVE DEVELOPMENT SECTION ==================== -->
+      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #9b59b6;">
+        <i class="fa fa-graduation-cap" style="color: #9b59b6; margin-right: 10px;"></i> Cognitive Development
+      </h2>
+      <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
+        Coming soon: Assessments for memory, problem-solving, language development, and learning milestones
+      </p>
+      <div style="background: #f8f9fa; padding: 30px; border-radius: 15px; text-align: center; color: #95a5a6; margin-bottom: 30px;">
+        <i class="fa fa-hourglass-half" style="font-size: 48px; margin-bottom: 15px;"></i>
+        <p style="margin: 0; font-size: 16px;">Charts and assessments will be added in future updates</p>
+      </div>
+
+      <!-- ==================== CREATIVITY SCALE SECTION ==================== -->
+      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #e67e22;">
+        <i class="fa fa-paint-brush" style="color: #e67e22; margin-right: 10px;"></i> Creativity Scale
+      </h2>
+      <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
+        Coming soon: Tracking artistic expression, imagination, innovative thinking, and creative problem-solving abilities
+      </p>
+      <div style="background: #f8f9fa; padding: 30px; border-radius: 15px; text-align: center; color: #95a5a6; margin-bottom: 30px;">
+        <i class="fa fa-hourglass-half" style="font-size: 48px; margin-bottom: 15px;"></i>
+        <p style="margin: 0; font-size: 16px;">Charts and assessments will be added in future updates</p>
+      </div>
+
+      <!-- ==================== PERSONALITY & CHARACTER SECTION ==================== -->
+      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #e74c3c;">
+        <i class="fa fa-user" style="color: #e74c3c; margin-right: 10px;"></i> Personality & Character
+      </h2>
+      <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
+        Coming soon: Behavioral patterns, emotional intelligence, social skills, and character development tracking
+      </p>
+      <div style="background: #f8f9fa; padding: 30px; border-radius: 15px; text-align: center; color: #95a5a6; margin-bottom: 30px;">
+        <i class="fa fa-hourglass-half" style="font-size: 48px; margin-bottom: 15px;"></i>
+        <p style="margin: 0; font-size: 16px;">Charts and assessments will be added in future updates</p>
       </div>
 
       <div class="chart-section" id="growthChartSection" style="display: none;">
@@ -1315,7 +1399,8 @@
             bedtime: data.bedtime,
             wakeTime: data.wakeTime,
             sleepQuality: data.sleepQuality,
-            temperature: data.temperature
+            temperature: data.temperature,
+            motorSkills: data.motorSkills
           });
         });
 
@@ -1466,6 +1551,9 @@
 
       // Display sleep chart
       displaySleepChart(consultations, childData);
+
+      // Display motor skills chart
+      displayMotorSkillsChart(consultations, childData);
     }
 
     // Calculate WHO recommended daily water intake based on age and weight
@@ -2044,6 +2132,326 @@
               ticks: { callback: (value) => value + ' hrs' },
               suggestedMin: Math.floor(Math.min(...sleepData.map(d => Math.min(d.minSleep, d.actualSleep))) - 2),
               suggestedMax: Math.ceil(Math.max(...sleepData.map(d => Math.max(d.maxSleep, d.actualSleep))) + 2)
+            }
+          }
+        }
+      });
+    }
+
+    // ==================== MOTOR SKILLS FUNCTIONS ====================
+
+    // Display motor skills chart
+    function displayMotorSkillsChart(consultations, childData) {
+      const motorSkillsCard = document.getElementById('motorSkillsCard');
+      const motorSkillsScoreSection = document.getElementById('motorSkillsScoreSection');
+
+      if (!consultations || consultations.length === 0) return;
+
+      const latestConsult = consultations[consultations.length - 1];
+
+      // Only show if motor skills data is available
+      if (!latestConsult.motorSkills || !latestConsult.motorSkills.overallScore) {
+        return;
+      }
+
+      const motorSkills = latestConsult.motorSkills;
+
+      // Calculate color and status based on overall score
+      const getScoreColor = (score) => {
+        if (score >= 9) return '#27ae60'; // Excellent - Green
+        if (score >= 7.5) return '#81c784'; // Good - Light Green
+        if (score >= 6) return '#ff9800'; // Average - Orange
+        if (score >= 4) return '#ff5722'; // Below Average - Dark Orange
+        return '#e74c3c'; // Concern - Red
+      };
+
+      const getScoreCategory = (score) => {
+        if (score >= 9) return 'Excellent';
+        if (score >= 7.5) return 'Good';
+        if (score >= 6) return 'Average';
+        if (score >= 4) return 'Below Average';
+        return 'Concern - Intervention Needed';
+      };
+
+      const overallScore = motorSkills.overallScore;
+      const scoreColor = getScoreColor(overallScore);
+      const scoreCategory = getScoreCategory(overallScore);
+      const alertLevel = motorSkills.alertLevel || 'none';
+
+      // Render score display
+      if (motorSkillsScoreSection) {
+        let alertBanner = '';
+        // Map alert levels to colors
+        const alertColors = {
+          excellent: null, // No alert for excellent
+          normal: null, // No alert for normal
+          monitor: { bg: '#fff9e6', border: '#ffc107', text: '#856404' },
+          warning: { bg: '#fff3e0', border: '#ff9800', text: '#e65100' },
+          critical: { bg: '#ffebee', border: '#f44336', text: '#c62828' }
+        };
+
+        if (alertLevel && alertColors[alertLevel]) {
+          const colors = alertColors[alertLevel];
+          alertBanner = `
+            <div style="background: ${colors.bg}; border: 2px solid ${colors.border}; color: ${colors.text}; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <strong>⚠️ Clinical Alert:</strong> Motor skills score is below expected range. Consider developmental assessment and intervention planning.
+            </div>
+          `;
+        }
+
+        motorSkillsScoreSection.innerHTML = `
+          ${alertBanner}
+
+          <!-- Main Score Layout - Side by Side -->
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
+
+            <!-- Left: Overall Score Card -->
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <div style="color: rgba(255,255,255,0.95); font-size: 13px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall Score</div>
+              <div style="color: white; font-size: 72px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore.toFixed(1)}</div>
+              <div style="color: white; font-size: 16px; font-weight: 600; margin-top: 12px; text-align: center;">${scoreCategory}</div>
+            </div>
+
+            <!-- Right: Subcategories Grid -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+
+              <!-- Gross Motor -->
+              <div style="background: linear-gradient(135deg, #00c3c9, #00a3a9); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,195,201,0.25); transition: transform 0.2s;">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                  <span style="font-size: 24px; margin-right: 8px;">🏃</span>
+                  <div style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Gross<br>Motor</div>
+                </div>
+                <div style="color: white; font-size: 42px; font-weight: 800; line-height: 1; margin-bottom: 8px;">${motorSkills.grossMotorAvg.toFixed(1)}</div>
+                <div style="color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 500;">${motorSkills.grossMotor ? Object.keys(motorSkills.grossMotor).length + ' skills' : 'No data'}</div>
+              </div>
+
+              <!-- Fine Motor -->
+              <div style="background: linear-gradient(135deg, #9b59b6, #8e44ad); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(155,89,182,0.25); transition: transform 0.2s;">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                  <span style="font-size: 24px; margin-right: 8px;">✋</span>
+                  <div style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Fine<br>Motor</div>
+                </div>
+                <div style="color: white; font-size: 42px; font-weight: 800; line-height: 1; margin-bottom: 8px;">${motorSkills.fineMotorAvg.toFixed(1)}</div>
+                <div style="color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 500;">${motorSkills.fineMotor ? Object.keys(motorSkills.fineMotor).length + ' skills' : 'No data'}</div>
+              </div>
+
+              <!-- Balance & Coordination -->
+              <div style="background: linear-gradient(135deg, #e67e22, #d35400); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(230,126,34,0.25); transition: transform 0.2s;">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                  <span style="font-size: 24px; margin-right: 8px;">⚖️</span>
+                  <div style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Balance &<br>Coordination</div>
+                </div>
+                <div style="color: white; font-size: 42px; font-weight: 800; line-height: 1; margin-bottom: 8px;">${motorSkills.balanceAvg.toFixed(1)}</div>
+                <div style="color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 500;">${motorSkills.balance ? Object.keys(motorSkills.balance).length + ' skills' : 'No data'}</div>
+              </div>
+
+              <!-- Strength & Endurance -->
+              <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(231,76,60,0.25); transition: transform 0.2s;">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                  <span style="font-size: 24px; margin-right: 8px;">💪</span>
+                  <div style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Strength &<br>Endurance</div>
+                </div>
+                <div style="color: white; font-size: 42px; font-weight: 800; line-height: 1; margin-bottom: 8px;">${motorSkills.strengthAvg.toFixed(1)}</div>
+                <div style="color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 500;">${motorSkills.strength ? Object.keys(motorSkills.strength).length + ' skills' : 'No data'}</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Clinical Notes -->
+          ${motorSkills.clinicalNotes ? `
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #00c3c9;">
+              <strong style="color: #2c3e50;">📝 Clinical Notes:</strong>
+              <p style="color: #555; margin: 10px 0 0 0; line-height: 1.6;">${motorSkills.clinicalNotes}</p>
+            </div>
+          ` : ''}
+
+          <!-- Progress Indicator -->
+          ${consultations.length > 1 ? (() => {
+            const prevConsult = consultations[consultations.length - 2];
+            if (prevConsult.motorSkills && prevConsult.motorSkills.overallScore) {
+              const prevScore = prevConsult.motorSkills.overallScore;
+              const scoreDiff = overallScore - prevScore;
+              const arrow = scoreDiff > 0 ? '↑' : scoreDiff < 0 ? '↓' : '→';
+              const diffColor = scoreDiff > 0 ? '#27ae60' : scoreDiff < 0 ? '#e74c3c' : '#7f8c8d';
+              return `
+                <div style="text-align: center; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                  <span style="color: #7f8c8d; font-size: 14px;">Progress from last visit: </span>
+                  <span style="color: ${diffColor}; font-size: 18px; font-weight: 700;">
+                    ${arrow} ${Math.abs(scoreDiff).toFixed(1)} points
+                  </span>
+                </div>
+              `;
+            }
+            return '';
+          })() : ''}
+        `;
+      }
+
+      // Show motor skills card
+      if (motorSkillsCard) motorSkillsCard.style.display = 'block';
+
+      // Store consultations data globally for history chart
+      window.motorSkillsConsultationsData = consultations;
+      window.motorSkillsChildData = childData;
+    }
+
+    // Switch between Current and History views for motor skills
+    window.switchMotorSkillsView = function(view) {
+      const currentView = document.getElementById('motorSkillsCurrentView');
+      const historyView = document.getElementById('motorSkillsHistoryView');
+      const buttons = document.querySelectorAll('#motorSkillsCard .hydration-toggle-btn');
+
+      if (view === 'current') {
+        currentView.classList.add('active');
+        historyView.classList.remove('active');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+      } else {
+        currentView.classList.remove('active');
+        historyView.classList.add('active');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+
+        // Draw history chart when switching to history view
+        drawMotorSkillsHistoryChart();
+      }
+    }
+
+    // Draw motor skills history chart
+    function drawMotorSkillsHistoryChart() {
+      if (typeof Chart === 'undefined') return;
+
+      const consultations = window.motorSkillsConsultationsData || [];
+      if (!consultations || consultations.length === 0) return;
+
+      const motorSkillsData = consultations
+        .map((consult, index) => {
+          if (!consult.motorSkills || !consult.motorSkills.overallScore) return null;
+
+          const ms = consult.motorSkills;
+          return {
+            visitNumber: index + 1,
+            date: parseDate(consult.date),
+            overallScore: ms.overallScore,
+            grossMotor: ms.grossMotorAvg,
+            fineMotor: ms.fineMotorAvg,
+            balance: ms.balanceAvg,
+            strength: ms.strengthAvg
+          };
+        })
+        .filter(d => d !== null);
+
+      if (motorSkillsData.length === 0) {
+        document.getElementById('motorSkillsHistoryChart').parentElement.innerHTML =
+          '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No motor skills history data available.</p>';
+        return;
+      }
+
+      const labels = motorSkillsData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+      const ctx = document.getElementById('motorSkillsHistoryChart');
+
+      if (window.motorSkillsHistoryChartInstance) {
+        window.motorSkillsHistoryChartInstance.destroy();
+      }
+
+      window.motorSkillsHistoryChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Overall Score',
+              data: motorSkillsData.map(d => d.overallScore),
+              backgroundColor: 'rgba(46, 204, 113, 0.2)',
+              borderColor: 'rgba(46, 204, 113, 1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 6,
+              pointHoverRadius: 8
+            },
+            {
+              label: 'Gross Motor',
+              data: motorSkillsData.map(d => d.grossMotor),
+              backgroundColor: 'rgba(0, 195, 201, 0.1)',
+              borderColor: 'rgba(0, 195, 201, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              label: 'Fine Motor',
+              data: motorSkillsData.map(d => d.fineMotor),
+              backgroundColor: 'rgba(155, 89, 182, 0.1)',
+              borderColor: 'rgba(155, 89, 182, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              label: 'Balance & Coordination',
+              data: motorSkillsData.map(d => d.balance),
+              backgroundColor: 'rgba(230, 126, 34, 0.1)',
+              borderColor: 'rgba(230, 126, 34, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              label: 'Strength & Endurance',
+              data: motorSkillsData.map(d => d.strength),
+              backgroundColor: 'rgba(231, 76, 60, 0.1)',
+              borderColor: 'rgba(231, 76, 60, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            datalabels: { display: false },
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            title: {
+              display: true,
+              text: 'Motor Skills Progress Across All Consultations',
+              font: { size: 16, weight: 'bold' },
+              color: '#2c3e50'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y.toFixed(1);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Consultation Visits' }
+            },
+            y: {
+              min: 0,
+              max: 10,
+              title: { display: true, text: 'Motor Skills Score (1-10)' },
+              ticks: {
+                stepSize: 1,
+                callback: (value) => value.toFixed(0)
+              }
             }
           }
         }

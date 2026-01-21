@@ -185,14 +185,18 @@
                         return;
                     }
                     const patient = doc.data();
-                    
+
                     currentPatientName = patient.name || 'Unknown Patient';
-                    
+
                     document.getElementById('patient-name-display').textContent = currentPatientName;
                     document.getElementById('patient-id-display').textContent = currentPatientId;
                     document.getElementById('patient-age-display').textContent = patientAge; // <<-- MODIFIED: Display age
-                    
+
                     document.getElementById('date-of-visit').value = getTodayDate();
+
+                    // Populate motor skills assessment based on child's age
+                    populateMotorSkillsAssessment(patient.dob || patient.dateOfBirth, patient.gender);
+
                     document.getElementById('consultation-form').addEventListener('submit', handleFormSubmission);
                 })
                 .catch(error => {
@@ -209,7 +213,302 @@
             const day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-        
+
+        // Calculate age in months from DOB
+        function calculateAgeInMonths(dobString) {
+            if (!dobString) return null;
+
+            let dob;
+            if (dobString.seconds) {
+                // Firestore Timestamp
+                dob = new Date(dobString.seconds * 1000);
+            } else if (typeof dobString === 'string') {
+                dob = new Date(dobString);
+            } else {
+                dob = dobString;
+            }
+
+            const today = new Date();
+            const months = (today.getFullYear() - dob.getFullYear()) * 12 + (today.getMonth() - dob.getMonth());
+            return months;
+        }
+
+        // Motor Skills Questions by Age Group (WHO, CDC, MABC-2 Standards)
+        const motorSkillsQuestions = {
+            '2-3': {
+                ageLabel: '2-3 Years',
+                grossMotor: [
+                    { id: 'walking', label: 'Independent Walking', description: 'Walks steadily without support' },
+                    { id: 'running', label: 'Running', description: 'Runs without falling frequently' },
+                    { id: 'kickingBall', label: 'Kicking Ball', description: 'Can kick a ball forward' },
+                    { id: 'climbingStairs', label: 'Climbing Stairs', description: 'Climbs stairs with/without support' }
+                ],
+                fineMotor: [
+                    { id: 'stackingBlocks', label: 'Stacking Blocks', description: 'Stacks 6+ blocks' },
+                    { id: 'scribbling', label: 'Scribbling/Drawing', description: 'Scribbles with crayons' },
+                    { id: 'usingUtensils', label: 'Using Spoon/Fork', description: 'Uses utensils to self-feed' }
+                ],
+                balance: [
+                    { id: 'throwingBall', label: 'Throwing Overhand', description: 'Throws a ball overhand' },
+                    { id: 'balance', label: 'Balance', description: 'Stands on one foot briefly' }
+                ],
+                strength: [
+                    { id: 'stamina', label: 'Physical Stamina', description: 'Energy during play activities' }
+                ]
+            },
+            '4-5': {
+                ageLabel: '4-5 Years',
+                grossMotor: [
+                    { id: 'hopping', label: 'Hopping on One Foot', description: 'Hops on one foot 3+ times' },
+                    { id: 'pedalingTricycle', label: 'Pedaling Tricycle', description: 'Pedals tricycle or bike with training wheels' },
+                    { id: 'catchingBall', label: 'Catching Ball', description: 'Catches large ball with both hands' },
+                    { id: 'climbing', label: 'Climbing', description: 'Climbs playground equipment confidently' }
+                ],
+                fineMotor: [
+                    { id: 'drawingShapes', label: 'Drawing Shapes', description: 'Copies circles, squares, basic shapes' },
+                    { id: 'cuttingScissors', label: 'Cutting with Scissors', description: 'Cuts paper along a line' },
+                    { id: 'buttoningZipping', label: 'Buttoning/Zipping', description: 'Buttons buttons or zips zippers' }
+                ],
+                balance: [
+                    { id: 'balancingOneFoot', label: 'Balancing', description: 'Balances on one foot for 5+ seconds' }
+                ],
+                strength: [
+                    { id: 'stamina', label: 'Physical Stamina', description: 'Energy during physical activities' }
+                ]
+            },
+            '6-8': {
+                ageLabel: '6-8 Years',
+                grossMotor: [
+                    { id: 'skipping', label: 'Skipping', description: 'Skips smoothly and rhythmically' },
+                    { id: 'jumpingRope', label: 'Jumping Rope', description: 'Jumps rope 5+ consecutive times' },
+                    { id: 'ridingBicycle', label: 'Riding Bicycle', description: 'Rides bicycle without training wheels' },
+                    { id: 'sportsSkills', label: 'Sports Skills', description: 'Coordination in sports (throwing, catching, kicking)' }
+                ],
+                fineMotor: [
+                    { id: 'handwriting', label: 'Handwriting', description: 'Legible and neat handwriting' },
+                    { id: 'tyingShoelaces', label: 'Tying Shoelaces', description: 'Ties shoelaces independently' },
+                    { id: 'usingTools', label: 'Using Tools', description: 'Uses scissors, rulers, drawing tools precisely' }
+                ],
+                balance: [
+                    { id: 'balanceBeam', label: 'Balance Beam', description: 'Walks on balance beam or narrow line' }
+                ],
+                strength: [
+                    { id: 'endurance', label: 'Endurance', description: 'Stamina during sustained activity' }
+                ]
+            },
+            '9-13': {
+                ageLabel: '9-13 Years',
+                grossMotor: [
+                    { id: 'complexSports', label: 'Complex Sports Skills', description: 'Proficiency in organized sports' },
+                    { id: 'reactionTime', label: 'Reaction Time', description: 'Quick reflexes and reactions' }
+                ],
+                fineMotor: [
+                    { id: 'fineMotorPrecision', label: 'Fine Motor Precision', description: 'Precision in typing, playing instruments' }
+                ],
+                balance: [
+                    { id: 'advancedCoordination', label: 'Advanced Coordination', description: 'Complex movement coordination' }
+                ],
+                strength: [
+                    { id: 'endurance', label: 'Endurance', description: 'Stamina during sustained physical activity' },
+                    { id: 'muscleTone', label: 'Muscle Tone', description: 'Overall muscle strength and tone' }
+                ]
+            }
+        };
+
+        function getAgeGroup(ageInMonths) {
+            if (ageInMonths >= 24 && ageInMonths < 48) return '2-3';
+            if (ageInMonths >= 48 && ageInMonths < 72) return '4-5';
+            if (ageInMonths >= 72 && ageInMonths < 108) return '6-8';
+            if (ageInMonths >= 108 && ageInMonths <= 156) return '9-13';
+            return '4-5'; // Default to preschool if outside range
+        }
+
+        function populateMotorSkillsAssessment(dob, gender) {
+            const ageInMonths = calculateAgeInMonths(dob);
+            if (!ageInMonths) {
+                document.getElementById('motorSkillsContainer').innerHTML =
+                    '<div style="background: #fff3cd; padding: 20px; border-radius: 10px; color: #856404;"><i class="fa fa-exclamation-triangle"></i> Unable to determine child\'s age. Please ensure DOB is recorded.</div>';
+                return;
+            }
+
+            const ageGroup = getAgeGroup(ageInMonths);
+            const questions = motorSkillsQuestions[ageGroup];
+
+            let html = `
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <strong style="color: #2e7d32;"><i class="fa fa-info-circle"></i> Age Group:</strong> ${questions.ageLabel} (${ageInMonths} months old)
+                    <br>
+                    <small style="color: #555;">Questions are customized based on child's developmental stage</small>
+                </div>
+            `;
+
+            // Gross Motor Skills
+            html += `
+                <h4 style="color: #00c3c9; margin-top: 20px; margin-bottom: 15px;">
+                    <i class="fa fa-child"></i> Gross Motor Skills
+                </h4>
+                <div class="row">
+            `;
+            questions.grossMotor.forEach(skill => {
+                html += `
+                    <div class="col-md-6 form-group">
+                        <label for="motor-${skill.id}">${skill.label}</label>
+                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="1" max="10" value="5" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <small class="form-text text-muted">${skill.description}</small>
+                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #00c3c9; font-size: 18px;">5</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            // Fine Motor Skills
+            html += `
+                <h4 style="color: #9b59b6; margin-top: 20px; margin-bottom: 15px;">
+                    <i class="fa fa-hand-paper-o"></i> Fine Motor Skills
+                </h4>
+                <div class="row">
+            `;
+            questions.fineMotor.forEach(skill => {
+                html += `
+                    <div class="col-md-6 form-group">
+                        <label for="motor-${skill.id}">${skill.label}</label>
+                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="1" max="10" value="5" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <small class="form-text text-muted">${skill.description}</small>
+                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #9b59b6; font-size: 18px;">5</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            // Balance & Coordination
+            html += `
+                <h4 style="color: #e67e22; margin-top: 20px; margin-bottom: 15px;">
+                    <i class="fa fa-balance-scale"></i> Balance & Coordination
+                </h4>
+                <div class="row">
+            `;
+            questions.balance.forEach(skill => {
+                html += `
+                    <div class="col-md-6 form-group">
+                        <label for="motor-${skill.id}">${skill.label}</label>
+                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="1" max="10" value="5" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <small class="form-text text-muted">${skill.description}</small>
+                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #e67e22; font-size: 18px;">5</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            // Strength & Endurance
+            html += `
+                <h4 style="color: #e74c3c; margin-top: 20px; margin-bottom: 15px;">
+                    <i class="fa fa-heartbeat"></i> Strength & Endurance
+                </h4>
+                <div class="row">
+            `;
+            questions.strength.forEach(skill => {
+                html += `
+                    <div class="col-md-6 form-group">
+                        <label for="motor-${skill.id}">${skill.label}</label>
+                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="1" max="10" value="5" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <small class="form-text text-muted">${skill.description}</small>
+                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #e74c3c; font-size: 18px;">5</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            document.getElementById('motorSkillsContainer').innerHTML = html;
+        }
+
+        // Collect motor skills data from form
+        function collectMotorSkillsData(form) {
+            const motorSkillsInputs = form.querySelectorAll('input[name^="motor-"]');
+            if (motorSkillsInputs.length === 0) {
+                return null; // No motor skills data
+            }
+
+            const grossMotor = {};
+            const fineMotor = {};
+            const balance = {};
+            const strength = {};
+
+            motorSkillsInputs.forEach(input => {
+                const skillId = input.name.replace('motor-', '');
+                const value = parseInt(input.value);
+
+                // Categorize based on skill ID
+                if (['walking', 'running', 'kickingBall', 'climbingStairs', 'hopping', 'pedalingTricycle',
+                     'catchingBall', 'climbing', 'skipping', 'jumpingRope', 'ridingBicycle', 'sportsSkills',
+                     'complexSports', 'reactionTime'].includes(skillId)) {
+                    grossMotor[skillId] = value;
+                } else if (['stackingBlocks', 'scribbling', 'usingUtensils', 'drawingShapes', 'cuttingScissors',
+                           'buttoningZipping', 'handwriting', 'tyingShoelaces', 'usingTools', 'fineMotorPrecision'].includes(skillId)) {
+                    fineMotor[skillId] = value;
+                } else if (['throwingBall', 'balance', 'balancingOneFoot', 'balanceBeam', 'advancedCoordination'].includes(skillId)) {
+                    balance[skillId] = value;
+                } else if (['stamina', 'endurance', 'muscleTone'].includes(skillId)) {
+                    strength[skillId] = value;
+                }
+            });
+
+            // Calculate averages
+            const calcAverage = (obj) => {
+                const values = Object.values(obj);
+                return values.length > 0 ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : null;
+            };
+
+            const grossMotorAvg = parseFloat(calcAverage(grossMotor));
+            const fineMotorAvg = parseFloat(calcAverage(fineMotor));
+            const balanceAvg = parseFloat(calcAverage(balance));
+            const strengthAvg = parseFloat(calcAverage(strength));
+
+            const overallScore = parseFloat(((grossMotorAvg + fineMotorAvg + balanceAvg + strengthAvg) / 4).toFixed(2));
+
+            // Determine category and alert level
+            let category, alertLevel;
+            if (overallScore >= 9.0) {
+                category = 'Excellent';
+                alertLevel = 'excellent';
+            } else if (overallScore >= 7.5) {
+                category = 'Good';
+                alertLevel = 'normal';
+            } else if (overallScore >= 6.0) {
+                category = 'Average';
+                alertLevel = 'monitor';
+            } else if (overallScore >= 4.0) {
+                category = 'Below Average';
+                alertLevel = 'warning';
+            } else {
+                category = 'Concern';
+                alertLevel = 'critical';
+            }
+
+            return {
+                grossMotor,
+                fineMotor,
+                balance,
+                strength,
+                grossMotorAvg,
+                fineMotorAvg,
+                balanceAvg,
+                strengthAvg,
+                overallScore,
+                category,
+                alertLevel,
+                clinicalNotes: form['motor-skills-notes'].value || '',
+                assessmentDate: new Date()
+            };
+        }
+
 
         // Generates Readable, UNIQUE ID using Name and Timestamp
         function generateConsultationId(patientName) {
@@ -258,6 +557,9 @@
                 bedtime: form['bedtime'].value || null,
                 wakeTime: form['wake-time'].value || null,
                 sleepQuality: form['sleep-quality'].value || null,
+
+                // Motor Skills Coordination
+                motorSkills: collectMotorSkillsData(form),
 
                 // S.O.A.P.
                 subjective: form['subjective'].value,
@@ -418,6 +720,28 @@
                                     <option value="Poor">Poor - Very restless, wakes up many times</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="section-separator">
+                            <h3>⚡ Motor Skills Coordination Assessment</h3>
+                            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
+                                Rate each motor skill on a scale of 1-10 (Age-appropriate questions will auto-populate based on child's age)
+                                <br>
+                                <strong>Standards:</strong> WHO Motor Development Milestones, CDC Developmental Milestones, Movement Assessment Battery for Children (MABC-2)
+                            </p>
+                        </div>
+
+                        <!-- Motor Skills will be dynamically populated based on age -->
+                        <div id="motorSkillsContainer">
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; color: #95a5a6;">
+                                <i class="fa fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                <p style="margin: 0;">Loading age-appropriate motor skills assessment...</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label for="motor-skills-notes">Clinical Notes (Motor Skills)</label>
+                            <textarea class="form-control" id="motor-skills-notes" rows="3" placeholder="Additional observations about motor development, concerns, or recommendations..."></textarea>
                         </div>
 
                         <div class="section-separator">
