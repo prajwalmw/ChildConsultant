@@ -145,30 +145,41 @@
     }
     .bmi-score-section {
       text-align: center;
-      padding: 20px;
-      border-radius: 12px;
+      padding: 20px 15px;
+      border-radius: 15px;
       color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 220px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      overflow: visible;
     }
     .bmi-score-section h3 {
-      margin: 0 0 15px 0;
-      font-size: 18px;
-      opacity: 0.95;
-      font-weight: 600;
+      margin: 0 0 10px 0;
+      font-size: 10px;
+      opacity: 0.85;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
     .bmi-score-value {
-      font-size: 56px;
-      font-weight: bold;
-      margin: 15px 0;
+      font-size: 50px;
+      font-weight: 800;
+      margin: 5px 0;
       line-height: 1;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
     .bmi-category {
-      font-size: 20px;
-      font-weight: 600;
-      margin: 15px 0 10px 0;
+      font-size: 15px;
+      font-weight: 700;
+      margin: 8px 0 5px 0;
+      line-height: 1.2;
     }
     .bmi-percentile {
-      font-size: 16px;
-      opacity: 0.95;
+      font-size: 12px;
+      opacity: 0.85;
+      font-weight: 500;
     }
     .bmi-legend-section {
       background: #f8f9fa;
@@ -436,82 +447,30 @@
       <div class="hydration-card" id="bmiCard" style="display: none;">
         <div class="hydration-card-header">
           <h3>📊 BMI (Body Mass Index)</h3>
-          <div class="hydration-toggle">
-            <button class="hydration-toggle-btn active" onclick="switchBMIView('current')">Current</button>
-            <button class="hydration-toggle-btn" onclick="switchBMIView('overview')">Overview</button>
-          </div>
         </div>
         <p class="subtitle">BMI tracking compared to <strong>WHO BMI-for-Age</strong> standards (2-19 years)</p>
 
-        <!-- Current View -->
-        <div class="hydration-view active" id="bmiCurrentView">
-          <div class="bmi-card-content">
-            <!-- BMI Score Section (Left) -->
-            <div id="bmiScoreSection">
-              <!-- Will be populated by JavaScript -->
-            </div>
+        <!-- BMI Content: Score Card + Chart Side by Side -->
+        <div style="display: grid; grid-template-columns: 220px 1fr; gap: 25px; margin-top: 20px; align-items: center;">
+          <!-- BMI Score Card (Left - Square) -->
+          <div id="bmiScoreSection">
+            <!-- Will be populated by JavaScript -->
+          </div>
 
-            <!-- Color Legend Section (Right) -->
-            <div class="bmi-legend-section">
-              <h4>WHO BMI-for-Age Categories (2-19 years)</h4>
-
-              <div class="bmi-legend-item">
-                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);"></div>
-                <div>
-                  <div class="bmi-legend-text">Severely Underweight</div>
-                  <div class="bmi-legend-range">&lt;3rd percentile</div>
-                </div>
-              </div>
-
-              <div class="bmi-legend-item">
-                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);"></div>
-                <div>
-                  <div class="bmi-legend-text">Underweight</div>
-                  <div class="bmi-legend-range">3rd-15th percentile</div>
-                </div>
-              </div>
-
-              <div class="bmi-legend-item">
-                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);"></div>
-                <div>
-                  <div class="bmi-legend-text">Healthy Weight</div>
-                  <div class="bmi-legend-range">15th-85th percentile</div>
-                </div>
-              </div>
-
-              <div class="bmi-legend-item">
-                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #f7a83d 0%, #e09734 100%);"></div>
-                <div>
-                  <div class="bmi-legend-text">Overweight</div>
-                  <div class="bmi-legend-range">85th-97th percentile</div>
-                </div>
-              </div>
-
-              <div class="bmi-legend-item">
-                <div class="bmi-legend-color" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);"></div>
-                <div>
-                  <div class="bmi-legend-text">Obese</div>
-                  <div class="bmi-legend-range">&gt;97th percentile</div>
-                </div>
-              </div>
+          <!-- BMI Chart (Right - Full height) -->
+          <div style="display: flex; flex-direction: column;">
+            <div style="flex: 1;">
+              <canvas id="bmiOverviewChart" style="height: 400px; max-height: 400px;"></canvas>
             </div>
           </div>
-          <p style="text-align: center; color: #7f8c8d; font-size: 13px; margin-top: 15px; font-style: italic;">
-            📅 This reading is from the latest consultation
-          </p>
         </div>
 
-        <!-- Overview View -->
-        <div class="hydration-view" id="bmiOverviewView">
-          <div style="margin: 20px 0;">
-            <canvas id="bmiOverviewChart" style="max-height: 400px;"></canvas>
-          </div>
-          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
-            <strong>How to Read:</strong> Blue line shows child's actual BMI across all consultations. Colored horizontal bands show WHO BMI-for-Age percentile categories (green = healthy weight range).
-          </div>
-          <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 15px;">
-            <strong>📋 Clinical Standards:</strong> BMI categories are based on World Health Organization (WHO) BMI-for-Age percentiles for children and adolescents aged 2-19 years. These percentiles account for age and gender differences in body composition during growth and development.
-          </div>
+        <!-- Info Sections Below -->
+        <div style="background: #f8f9fa; padding: 12px 15px; border-radius: 8px; margin-top: 20px; font-size: 13px;">
+          <strong>How to Read:</strong> Blue line shows child's actual BMI across all consultations. Colored horizontal bands show WHO BMI-for-Age percentile categories (green = healthy weight range).
+        </div>
+        <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 12px 15px; border-radius: 8px; margin-top: 12px; font-size: 13px;">
+          <strong>📋 Clinical Standards:</strong> BMI categories are based on World Health Organization (WHO) BMI-for-Age percentiles for children and adolescents aged 2-19 years. These percentiles account for age and gender differences in body composition during growth and development.
         </div>
       </div>
 
@@ -1526,11 +1485,35 @@
           // Populate BMI score section
           if (bmiScoreSection) {
             bmiScoreSection.innerHTML = `
-              <div class="bmi-score-section" style="${bmiGradient}">
+              <div class="bmi-score-section" style="${bmiGradient} position: relative;">
                 <h3>BMI (WHO Standard)</h3>
                 <div class="bmi-score-value">${bmi.toFixed(1)}</div>
                 <div class="bmi-category">${bmiCategory}</div>
                 <div class="bmi-percentile">${bmiPercentile.toFixed(0)}th Percentile</div>
+              </div>
+
+              <!-- Horizontal Legend below card -->
+              <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; padding: 0 5px;">
+                <div style="display: flex; align-items: center; gap: 3px;">
+                  <div style="width: 10px; height: 10px; border-radius: 2px; background: #e74c3c;"></div>
+                  <span style="font-size: 8px; color: #555; white-space: nowrap;">Severely UW</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 3px;">
+                  <div style="width: 10px; height: 10px; border-radius: 2px; background: #f1c40f;"></div>
+                  <span style="font-size: 8px; color: #555; white-space: nowrap;">Underweight</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 3px;">
+                  <div style="width: 10px; height: 10px; border-radius: 2px; background: #4CAF50;"></div>
+                  <span style="font-size: 8px; color: #555; white-space: nowrap;">Healthy</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 3px;">
+                  <div style="width: 10px; height: 10px; border-radius: 2px; background: #f7a83d;"></div>
+                  <span style="font-size: 8px; color: #555; white-space: nowrap;">Overweight</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 3px;">
+                  <div style="width: 10px; height: 10px; border-radius: 2px; background: #3498db;"></div>
+                  <span style="font-size: 8px; color: #555; white-space: nowrap;">Obese</span>
+                </div>
               </div>
             `;
           }
@@ -1540,6 +1523,8 @@
             bmiCard.style.display = 'block';
             window.bmiConsultationsData = consultations;
             window.bmiChildData = childData;
+            // Automatically render BMI chart
+            setTimeout(() => drawBMIOverviewChart(), 100);
           }
         }
       }
@@ -2201,11 +2186,11 @@
           const colors = alertColors[alertLevel];
           let rangeInfo = '';
           if (alertLevel === 'monitor') {
-            rangeInfo = 'Current score is in the Average range (6.0-7.4). Expected range for good development is 7.5+.';
+            rangeInfo = 'Current score is in the average range. Expected range for good development is 7.5+.';
           } else if (alertLevel === 'warning') {
-            rangeInfo = 'Current score is Below Average (4.0-5.9). Expected range for age-appropriate development is 6.0+.';
+            rangeInfo = 'Current score is below average. Expected range for age-appropriate development is 6.0+.';
           } else if (alertLevel === 'critical') {
-            rangeInfo = 'Current score indicates Concern (<4.0). Immediate developmental assessment recommended. Expected range is 6.0+.';
+            rangeInfo = 'Current score indicates concern. Immediate developmental assessment recommended. Expected range is 6.0+.';
           }
           alertBanner = `
             <div style="background: ${colors.bg}; border: 2px solid ${colors.border}; color: ${colors.text}; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -2407,6 +2392,29 @@
       }
     }
 
+    // Toggle BMI Legend Tooltip
+    // Show BMI Legend on hover
+    window.showBMILegend = function() {
+      const tooltip = document.getElementById('bmiLegendTooltip');
+      console.log('showBMILegend called, tooltip:', tooltip);
+      if (tooltip) {
+        console.log('Showing BMI tooltip');
+        tooltip.style.display = 'block';
+      } else {
+        console.error('BMI tooltip not found!');
+      }
+    }
+
+    // Hide BMI Legend when leaving
+    window.hideBMILegend = function() {
+      const tooltip = document.getElementById('bmiLegendTooltip');
+      console.log('hideBMILegend called, tooltip:', tooltip);
+      if (tooltip) {
+        console.log('Hiding BMI tooltip');
+        tooltip.style.display = 'none';
+      }
+    }
+
     // Draw motor skills history chart
     function drawMotorSkillsHistoryChart() {
       if (typeof Chart === 'undefined') return;
@@ -2547,25 +2555,6 @@
       });
     }
 
-    // Switch BMI view - globally accessible
-    window.switchBMIView = function(view) {
-      const currentView = document.getElementById('bmiCurrentView');
-      const overviewView = document.getElementById('bmiOverviewView');
-      const buttons = document.querySelectorAll('#bmiCard .hydration-toggle-btn');
-
-      if (view === 'current') {
-        currentView.classList.add('active');
-        overviewView.classList.remove('active');
-        buttons[0].classList.add('active');
-        buttons[1].classList.remove('active');
-      } else {
-        currentView.classList.remove('active');
-        overviewView.classList.add('active');
-        buttons[0].classList.remove('active');
-        buttons[1].classList.add('active');
-        drawBMIOverviewChart();
-      }
-    }
 
     // Draw BMI overview chart
     function drawBMIOverviewChart() {
