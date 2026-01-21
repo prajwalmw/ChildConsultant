@@ -353,10 +353,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="motor-${skill.id}">${skill.label}</label>
-                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="1" max="10" value="5" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value">
+                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="0" max="10" value="0" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value == 0 ? '-' : this.value">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                             <small class="form-text text-muted">${skill.description}</small>
-                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #00c3c9; font-size: 18px;">5</span>
+                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #00c3c9; font-size: 18px;">-</span>
                         </div>
                     </div>
                 `;
@@ -374,10 +374,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="motor-${skill.id}">${skill.label}</label>
-                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="1" max="10" value="5" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value">
+                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="0" max="10" value="0" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value == 0 ? '-' : this.value">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                             <small class="form-text text-muted">${skill.description}</small>
-                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #9b59b6; font-size: 18px;">5</span>
+                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #9b59b6; font-size: 18px;">-</span>
                         </div>
                     </div>
                 `;
@@ -395,10 +395,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="motor-${skill.id}">${skill.label}</label>
-                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="1" max="10" value="5" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value">
+                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="0" max="10" value="0" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value == 0 ? '-' : this.value">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                             <small class="form-text text-muted">${skill.description}</small>
-                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #e67e22; font-size: 18px;">5</span>
+                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #e67e22; font-size: 18px;">-</span>
                         </div>
                     </div>
                 `;
@@ -416,10 +416,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="motor-${skill.id}">${skill.label}</label>
-                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="1" max="10" value="5" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value">
+                        <input type="range" class="form-control-range" id="motor-${skill.id}" name="motor-${skill.id}" min="0" max="10" value="0" oninput="document.getElementById('motor-${skill.id}-value').textContent = this.value == 0 ? '-' : this.value">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                             <small class="form-text text-muted">${skill.description}</small>
-                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #e74c3c; font-size: 18px;">5</span>
+                            <span id="motor-${skill.id}-value" style="font-weight: bold; color: #e74c3c; font-size: 18px;">-</span>
                         </div>
                     </div>
                 `;
@@ -445,6 +445,9 @@
                 const skillId = input.name.replace('motor-', '');
                 const value = parseInt(input.value);
 
+                // Only include values > 0 (skip "not assessed" items)
+                if (value === 0) return;
+
                 // Categorize based on skill ID
                 if (['walking', 'running', 'kickingBall', 'climbingStairs', 'hopping', 'pedalingTricycle',
                      'catchingBall', 'climbing', 'skipping', 'jumpingRope', 'ridingBicycle', 'sportsSkills',
@@ -460,10 +463,10 @@
                 }
             });
 
-            // Calculate averages
+            // Calculate averages (only for assessed items with value > 0)
             const calcAverage = (obj) => {
-                const values = Object.values(obj);
-                return values.length > 0 ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : null;
+                const values = Object.values(obj).filter(v => v > 0);
+                return values.length > 0 ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : 0;
             };
 
             const grossMotorAvg = parseFloat(calcAverage(grossMotor));
@@ -471,11 +474,18 @@
             const balanceAvg = parseFloat(calcAverage(balance));
             const strengthAvg = parseFloat(calcAverage(strength));
 
-            const overallScore = parseFloat(((grossMotorAvg + fineMotorAvg + balanceAvg + strengthAvg) / 4).toFixed(2));
+            // Calculate overall score only from assessed categories
+            const assessedScores = [grossMotorAvg, fineMotorAvg, balanceAvg, strengthAvg].filter(score => score > 0);
+            const overallScore = assessedScores.length > 0
+                ? parseFloat((assessedScores.reduce((a, b) => a + b, 0) / assessedScores.length).toFixed(2))
+                : 0;
 
             // Determine category and alert level
             let category, alertLevel;
-            if (overallScore >= 9.0) {
+            if (overallScore === 0) {
+                category = 'Not Assessed';
+                alertLevel = 'info';
+            } else if (overallScore >= 9.0) {
                 category = 'Excellent';
                 alertLevel = 'excellent';
             } else if (overallScore >= 7.5) {
@@ -537,41 +547,117 @@
             const consultationId = generateConsultationId(currentPatientName);
             const parentKey = createParentKey(currentParentName, currentParentId);
 
+            // Collect form values
+            const weight = parseFloat(form['weight'].value) || null;
+            const height = parseFloat(form['height'].value) || null;
+            const headCircumference = parseFloat(form['head-circumference'].value) || null;
+            const waterIntake = parseFloat(form['water-intake'].value) || null;
+            const sleepDuration = parseFloat(form['sleep-duration'].value) || null;
+            const bedtime = form['bedtime'].value || null;
+            const wakeTime = form['wake-time'].value || null;
+            const sleepQuality = form['sleep-quality'].value || null;
+            const subjective = form['subjective'].value || '';
+            const objective = form['objective'].value || '';
+            const assessment = form['assessment'].value || '';
+            const plan = form['plan'].value || '';
+
             const consultationData = {
+                // Consultation Metadata
                 doctorId: currentDoctorId,
                 doctorName: currentDoctorName,
                 consultationDate: new Date(form['date-of-visit'].value),
                 date: new Date(form['date-of-visit'].value),
                 type: form['consultation-type'].value,
-                // Vitals
-                weight: parseFloat(form['weight'].value) || null,
-                height: parseFloat(form['height'].value) || null,
-                headCircumference: parseFloat(form['head-circumference'].value) || null,
-                waterIntake: parseFloat(form['water-intake'].value) || null,
-                temperature: form['temperature'].value,
-                symptomDuration: form['symptom-duration'].value,
-                vitalsNotes: form['vitals-notes'].value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
 
-                // Sleep Health
-                sleepDuration: parseFloat(form['sleep-duration'].value) || null,
-                bedtime: form['bedtime'].value || null,
-                wakeTime: form['wake-time'].value || null,
-                sleepQuality: form['sleep-quality'].value || null,
+                // Physical Health (Grouped)
+                physicalHealth: {
+                    weight: weight,
+                    height: height,
+                    headCircumference: headCircumference,
+                    temperature: form['temperature'].value || null,
+                    symptomDuration: form['symptom-duration'].value || null,
+                    clinicalNotes: form['vitals-notes'].value || ''
+                },
 
-                // Motor Skills Coordination
+                // Hydration (Grouped)
+                hydration: {
+                    waterIntake: waterIntake
+                },
+
+                // Sleep Health (Grouped)
+                sleepHealth: {
+                    sleepDuration: sleepDuration,
+                    bedtime: bedtime,
+                    wakeTime: wakeTime,
+                    sleepQuality: sleepQuality
+                },
+
+                // Nutritional Health (Grouped)
+                nutritionalHealth: {
+                    // Physical Indicators
+                    energyLevel: form['energy-level']?.value || null,
+                    appetite: form['appetite']?.value || null,
+                    skinHealth: form['skin-health']?.value || null,
+                    hairQuality: form['hair-quality']?.value || null,
+                    nailHealth: form['nail-health']?.value || null,
+
+                    // Dietary Intake
+                    mealsPerDay: parseFloat(form['meals-per-day']?.value) || null,
+                    dietaryPattern: form['dietary-pattern']?.value || null,
+                    breakfastRegularity: form['breakfast-regularity']?.value || null,
+                    junkFoodFrequency: form['junk-food-frequency']?.value || null,
+
+                    // Food Groups
+                    fruitServings: parseFloat(form['fruit-servings']?.value) || null,
+                    vegetableServings: parseFloat(form['vegetable-servings']?.value) || null,
+                    dairyIntake: parseFloat(form['dairy-intake']?.value) || null,
+
+                    // Supplements
+                    supplements: Array.from(form.querySelectorAll('input[name="supplement"]:checked')).map(cb => cb.value),
+
+                    // Clinical Notes
+                    clinicalNotes: form['nutritional-notes']?.value || ''
+                },
+
+                // Motor Skills Coordination (Grouped)
                 motorSkills: collectMotorSkillsData(form),
 
-                // S.O.A.P.
-                subjective: form['subjective'].value,
-                objective: form['objective'].value,
-                assessment: form['assessment'].value,
-                plan: form['plan'].value,
+                // S.O.A.P. Notes (Grouped)
+                soapNotes: {
+                    subjective: subjective,
+                    objective: objective,
+                    assessment: assessment,
+                    plan: plan
+                },
 
-                // Action/Follow-up
+                // Action/Follow-up (Grouped)
+                followUp: {
+                    prescriptionGiven: form['prescription-given'].checked,
+                    followUpRequired: form['follow-up-required'].checked,
+                    nextFollowUpDate: form['follow-up-required'].checked && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null
+                },
+
+                // ===== BACKWARD COMPATIBILITY - Root level fields =====
+                // These maintain compatibility with existing dashboard code
+                weight: weight,
+                height: height,
+                headCircumference: headCircumference,
+                waterIntake: waterIntake,
+                temperature: form['temperature'].value || null,
+                symptomDuration: form['symptom-duration'].value || null,
+                vitalsNotes: form['vitals-notes'].value || '',
+                sleepDuration: sleepDuration,
+                bedtime: bedtime,
+                wakeTime: wakeTime,
+                sleepQuality: sleepQuality,
+                subjective: subjective,
+                objective: objective,
+                assessment: assessment,
+                plan: plan,
                 prescriptionGiven: form['prescription-given'].checked,
                 followUpRequired: form['follow-up-required'].checked,
-                nextFollowUpDate: form['follow-up-required'].checked && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                nextFollowUpDate: form['follow-up-required'].checked && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null
             };
 
             try {
@@ -639,6 +725,7 @@
                             <div class="col-md-4 form-group">
                                 <label for="consultation-type">Consultation Type</label>
                                 <select class="form-control" id="consultation-type" required>
+                                    <option value="">Select consultation type...</option>
                                     <option value="Initial">Initial Visit</option>
                                     <option value="Follow-up">Follow-up</option>
                                     <option value="Emergency">Emergency</option>
@@ -651,46 +738,118 @@
                             </div>
                         </div>
                         
+                        <!-- ==================== PHYSICAL DEVELOPMENT SECTION ==================== -->
                         <div class="section-separator">
-                            <h3>Vitals & Notes</h3>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="weight">Weight (kg)</label>
-                                <input type="number" step="0.1" class="form-control" id="weight">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="height">Height (cm)</label>
-                                <input type="number" step="0.1" class="form-control" id="height">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="temperature">Temperature (°C)</label>
-                                <input type="text" class="form-control" id="temperature" placeholder="e.g., 37.5, Normal">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="head-circumference">Head Circumference (cm)</label>
-                                <input type="number" step="0.1" class="form-control" id="head-circumference">
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="water-intake">Daily Water Intake (ml)</label>
-                                <input type="number" step="50" class="form-control" id="water-intake" placeholder="e.g., 1200">
-                                <small class="form-text text-muted">Reference: 1 small glass = 200ml, 1 regular glass = 250ml, 1 large glass = 300ml</small>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="vitals-notes">Vitals / Examination Notes</label>
-                            <textarea class="form-control" id="vitals-notes" rows="3" placeholder="Enter any notes on physical examination or vital readings..."></textarea>
-                        </div>
-
-                        <div class="section-separator">
-                            <h3>Sleep Health</h3>
-                            <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">
-                                <i class="fa fa-moon-o"></i> Assessment based on American Academy of Sleep Medicine (AASM) guidelines
+                            <h3 style="color: #00c3c9;">
+                                <i class="fa fa-child"></i> Physical Development
+                            </h3>
+                            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
+                                Growth measurements, vital signs, and physical examination findings
+                                <br>
+                                <strong>Standards:</strong> WHO Child Growth Standards, CDC Growth Charts
                             </p>
                         </div>
+
+                        <!-- Growth Measurements -->
+                        <div style="background: #e0f7fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #00c3c9;">
+                            <h4 style="margin-top: 0; color: #00c3c9; font-size: 16px; font-weight: bold;">
+                                <i class="fa fa-line-chart"></i> Growth Measurements
+                            </h4>
+                            <p style="color: #7f8c8d; font-size: 12px; margin-bottom: 15px;">
+                                Primary anthropometric measurements for growth tracking
+                            </p>
+
+                            <div class="row">
+                                <div class="col-md-3 form-group">
+                                    <label for="weight">Weight (kg)</label>
+                                    <input type="number" step="0.1" class="form-control" id="weight">
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label for="height">Height (cm)</label>
+                                    <input type="number" step="0.1" class="form-control" id="height">
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label for="head-circumference">Head Circumference (cm)</label>
+                                    <input type="number" step="0.1" class="form-control" id="head-circumference">
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label for="temperature">Temperature (°C)</label>
+                                    <input type="text" class="form-control" id="temperature" placeholder="e.g., 37.5, Normal">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Physical Examination Notes -->
+                        <div class="form-group">
+                            <label for="vitals-notes">Physical Examination Notes</label>
+                            <textarea class="form-control" id="vitals-notes" rows="3" placeholder="Physical findings, reflexes, posture, coordination observations..."></textarea>
+                        </div>
+
+                        <!-- ==================== MOTOR SKILLS (Under Physical Development) ==================== -->
+                        <div style="background: #fff3e0; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #FF9800; margin-top: 20px;">
+                            <h4 style="margin-top: 0; color: #FF9800; font-size: 16px; font-weight: bold;">
+                                <i class="fa fa-bolt"></i> Motor Skills Coordination
+                            </h4>
+                            <p style="color: #7f8c8d; font-size: 12px; margin-bottom: 15px;">
+                                Rate each motor skill on a scale of 0-10 (0 = Not Assessed, 1-10 = Performance Level)
+                                <br>
+                                Age-appropriate questions will auto-populate based on child's age
+                                <br>
+                                <strong>Standards:</strong> WHO Motor Development Milestones, CDC Developmental Milestones, MABC-2
+                            </p>
+
+                            <!-- Motor Skills will be dynamically populated based on age -->
+                            <div id="motorSkillsContainer">
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; color: #95a5a6;">
+                                    <i class="fa fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                    <p style="margin: 0;">Loading age-appropriate motor skills assessment...</p>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 20px;">
+                                <label for="motor-skills-notes">Clinical Notes (Motor Skills)</label>
+                                <textarea class="form-control" id="motor-skills-notes" rows="3" placeholder="Additional observations about motor development, concerns, or recommendations..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- ==================== NUTRITIONAL HEALTH SECTION ==================== -->
+                        <div class="section-separator">
+                            <h3 style="color: #27ae60;">
+                                <i class="fa fa-heart"></i> Nutritional Health
+                            </h3>
+                            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
+                                Dietary habits, hydration status, and nutritional clinical indicators
+                                <br>
+                                <strong>Standards:</strong> WHO Nutrient Intake Guidelines, ICMR RDA, Dietary Reference Intakes
+                            </p>
+                        </div>
+
+                        <!-- Hydration Status -->
+                        <div style="background: #e0f7fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #00ACC1;">
+                            <h4 style="margin-top: 0; color: #00ACC1; font-size: 16px; font-weight: bold;">
+                                <i class="fa fa-tint"></i> Hydration Status
+                            </h4>
+                            <p style="color: #7f8c8d; font-size: 12px; margin-bottom: 15px;">
+                                Daily water and fluid intake assessment
+                            </p>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="water-intake">Daily Water Intake (ml)</label>
+                                    <input type="number" step="50" class="form-control" id="water-intake" placeholder="e.g., 1200">
+                                    <small class="form-text text-muted">Reference: 1 small glass = 200ml, 1 regular glass = 250ml, 1 large glass = 300ml</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sleep & Rest -->
+                        <div style="background: #e8eaf6; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #5C6BC0;">
+                            <h4 style="margin-top: 0; color: #5C6BC0; font-size: 16px; font-weight: bold;">
+                                <i class="fa fa-moon-o"></i> Sleep & Rest
+                            </h4>
+                            <p style="color: #7f8c8d; font-size: 12px; margin-bottom: 15px;">
+                                Based on American Academy of Sleep Medicine (AASM) guidelines
+                            </p>
 
                         <div class="row">
                             <div class="col-md-4 form-group">
@@ -721,27 +880,236 @@
                                 </select>
                             </div>
                         </div>
-
-                        <div class="section-separator">
-                            <h3>⚡ Motor Skills Coordination Assessment</h3>
-                            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
-                                Rate each motor skill on a scale of 1-10 (Age-appropriate questions will auto-populate based on child's age)
-                                <br>
-                                <strong>Standards:</strong> WHO Motor Development Milestones, CDC Developmental Milestones, Movement Assessment Battery for Children (MABC-2)
-                            </p>
                         </div>
 
-                        <!-- Motor Skills will be dynamically populated based on age -->
-                        <div id="motorSkillsContainer">
-                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; color: #95a5a6;">
-                                <i class="fa fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                <p style="margin: 0;">Loading age-appropriate motor skills assessment...</p>
+                        <!-- Nutritional Clinical Observations -->
+                        <div style="background: #f0f8ff; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
+                            <h4 style="margin-top: 0; color: #2196F3; font-size: 16px; font-weight: bold;">
+                                <i class="fa fa-stethoscope"></i> Nutritional Clinical Observations
+                            </h4>
+                            <p style="color: #7f8c8d; font-size: 12px; margin-bottom: 15px;">
+                                Physical signs related to nutritional health during examination
+                            </p>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label for="energy-level">Energy Level</label>
+                                    <select class="form-control" id="energy-level">
+                                        <option value="">Select energy level...</option>
+                                        <option value="low">Low - Lethargic, tired</option>
+                                        <option value="normal">Normal - Age-appropriate</option>
+                                        <option value="high">High - Very active, energetic</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="appetite">Appetite</label>
+                                    <select class="form-control" id="appetite">
+                                        <option value="">Select appetite level...</option>
+                                        <option value="poor">Poor - Eats very little</option>
+                                        <option value="normal">Normal - Adequate intake</option>
+                                        <option value="good">Good - Healthy appetite</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="skin-health">Skin Health</label>
+                                    <select class="form-control" id="skin-health">
+                                        <option value="">Select skin health...</option>
+                                        <option value="dry">Dry/Rough skin</option>
+                                        <option value="normal">Normal skin</option>
+                                        <option value="healthy">Healthy glow</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label for="hair-quality">Hair Quality</label>
+                                    <select class="form-control" id="hair-quality">
+                                        <option value="">Select hair quality...</option>
+                                        <option value="brittle">Brittle/Dry hair</option>
+                                        <option value="normal">Normal hair</option>
+                                        <option value="healthy">Healthy/Lustrous hair</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="nail-health">Nail Health</label>
+                                    <select class="form-control" id="nail-health">
+                                        <option value="">Select nail health...</option>
+                                        <option value="brittle">Brittle/Weak nails</option>
+                                        <option value="normal">Normal nails</option>
+                                        <option value="strong">Strong/Healthy nails</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="pallor">Pallor (Anemia Signs)</label>
+                                    <div style="margin-top: 8px;">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" id="pallor"> Pallor detected (pale conjunctiva/palms)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-group" style="margin-top: 20px;">
-                            <label for="motor-skills-notes">Clinical Notes (Motor Skills)</label>
-                            <textarea class="form-control" id="motor-skills-notes" rows="3" placeholder="Additional observations about motor development, concerns, or recommendations..."></textarea>
+                        <!-- Dietary Information Subsection -->
+                        <div style="background: #fff8e1; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #FFC107;">
+                            <h4 style="margin-top: 0; color: #F57C00; font-size: 16px; font-weight: bold;">
+                                <i class="fa fa-cutlery"></i> Dietary Information (Ask Parent/Guardian)
+                            </h4>
+                            <p style="color: #7f8c8d; font-size: 12px; margin-bottom: 15px;">
+                                Quick verbal questions about child's typical eating patterns
+                            </p>
+
+                            <div class="row">
+                                <div class="col-md-3 form-group">
+                                    <label for="meals-per-day">Meals Per Day</label>
+                                    <input type="number" class="form-control" id="meals-per-day" min="1" max="8" placeholder="e.g., 3">
+                                    <small class="form-text text-muted">Main meals + snacks</small>
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label for="dietary-pattern">Dietary Pattern</label>
+                                    <select class="form-control" id="dietary-pattern">
+                                        <option value="">Select dietary pattern...</option>
+                                        <option value="vegetarian">Vegetarian (with dairy/eggs)</option>
+                                        <option value="non-vegetarian">Non-Vegetarian/Mixed</option>
+                                        <option value="vegan">Vegan (plant-based only)</option>
+                                        <option value="eggetarian">Eggetarian (eggs + veg)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label for="breakfast-regularity">Breakfast Regularity</label>
+                                    <select class="form-control" id="breakfast-regularity">
+                                        <option value="">Select frequency...</option>
+                                        <option value="daily">Daily</option>
+                                        <option value="sometimes">Sometimes (3-4x/week)</option>
+                                        <option value="rarely">Rarely (0-2x/week)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label for="junk-food-frequency">Junk Food (per week)</label>
+                                    <select class="form-control" id="junk-food-frequency">
+                                        <option value="">Select frequency...</option>
+                                        <option value="never">Never/Very Rare</option>
+                                        <option value="1-2">1-2 times</option>
+                                        <option value="3-4">3-4 times</option>
+                                        <option value="5+">5+ times</option>
+                                    </select>
+                                    <small class="form-text text-muted">Chips, sodas, fast food</small>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label for="fruit-servings">Fruit Servings (per day)</label>
+                                    <input type="number" class="form-control" id="fruit-servings" min="0" max="6" step="0.5" placeholder="e.g., 1">
+                                    <small class="form-text text-muted">Fresh fruits</small>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="vegetable-servings">Vegetable Servings (per day)</label>
+                                    <input type="number" class="form-control" id="vegetable-servings" min="0" max="6" step="0.5" placeholder="e.g., 2">
+                                    <small class="form-text text-muted">All vegetables</small>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label for="dairy-intake">Milk/Dairy Intake (ml/day)</label>
+                                    <input type="number" class="form-control" id="dairy-intake" min="0" max="1000" step="50" placeholder="e.g., 250">
+                                    <small class="form-text text-muted">Milk, curd, paneer</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Supplements Subsection -->
+                        <div style="background: #f3e5f5; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #9C27B0;">
+                            <h4 style="margin-top: 0; color: #9C27B0; font-size: 16px; font-weight: bold;">
+                                <i class="fa fa-medkit"></i> Nutritional Supplements
+                            </h4>
+                            <p style="color: #7f8c8d; font-size: 12px; margin-bottom: 15px;">
+                                Check all supplements currently being taken by the child
+                            </p>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="supplement" value="none" id="supplement-none"> None
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="supplement" value="multivitamin"> Multivitamin
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="supplement" value="iron"> Iron
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="supplement" value="calcium"> Calcium
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="supplement" value="vitaminD"> Vitamin D
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="supplement" value="omega3"> Omega-3
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="supplement" value="zinc"> Zinc
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="supplement" value="other"> Other
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nutritional Assessment Notes -->
+                        <div class="form-group">
+                            <label for="nutritional-notes">Clinical Notes (Nutritional Health)</label>
+                            <textarea class="form-control" id="nutritional-notes" rows="3" placeholder="Any dietary concerns, food allergies, feeding difficulties, specific nutritional recommendations, or follow-up actions..."></textarea>
+                        </div>
+
+                        <!-- ==================== COGNITIVE DEVELOPMENT SECTION (Coming Soon) ==================== -->
+                        <div class="section-separator">
+                            <h3 style="color: #9b59b6;">
+                                <i class="fa fa-graduation-cap"></i> Cognitive Development <span style="font-size: 14px; color: #95a5a6; font-weight: normal;">(Coming Soon)</span>
+                            </h3>
+                            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
+                                Future features will include assessment of learning abilities, memory, attention span, and problem-solving skills
+                            </p>
+                        </div>
+
+                        <!-- ==================== CREATIVE DEVELOPMENT SECTION (Coming Soon) ==================== -->
+                        <div class="section-separator">
+                            <h3 style="color: #e67e22;">
+                                <i class="fa fa-paint-brush"></i> Creative Development <span style="font-size: 14px; color: #95a5a6; font-weight: normal;">(Coming Soon)</span>
+                            </h3>
+                            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
+                                Future features will track artistic expression, imagination, and creative problem-solving abilities
+                            </p>
+                        </div>
+
+                        <!-- ==================== PERSONALITY & CHARACTER SECTION (Coming Soon) ==================== -->
+                        <div class="section-separator">
+                            <h3 style="color: #e74c3c;">
+                                <i class="fa fa-user"></i> Personality & Character <span style="font-size: 14px; color: #95a5a6; font-weight: normal;">(Coming Soon)</span>
+                            </h3>
+                            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
+                                Future features will assess social skills, emotional intelligence, behavioral patterns, and character development
+                            </p>
                         </div>
 
                         <div class="section-separator">

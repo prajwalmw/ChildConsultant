@@ -483,7 +483,14 @@
             <button class="hydration-toggle-btn" onclick="switchMotorSkillsView('history')">History</button>
           </div>
         </div>
-        <p class="subtitle">Age-specific motor development assessment based on <strong>WHO, CDC, and MABC-2</strong> clinical standards</p>
+        <p class="subtitle">Comprehensive motor development assessment across gross motor, fine motor, balance, and strength domains</p>
+
+        <!-- Condensed Clinical Standards Disclaimer -->
+        <div style="background: rgba(33,150,243,0.1); border-left: 3px solid #2196f3; padding: 10px 12px; margin: 15px 0; border-radius: 6px;">
+          <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #1565c0;">
+            <strong>📋 Standards:</strong> WHO/CDC/MABC-2 guidelines applied. <strong>⚠️ Note:</strong> Color-coded scores are interpretive tools for progress tracking, not official MABC-2 percentiles.
+          </p>
+        </div>
 
         <!-- Current View -->
         <div class="hydration-view active" id="motorSkillsCurrentView">
@@ -511,8 +518,41 @@
         <i class="fa fa-heart" style="color: #27ae60; margin-right: 10px;"></i> Nutritional Health
       </h2>
       <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
-        Monitors hydration levels (WHO standards) and sleep patterns (AASM guidelines) for optimal health and development
+        Comprehensive nutritional assessment including dietary balance, hydration levels (WHO standards), and sleep patterns (AASM guidelines)
       </p>
+
+      <!-- Compact Clinical Standards & Legal Disclaimer -->
+      <div style="background: rgba(52, 152, 219, 0.08); border-left: 3px solid #3498db; padding: 12px 15px; border-radius: 8px; margin-bottom: 20px;">
+        <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #2c3e50;">
+          <strong>📋 Clinical Standards:</strong> Assessments use WHO/USDA/AAP age-based guidelines. Scores are screening tools to guide consultation discussions. For concerns or intervention planning, consult with a registered dietitian or pediatric nutritionist.
+        </p>
+      </div>
+
+      <!-- Nutritional Balance - Overall Health Card -->
+      <div class="hydration-card" id="nutritionalBalanceCard" style="display: none;">
+        <div class="hydration-card-header">
+          <h3>🍎 Nutritional Balance - Overall Health</h3>
+          <div class="hydration-toggle">
+            <button class="hydration-toggle-btn active" onclick="switchNutritionalView('current')">Current</button>
+            <button class="hydration-toggle-btn" onclick="switchNutritionalView('history')">History</button>
+          </div>
+        </div>
+        <p class="subtitle">Comprehensive nutritional assessment based on clinical indicators, dietary patterns, and food group balance</p>
+
+        <!-- Current View -->
+        <div class="hydration-view active" id="nutritionalCurrentView">
+          <div id="nutritionalScoreSection">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- History View -->
+        <div class="hydration-view" id="nutritionalHistoryView">
+          <div style="padding: 20px;">
+            <canvas id="nutritionalHistoryChart" style="max-height: 400px;"></canvas>
+          </div>
+        </div>
+      </div>
 
       <!-- Hydration Chart with Toggle -->
       <div class="hydration-card" id="hydrationCard" style="display: none;">
@@ -1359,7 +1399,8 @@
             wakeTime: data.wakeTime,
             sleepQuality: data.sleepQuality,
             temperature: data.temperature,
-            motorSkills: data.motorSkills
+            motorSkills: data.motorSkills,
+            nutritionalHealth: data.nutritionalHealth
           });
         });
 
@@ -1536,6 +1577,9 @@
 
       // Display sleep chart
       displaySleepChart(consultations, childData);
+
+      // Display nutritional balance chart
+      displayNutritionalBalanceChart(consultations, childData);
 
       // Display motor skills chart
       displayMotorSkillsChart(consultations, childData);
@@ -2123,6 +2167,852 @@
       });
     }
 
+    // ==================== NUTRITIONAL BALANCE FUNCTIONS ====================
+
+    // Display nutritional balance chart
+    function displayNutritionalBalanceChart(consultations, childData) {
+      const nutritionalBalanceCard = document.getElementById('nutritionalBalanceCard');
+      const nutritionalScoreSection = document.getElementById('nutritionalScoreSection');
+
+      if (!consultations || consultations.length === 0) return;
+
+      // Check if ANY consultation has nutritional health data
+      const hasNutritionalData = consultations.some(c =>
+        c.nutritionalHealth &&
+        (c.nutritionalHealth.energyLevel || c.nutritionalHealth.appetite ||
+         c.nutritionalHealth.fruitServings || c.nutritionalHealth.vegetableServings)
+      );
+
+      if (!hasNutritionalData) {
+        return; // No nutritional data at all, don't show the card
+      }
+
+      // Get the latest consultation with nutritional data
+      const latestConsultWithData = [...consultations].reverse().find(c =>
+        c.nutritionalHealth &&
+        (c.nutritionalHealth.energyLevel || c.nutritionalHealth.appetite ||
+         c.nutritionalHealth.fruitServings || c.nutritionalHealth.vegetableServings)
+      );
+
+      if (!latestConsultWithData) {
+        return;
+      }
+
+      const nutritionalHealth = latestConsultWithData.nutritionalHealth;
+
+      // Calculate scores for each dimension (0-100 scale)
+      const scores = calculateNutritionalScores(nutritionalHealth, childData);
+
+      // Calculate overall nutritional score
+      const overallScore = scores.overall;
+      const scoreColor = getNutritionalScoreColor(overallScore);
+      const scoreCategory = getNutritionalScoreCategory(overallScore);
+      const alertLevel = getNutritionalAlertLevel(overallScore);
+
+      // Render the current view
+      if (nutritionalScoreSection) {
+        let alertBanner = '';
+        if (alertLevel && alertLevel !== 'excellent' && alertLevel !== 'normal') {
+          const alertColors = {
+            monitor: { bg: '#fff9e6', border: '#ffc107', text: '#856404' },
+            warning: { bg: '#fff3e0', border: '#ff9800', text: '#e65100' },
+            critical: { bg: '#ffebee', border: '#f44336', text: '#c62828' }
+          };
+
+          const colors = alertColors[alertLevel];
+          let rangeInfo = '';
+          if (alertLevel === 'monitor') {
+            rangeInfo = 'Nutritional status is adequate but could be improved. Optimal score is 80+.';
+          } else if (alertLevel === 'warning') {
+            rangeInfo = 'Nutritional deficiencies detected. Dietary intervention recommended. Target score: 70+.';
+          } else if (alertLevel === 'critical') {
+            rangeInfo = 'Significant nutritional concerns. Immediate dietary assessment and intervention required.';
+          }
+          alertBanner = `
+            <div style="background: ${colors.bg}; border: 2px solid ${colors.border}; color: ${colors.text}; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <strong>⚠️ Nutritional Alert:</strong> ${rangeInfo}
+            </div>
+          `;
+        }
+
+        nutritionalScoreSection.innerHTML = `
+          ${alertBanner}
+
+          <!-- Main Score and Radar Chart Layout -->
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
+
+            <!-- Left: Overall Score Card -->
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+
+              <!-- Color Guide Info Button -->
+              <button onmouseenter="showNutritionalLegend()" onmouseleave="hideNutritionalLegend()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #27ae60; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="Color Guide">
+                i
+              </button>
+
+              <div style="color: rgba(255,255,255,0.95); font-size: 13px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall Nutritional Score</div>
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <div style="color: white; font-size: 72px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 28px; font-weight: 600;">/100</div>
+              </div>
+              <div style="color: white; font-size: 16px; font-weight: 600; margin-top: 12px; text-align: center;">${scoreCategory}</div>
+
+              <!-- Color Guide Tooltip -->
+              <div id="nutritionalLegendTooltip" onmouseenter="showNutritionalLegend()" onmouseleave="hideNutritionalLegend()" style="display: none; position: absolute; top: 45px; right: 8px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 100; width: 220px;">
+                <div style="color: #2c3e50; font-size: 11px; font-weight: 700; margin-bottom: 10px; text-align: center;">COLOR GUIDE</div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #27ae60; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>85 - 100</strong> Excellent Nutrition</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #3498db; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>70 - 84</strong> Good Nutrition</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #f39c12; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>55 - 69</strong> Adequate</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #e67e22; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>40 - 54</strong> Needs Improvement</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #e74c3c; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>0 - 39</strong> Concern</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Radar Chart -->
+            <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+              <canvas id="nutritionalRadarChart" style="max-height: 350px;"></canvas>
+            </div>
+          </div>
+
+          <!-- Detailed Breakdown -->
+          <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-top: 20px;">
+            <h4 style="margin: 0 0 20px 0; color: #2c3e50;">📊 Detailed Assessment</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+              ${generateDetailedMetrics(nutritionalHealth, scores)}
+            </div>
+          </div>
+
+          <!-- Clinical Notes -->
+          ${nutritionalHealth.clinicalNotes ? `
+            <div style="background: #e8f4f8; border-left: 4px solid #17a2b8; padding: 15px 20px; border-radius: 8px; margin-top: 20px;">
+              <strong style="color: #17a2b8;">📋 Clinical Notes:</strong>
+              <p style="color: #555; margin: 10px 0 0 0; line-height: 1.6;">${nutritionalHealth.clinicalNotes}</p>
+            </div>
+          ` : ''}
+        `;
+
+        // Render radar chart
+        renderNutritionalRadarChart(scores);
+      }
+
+      if (nutritionalBalanceCard) nutritionalBalanceCard.style.display = 'block';
+
+      // Store data for history view
+      window.nutritionalConsultationsData = consultations;
+      window.nutritionalChildData = childData;
+    }
+
+    // Calculate nutritional scores based on collected data with AGE-BASED WHO/AAP clinical standards
+    function calculateNutritionalScores(nutritionalHealth, childData) {
+      // Calculate child's age in months for age-appropriate standards
+      const dobDate = parseDate(childData.dob || childData.dateOfBirth);
+      const today = new Date();
+      const ageMonths = calculateAgeInMonths(dobDate, today);
+      const ageYears = Math.floor(ageMonths / 12);
+
+      let physicalScore = 0;
+      let dietaryPatternsScore = 0;
+      let foodGroupsScore = 0;
+      let supplementationScore = 0;
+
+      // 1. Physical Indicators Score (0-100) - Clinical observation-based
+      let physicalCount = 0;
+      if (nutritionalHealth.energyLevel) {
+        physicalCount++;
+        if (nutritionalHealth.energyLevel === 'high') physicalScore += 100;
+        else if (nutritionalHealth.energyLevel === 'normal') physicalScore += 75;
+        else physicalScore += 40;
+      }
+      if (nutritionalHealth.appetite) {
+        physicalCount++;
+        if (nutritionalHealth.appetite === 'good') physicalScore += 100;
+        else if (nutritionalHealth.appetite === 'normal') physicalScore += 75;
+        else physicalScore += 40;
+      }
+      if (nutritionalHealth.skinHealth) {
+        physicalCount++;
+        if (nutritionalHealth.skinHealth === 'healthy') physicalScore += 100;
+        else if (nutritionalHealth.skinHealth === 'normal') physicalScore += 75;
+        else physicalScore += 40;
+      }
+      if (nutritionalHealth.hairQuality) {
+        physicalCount++;
+        if (nutritionalHealth.hairQuality === 'healthy') physicalScore += 100;
+        else if (nutritionalHealth.hairQuality === 'normal') physicalScore += 75;
+        else physicalScore += 40;
+      }
+      if (nutritionalHealth.nailHealth) {
+        physicalCount++;
+        if (nutritionalHealth.nailHealth === 'healthy') physicalScore += 100;
+        else if (nutritionalHealth.nailHealth === 'normal') physicalScore += 75;
+        else physicalScore += 40;
+      }
+      physicalScore = physicalCount > 0 ? Math.round(physicalScore / physicalCount) : 0;
+
+      // 2. Dietary Patterns Score (0-100) - Age-based WHO meal frequency standards
+      let dietaryCount = 0;
+
+      // Meal frequency - WHO IYCF Guidelines
+      if (nutritionalHealth.mealsPerDay) {
+        dietaryCount++;
+        let mealScore = 0;
+
+        if (ageMonths >= 6 && ageMonths < 9) {
+          // WHO: 2-3 meals per day for 6-8 months
+          if (nutritionalHealth.mealsPerDay >= 2 && nutritionalHealth.mealsPerDay <= 3) mealScore = 100;
+          else if (nutritionalHealth.mealsPerDay === 4) mealScore = 85;
+          else if (nutritionalHealth.mealsPerDay === 1) mealScore = 50;
+          else mealScore = 40;
+        } else if (ageMonths >= 9 && ageMonths < 24) {
+          // WHO: 3-4 meals per day for 9-23 months
+          if (nutritionalHealth.mealsPerDay >= 3 && nutritionalHealth.mealsPerDay <= 4) mealScore = 100;
+          else if (nutritionalHealth.mealsPerDay === 2 || nutritionalHealth.mealsPerDay === 5) mealScore = 75;
+          else mealScore = 50;
+        } else {
+          // Children 2+ years: 3 meals + 2 snacks = 5 total, standard is 3-5
+          if (nutritionalHealth.mealsPerDay >= 3 && nutritionalHealth.mealsPerDay <= 5) mealScore = 100;
+          else if (nutritionalHealth.mealsPerDay === 2 || nutritionalHealth.mealsPerDay === 6) mealScore = 70;
+          else mealScore = 40;
+        }
+        dietaryPatternsScore += mealScore;
+      }
+
+      // Breakfast regularity - Standard pediatric recommendation
+      if (nutritionalHealth.breakfastRegularity) {
+        dietaryCount++;
+        if (nutritionalHealth.breakfastRegularity === 'daily') dietaryPatternsScore += 100;
+        else if (nutritionalHealth.breakfastRegularity === 'sometimes') dietaryPatternsScore += 60;
+        else dietaryPatternsScore += 20;
+      }
+
+      // Junk food frequency - Standard pediatric guideline
+      if (nutritionalHealth.junkFoodFrequency) {
+        dietaryCount++;
+        if (nutritionalHealth.junkFoodFrequency === '0-1') dietaryPatternsScore += 100;
+        else if (nutritionalHealth.junkFoodFrequency === '2-3') dietaryPatternsScore += 75;
+        else if (nutritionalHealth.junkFoodFrequency === '4-5') dietaryPatternsScore += 50;
+        else dietaryPatternsScore += 25;
+      }
+
+      dietaryPatternsScore = dietaryCount > 0 ? Math.round(dietaryPatternsScore / dietaryCount) : 0;
+
+      // 3. Food Groups Balance Score (0-100) - Age-based WHO & USDA Dietary Guidelines
+      let foodGroupCount = 0;
+
+      // Fruit servings - Age-appropriate ranges (USDA 2025-2030 Guidelines)
+      if (nutritionalHealth.fruitServings !== null && nutritionalHealth.fruitServings !== undefined) {
+        foodGroupCount++;
+        let fruitScore = 0;
+
+        if (ageYears >= 0 && ageYears <= 1) {
+          // Infants 12-23 months: 0.5-1 cup (approximately 1-2 servings)
+          if (nutritionalHealth.fruitServings >= 1 && nutritionalHealth.fruitServings <= 2) fruitScore = 100;
+          else if (nutritionalHealth.fruitServings >= 0.5 && nutritionalHealth.fruitServings < 1) fruitScore = 80;
+          else if (nutritionalHealth.fruitServings > 2 && nutritionalHealth.fruitServings <= 2.5) fruitScore = 85;
+          else fruitScore = 40;
+        } else if (ageYears >= 2 && ageYears <= 4) {
+          // Toddlers 2-4 years: 1-1.5 cups (approximately 2-3 servings)
+          if (nutritionalHealth.fruitServings >= 2 && nutritionalHealth.fruitServings <= 3) fruitScore = 100;
+          else if (nutritionalHealth.fruitServings >= 1 && nutritionalHealth.fruitServings < 2) fruitScore = 70;
+          else if (nutritionalHealth.fruitServings > 3 && nutritionalHealth.fruitServings <= 4) fruitScore = 85;
+          else fruitScore = 40;
+        } else if (ageYears >= 5 && ageYears <= 8) {
+          // Children 5-8 years: 1-1.5 cups (approximately 2-3 servings)
+          if (nutritionalHealth.fruitServings >= 2 && nutritionalHealth.fruitServings <= 3) fruitScore = 100;
+          else if (nutritionalHealth.fruitServings >= 1 && nutritionalHealth.fruitServings < 2) fruitScore = 70;
+          else if (nutritionalHealth.fruitServings > 3 && nutritionalHealth.fruitServings <= 4) fruitScore = 85;
+          else fruitScore = 40;
+        } else if (ageYears >= 9 && ageYears <= 13) {
+          // Pre-teens 9-13 years: 1.5 cups (approximately 3 servings)
+          if (nutritionalHealth.fruitServings >= 2.5 && nutritionalHealth.fruitServings <= 3.5) fruitScore = 100;
+          else if (nutritionalHealth.fruitServings >= 2 && nutritionalHealth.fruitServings < 2.5) fruitScore = 75;
+          else if (nutritionalHealth.fruitServings > 3.5 && nutritionalHealth.fruitServings <= 4.5) fruitScore = 85;
+          else fruitScore = 50;
+        } else {
+          // Adolescents 14+ years: 1.5-2 cups (approximately 3-4 servings)
+          if (nutritionalHealth.fruitServings >= 3 && nutritionalHealth.fruitServings <= 4) fruitScore = 100;
+          else if (nutritionalHealth.fruitServings >= 2 && nutritionalHealth.fruitServings < 3) fruitScore = 75;
+          else if (nutritionalHealth.fruitServings > 4 && nutritionalHealth.fruitServings <= 5) fruitScore = 85;
+          else fruitScore = 50;
+        }
+        foodGroupsScore += fruitScore;
+      }
+
+      // Vegetable servings - Age-appropriate ranges (USDA 2025-2030 Guidelines)
+      if (nutritionalHealth.vegetableServings !== null && nutritionalHealth.vegetableServings !== undefined) {
+        foodGroupCount++;
+        let vegScore = 0;
+
+        if (ageYears >= 0 && ageYears <= 1) {
+          // Infants 12-23 months: 0.67-1 cup (approximately 1-2 servings)
+          if (nutritionalHealth.vegetableServings >= 1 && nutritionalHealth.vegetableServings <= 2) vegScore = 100;
+          else if (nutritionalHealth.vegetableServings >= 0.5 && nutritionalHealth.vegetableServings < 1) vegScore = 75;
+          else if (nutritionalHealth.vegetableServings > 2 && nutritionalHealth.vegetableServings <= 2.5) vegScore = 85;
+          else vegScore = 40;
+        } else if (ageYears >= 2 && ageYears <= 4) {
+          // Toddlers 2-4 years: 1-2 cups (approximately 2-4 servings)
+          if (nutritionalHealth.vegetableServings >= 2 && nutritionalHealth.vegetableServings <= 4) vegScore = 100;
+          else if (nutritionalHealth.vegetableServings >= 1 && nutritionalHealth.vegetableServings < 2) vegScore = 70;
+          else if (nutritionalHealth.vegetableServings > 4 && nutritionalHealth.vegetableServings <= 5) vegScore = 85;
+          else vegScore = 40;
+        } else if (ageYears >= 5 && ageYears <= 8) {
+          // Children 5-8 years: 1.5-2.5 cups (approximately 3-5 servings)
+          if (nutritionalHealth.vegetableServings >= 3 && nutritionalHealth.vegetableServings <= 5) vegScore = 100;
+          else if (nutritionalHealth.vegetableServings >= 1.5 && nutritionalHealth.vegetableServings < 3) vegScore = 75;
+          else if (nutritionalHealth.vegetableServings > 5 && nutritionalHealth.vegetableServings <= 6) vegScore = 85;
+          else vegScore = 50;
+        } else if (ageYears >= 9 && ageYears <= 13) {
+          // Pre-teens 9-13 years: 2-3 cups for girls, 2.5-3.5 for boys (approximately 4-6 servings)
+          if (nutritionalHealth.vegetableServings >= 4 && nutritionalHealth.vegetableServings <= 7) vegScore = 100;
+          else if (nutritionalHealth.vegetableServings >= 2 && nutritionalHealth.vegetableServings < 4) vegScore = 75;
+          else if (nutritionalHealth.vegetableServings > 7 && nutritionalHealth.vegetableServings <= 8) vegScore = 85;
+          else vegScore = 50;
+        } else {
+          // Adolescents 14+ years: 2.5-3 cups for girls, 3-4 for boys (approximately 5-8 servings)
+          if (nutritionalHealth.vegetableServings >= 5 && nutritionalHealth.vegetableServings <= 8) vegScore = 100;
+          else if (nutritionalHealth.vegetableServings >= 3 && nutritionalHealth.vegetableServings < 5) vegScore = 75;
+          else if (nutritionalHealth.vegetableServings > 8 && nutritionalHealth.vegetableServings <= 10) vegScore = 85;
+          else vegScore = 50;
+        }
+        foodGroupsScore += vegScore;
+      }
+
+      // Dairy intake - Age-appropriate ranges (WHO & AAP Guidelines)
+      if (nutritionalHealth.dairyIntake !== null && nutritionalHealth.dairyIntake !== undefined) {
+        foodGroupCount++;
+        let dairyScore = 0;
+
+        if (ageMonths >= 12 && ageMonths < 24) {
+          // WHO: 200-500ml for 12-23 months (depending on other animal-source foods)
+          // AAP: 470-710ml (16-24 oz)
+          if (nutritionalHealth.dairyIntake >= 400 && nutritionalHealth.dairyIntake <= 600) dairyScore = 100;
+          else if (nutritionalHealth.dairyIntake >= 300 && nutritionalHealth.dairyIntake < 400) dairyScore = 85;
+          else if (nutritionalHealth.dairyIntake >= 200 && nutritionalHealth.dairyIntake < 300) dairyScore = 75;
+          else if (nutritionalHealth.dairyIntake > 600 && nutritionalHealth.dairyIntake <= 750) dairyScore = 75;
+          else dairyScore = 50;
+        } else if (ageYears >= 2 && ageYears <= 5) {
+          // AAP: 470-590ml (16-20 oz) for ages 2-5
+          if (nutritionalHealth.dairyIntake >= 450 && nutritionalHealth.dairyIntake <= 600) dairyScore = 100;
+          else if (nutritionalHealth.dairyIntake >= 350 && nutritionalHealth.dairyIntake < 450) dairyScore = 80;
+          else if (nutritionalHealth.dairyIntake > 600 && nutritionalHealth.dairyIntake <= 750) dairyScore = 75;
+          else dairyScore = 50;
+        } else if (ageYears >= 6 && ageYears <= 8) {
+          // Standard pediatric: 2-2.5 cups (approximately 480-600ml)
+          if (nutritionalHealth.dairyIntake >= 450 && nutritionalHealth.dairyIntake <= 650) dairyScore = 100;
+          else if (nutritionalHealth.dairyIntake >= 350 && nutritionalHealth.dairyIntake < 450) dairyScore = 75;
+          else if (nutritionalHealth.dairyIntake > 650 && nutritionalHealth.dairyIntake <= 800) dairyScore = 80;
+          else dairyScore = 50;
+        } else {
+          // Older children/adolescents: 2.5-3 cups (approximately 600-720ml)
+          if (nutritionalHealth.dairyIntake >= 550 && nutritionalHealth.dairyIntake <= 750) dairyScore = 100;
+          else if (nutritionalHealth.dairyIntake >= 400 && nutritionalHealth.dairyIntake < 550) dairyScore = 75;
+          else if (nutritionalHealth.dairyIntake > 750 && nutritionalHealth.dairyIntake <= 900) dairyScore = 80;
+          else dairyScore = 50;
+        }
+        foodGroupsScore += dairyScore;
+      }
+
+      foodGroupsScore = foodGroupCount > 0 ? Math.round(foodGroupsScore / foodGroupCount) : 0;
+
+      // 4. Supplementation Score (0-100)
+      if (nutritionalHealth.supplements && nutritionalHealth.supplements.length > 0) {
+        if (nutritionalHealth.supplements.includes('none')) {
+          supplementationScore = 75; // Neutral - assuming balanced diet
+        } else {
+          supplementationScore = 85; // Good - addressing specific deficiencies
+        }
+      } else {
+        supplementationScore = 75; // Neutral
+      }
+
+      // Calculate overall score (weighted average)
+      const overall = Math.round(
+        (physicalScore * 0.35) +
+        (dietaryPatternsScore * 0.30) +
+        (foodGroupsScore * 0.30) +
+        (supplementationScore * 0.05)
+      );
+
+      return {
+        physical: physicalScore,
+        dietaryPatterns: dietaryPatternsScore,
+        foodGroups: foodGroupsScore,
+        supplementation: supplementationScore,
+        overall: overall,
+        ageMonths: ageMonths, // Include for reference
+        ageYears: ageYears
+      };
+    }
+
+    // Generate detailed metrics HTML
+    function generateDetailedMetrics(nutritionalHealth, scores) {
+      // Helper function to get color scheme based on nutritional score
+      const getNutritionalColorScheme = (score) => {
+        if (score >= 85) {
+          // Excellent: 85-100
+          return {
+            bg: 'linear-gradient(135deg, #81c784 0%, #66bb6a 100%)',
+            text: '#1b5e20',
+            textLight: '#2e7d32',
+            shadow: 'rgba(102, 187, 106, 0.3)'
+          };
+        } else if (score >= 70) {
+          // Good: 70-84
+          return {
+            bg: 'linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%)',
+            text: '#0d47a1',
+            textLight: '#1565c0',
+            shadow: 'rgba(66, 165, 245, 0.3)'
+          };
+        } else if (score >= 55) {
+          // Adequate: 55-69
+          return {
+            bg: 'linear-gradient(135deg, #ffd54f 0%, #ffca28 100%)',
+            text: '#f57f17',
+            textLight: '#f9a825',
+            shadow: 'rgba(255, 202, 40, 0.3)'
+          };
+        } else if (score >= 40) {
+          // Needs Improvement: 40-54
+          return {
+            bg: 'linear-gradient(135deg, #ffb74d 0%, #ffa726 100%)',
+            text: '#e65100',
+            textLight: '#ef6c00',
+            shadow: 'rgba(255, 167, 38, 0.3)'
+          };
+        } else {
+          // Concern: <40
+          return {
+            bg: 'linear-gradient(135deg, #e57373 0%, #ef5350 100%)',
+            text: '#b71c1c',
+            textLight: '#c62828',
+            shadow: 'rgba(239, 83, 80, 0.3)'
+          };
+        }
+      };
+
+      const physicalColors = getNutritionalColorScheme(scores.physical);
+      const dietaryColors = getNutritionalColorScheme(scores.dietaryPatterns);
+      const foodGroupsColors = getNutritionalColorScheme(scores.foodGroups);
+
+      return `
+        <div style="background: ${physicalColors.bg}; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px ${physicalColors.shadow};">
+          <div style="color: ${physicalColors.text}; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Physical Indicators</div>
+          <div style="font-size: 28px; font-weight: 800; color: ${physicalColors.text};">${scores.physical}<span style="font-size: 16px; color: ${physicalColors.textLight}; font-weight: 500;">/100</span></div>
+          <div style="font-size: 11px; color: ${physicalColors.textLight}; margin-top: 5px;">Energy, Appetite, Skin, Hair, Nails</div>
+        </div>
+        <div style="background: ${dietaryColors.bg}; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px ${dietaryColors.shadow};">
+          <div style="color: ${dietaryColors.text}; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Dietary Patterns</div>
+          <div style="font-size: 28px; font-weight: 800; color: ${dietaryColors.text};">${scores.dietaryPatterns}<span style="font-size: 16px; color: ${dietaryColors.textLight}; font-weight: 500;">/100</span></div>
+          <div style="font-size: 11px; color: ${dietaryColors.textLight}; margin-top: 5px;">Meal frequency, Breakfast, Junk food</div>
+        </div>
+        <div style="background: ${foodGroupsColors.bg}; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px ${foodGroupsColors.shadow};">
+          <div style="color: ${foodGroupsColors.text}; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Food Groups Balance</div>
+          <div style="font-size: 28px; font-weight: 800; color: ${foodGroupsColors.text};">${scores.foodGroups}<span style="font-size: 16px; color: ${foodGroupsColors.textLight}; font-weight: 500;">/100</span></div>
+          <div style="font-size: 11px; color: ${foodGroupsColors.textLight}; margin-top: 5px;">Fruits, Vegetables, Dairy intake</div>
+        </div>
+      `;
+    }
+
+    // Render radar chart
+    function renderNutritionalRadarChart(scores) {
+      const ctx = document.getElementById('nutritionalRadarChart');
+      if (!ctx) return;
+
+      if (window.nutritionalRadarChartInstance) {
+        window.nutritionalRadarChartInstance.destroy();
+      }
+
+      window.nutritionalRadarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Physical Indicators', 'Dietary Patterns', 'Food Groups Balance', 'Supplementation'],
+          datasets: [{
+            label: 'Current Status',
+            data: [scores.physical, scores.dietaryPatterns, scores.foodGroups, scores.supplementation],
+            fill: true,
+            backgroundColor: 'rgba(39, 174, 96, 0.2)',
+            borderColor: '#27ae60',
+            pointBackgroundColor: '#27ae60',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#27ae60',
+            borderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }, {
+            label: 'Optimal Standard',
+            data: [85, 85, 85, 80],
+            fill: true,
+            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+            borderColor: '#3498db',
+            borderDash: [5, 5],
+            pointBackgroundColor: '#3498db',
+            pointBorderColor: '#fff',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                stepSize: 20,
+                font: { size: 11 }
+              },
+              pointLabels: {
+                font: { size: 12, weight: 'bold' }
+              },
+              grid: {
+                color: '#e0e0e0'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                padding: 15,
+                font: { size: 12 }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Nutritional Balance: Current vs Optimal Standards',
+              font: { size: 14, weight: 'bold' },
+              padding: { bottom: 20 }
+            }
+          }
+        }
+      });
+    }
+
+    // Helper functions
+    function getNutritionalScoreColor(score) {
+      if (score >= 85) return '#27ae60'; // Excellent
+      if (score >= 70) return '#3498db'; // Good
+      if (score >= 55) return '#f39c12'; // Average
+      if (score >= 40) return '#e67e22'; // Below Average
+      return '#e74c3c'; // Concern
+    }
+
+    function getNutritionalScoreCategory(score) {
+      if (score >= 85) return 'Excellent Nutrition';
+      if (score >= 70) return 'Good Nutrition';
+      if (score >= 55) return 'Adequate Nutrition';
+      if (score >= 40) return 'Needs Improvement';
+      return 'Nutritional Concern';
+    }
+
+    function getNutritionalAlertLevel(score) {
+      if (score >= 85) return 'excellent';
+      if (score >= 70) return 'normal';
+      if (score >= 55) return 'monitor';
+      if (score >= 40) return 'warning';
+      return 'critical';
+    }
+
+    // Toggle between current and history views
+    window.switchNutritionalView = function(view) {
+      const currentView = document.getElementById('nutritionalCurrentView');
+      const historyView = document.getElementById('nutritionalHistoryView');
+      const buttons = document.querySelectorAll('#nutritionalBalanceCard .hydration-toggle-btn');
+
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      if (view === 'current') {
+        currentView.classList.add('active');
+        historyView.classList.remove('active');
+        buttons[0].classList.add('active');
+      } else {
+        currentView.classList.remove('active');
+        historyView.classList.add('active');
+        buttons[1].classList.add('active');
+
+        // Render history chart
+        renderNutritionalHistoryChart();
+      }
+    }
+
+    // Render nutritional history chart
+    function renderNutritionalHistoryChart() {
+      const consultations = window.nutritionalConsultationsData || [];
+
+      const nutritionalData = consultations
+        .map((consult, index) => {
+          if (!consult.nutritionalHealth) return null;
+
+          const scores = calculateNutritionalScores(consult.nutritionalHealth, window.nutritionalChildData);
+
+          return {
+            visitNumber: index + 1,
+            date: consult.date?.toDate ? consult.date.toDate() : new Date(consult.date),
+            overall: scores.overall,
+            physical: scores.physical,
+            dietaryPatterns: scores.dietaryPatterns,
+            foodGroups: scores.foodGroups
+          };
+        })
+        .filter(d => d !== null);
+
+      if (nutritionalData.length === 0) {
+        document.getElementById('nutritionalHistoryChart').parentElement.innerHTML =
+          '<p style="text-align: center; color: #95a5a6; padding: 40px;">No nutritional history data available</p>';
+        return;
+      }
+
+      const labels = nutritionalData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+
+      // Calculate dynamic max value: find highest value across all data points and add 20% padding
+      const allNutritionalValues = nutritionalData.flatMap(d => [
+        d.overall,
+        d.physical,
+        d.dietaryPatterns,
+        d.foodGroups
+      ]);
+      const maxNutritionalValue = Math.max(...allNutritionalValues);
+      const dynamicNutritionalMax = Math.ceil(maxNutritionalValue * 1.2); // Add 20% padding and round up
+
+      const ctx = document.getElementById('nutritionalHistoryChart');
+
+      if (window.nutritionalHistoryChartInstance) {
+        window.nutritionalHistoryChartInstance.destroy();
+      }
+
+      window.nutritionalHistoryChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            // Optimal Target Range (85-100+) - Green shaded area extending to chart max
+            {
+              label: 'Excellent Range (85-100)',
+              data: nutritionalData.map(() => dynamicNutritionalMax),
+              borderColor: 'rgba(39, 174, 96, 0)',
+              backgroundColor: 'rgba(39, 174, 96, 0.2)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 85 },
+                above: 'rgba(39, 174, 96, 0.2)'
+              },
+              order: 10
+            },
+            // Good Range (70-85) - Blue shaded area
+            {
+              label: 'Good Range (70-85)',
+              data: nutritionalData.map(() => 85),
+              borderColor: 'rgba(52, 152, 219, 0)',
+              backgroundColor: 'rgba(52, 152, 219, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 70 },
+                above: 'rgba(52, 152, 219, 0.25)'
+              },
+              order: 9
+            },
+            // Adequate Range (55-70) - Yellow shaded area
+            {
+              label: 'Adequate Range (55-70)',
+              data: nutritionalData.map(() => 70),
+              borderColor: 'rgba(243, 156, 18, 0)',
+              backgroundColor: 'rgba(243, 156, 18, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 55 },
+                above: 'rgba(243, 156, 18, 0.25)'
+              },
+              order: 8
+            },
+            // Needs Improvement Range (40-55) - Orange shaded area
+            {
+              label: 'Needs Improvement Range (40-55)',
+              data: nutritionalData.map(() => 55),
+              borderColor: 'rgba(255, 152, 0, 0)',
+              backgroundColor: 'rgba(255, 152, 0, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 40 },
+                above: 'rgba(255, 152, 0, 0.25)'
+              },
+              order: 7
+            },
+            // Concern Range (0-40) - Red shaded area
+            {
+              label: 'Concern Range (0-40)',
+              data: nutritionalData.map(() => 40),
+              borderColor: 'rgba(244, 67, 54, 0)',
+              backgroundColor: 'rgba(244, 67, 54, 0.2)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 0 },
+                above: 'rgba(244, 67, 54, 0.2)'
+              },
+              order: 6
+            },
+            // Overall Score - Main line
+            {
+              label: 'Overall Score',
+              data: nutritionalData.map(d => d.overall),
+              borderColor: '#27ae60',
+              backgroundColor: 'rgba(39, 174, 96, 0.2)',
+              borderWidth: 3,
+              tension: 0.3,
+              fill: false,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              order: 1
+            },
+            // Physical Indicators
+            {
+              label: 'Physical Indicators',
+              data: nutritionalData.map(d => d.physical),
+              borderColor: '#e74c3c',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              tension: 0.3,
+              fill: false,
+              pointRadius: 4,
+              order: 2
+            },
+            // Dietary Patterns
+            {
+              label: 'Dietary Patterns',
+              data: nutritionalData.map(d => d.dietaryPatterns),
+              borderColor: '#3498db',
+              borderWidth: 2,
+              borderDash: [10, 5],
+              tension: 0.3,
+              fill: false,
+              pointRadius: 4,
+              order: 3
+            },
+            // Food Groups Balance
+            {
+              label: 'Food Groups Balance',
+              data: nutritionalData.map(d => d.foodGroups),
+              borderColor: '#f39c12',
+              borderWidth: 2,
+              borderDash: [2, 2],
+              tension: 0.3,
+              fill: false,
+              pointRadius: 4,
+              order: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: dynamicNutritionalMax,
+              title: {
+                display: true,
+                text: 'Nutritional Score (0-100)',
+                font: { size: 13, weight: 'bold' }
+              },
+              grid: {
+                color: '#e0e0e0'
+              },
+              ticks: {
+                stepSize: 5,
+                autoSkip: false,
+                callback: function(value) {
+                  // Round to handle floating point precision
+                  const rounded = Math.round(value);
+
+                  // ONLY label the 5 clinical thresholds - nothing else
+                  if (rounded === 85) return '85 (Excellent)';
+                  if (rounded === 70) return '70 (Good)';
+                  if (rounded === 55) return '55 (Adequate)';
+                  if (rounded === 40) return '40 (Needs Improvement)';
+                  if (rounded === 0) return '0 (Concern)';
+
+                  // Hide all other values
+                  return '';
+                }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Consultation Timeline',
+                font: { size: 13, weight: 'bold' }
+              },
+              grid: {
+                display: false
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                padding: 12,
+                font: { size: 11 },
+                usePointStyle: true,
+                filter: function(item, chart) {
+                  // Hide range datasets from legend, only show main metrics and thresholds
+                  return !item.text.includes('Range');
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Nutritional Health Progress (WHO/AAP Age-Based Standards)',
+              font: { size: 16, weight: 'bold' },
+              padding: { bottom: 15 }
+            },
+            tooltip: {
+              callbacks: {
+                afterBody: function(context) {
+                  const score = context[0].parsed.y;
+                  if (score >= 85) return '\n🟢 Excellent Nutrition';
+                  if (score >= 70) return '\n🔵 Good Nutrition';
+                  if (score >= 55) return '\n🟡 Adequate Nutrition';
+                  if (score >= 40) return '\n🟠 Needs Improvement';
+                  return '\n🔴 Nutritional Concern';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
     // ==================== MOTOR SKILLS FUNCTIONS ====================
 
     // Display motor skills chart
@@ -2230,17 +3120,18 @@
                   const currentScore = currentConsult.motorSkills.overallScore;
                   const scoreDiff = currentScore - prevScore;
                   const arrow = scoreDiff > 0 ? '↑' : scoreDiff < 0 ? '↓' : '→';
-                  const bgColor = scoreDiff > 0 ? 'rgba(76, 175, 80, 0.25)' : scoreDiff < 0 ? 'rgba(244, 67, 54, 0.25)' : 'rgba(127, 140, 141, 0.2)';
-                  const borderColor = scoreDiff > 0 ? 'rgba(76, 175, 80, 0.5)' : scoreDiff < 0 ? 'rgba(244, 67, 54, 0.5)' : 'rgba(127, 140, 141, 0.4)';
+                  const arrowColor = scoreDiff > 0 ? '#4caf50' : scoreDiff < 0 ? '#f44336' : '#95a5a6';
+                  const textColor = scoreDiff > 0 ? '#2e7d32' : scoreDiff < 0 ? '#c62828' : '#546e7a';
+                  const borderColor = scoreDiff > 0 ? '#4caf50' : scoreDiff < 0 ? '#f44336' : '#95a5a6';
                   const status = scoreDiff > 0 ? 'Improved' : scoreDiff < 0 ? 'Declined' : 'Stable';
                   return `
-                    <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); padding: 8px 10px; background: ${bgColor}; border: 2px solid ${borderColor}; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); padding: 10px 12px; background: white; border: 2px solid ${borderColor}; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                       <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div style="color: rgba(255,255,255,0.85); font-size: 8px; text-transform: uppercase; letter-spacing: 0.8px;">vs Last</div>
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                          <div style="color: white; font-size: 20px; font-weight: 900; line-height: 1;">${arrow}</div>
-                          <div style="color: white; font-size: 14px; font-weight: 800; line-height: 1;">${Math.abs(scoreDiff).toFixed(1)}</div>
-                          <div style="color: rgba(255,255,255,0.85); font-size: 8px; font-weight: 600;">${status}</div>
+                        <div style="color: #7f8c8d; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">vs Last</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="color: ${arrowColor}; font-size: 22px; font-weight: 900; line-height: 1;">${arrow}</div>
+                          <div style="color: ${textColor}; font-size: 16px; font-weight: 800; line-height: 1;">${Math.abs(scoreDiff).toFixed(1)}</div>
+                          <div style="color: ${textColor}; font-size: 9px; font-weight: 700; text-transform: uppercase;">${status}</div>
                         </div>
                       </div>
                     </div>
@@ -2279,59 +3170,106 @@
 
             <!-- Right: Subcategories Grid -->
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+              ${(() => {
+                // Helper function to get color scheme based on motor skills score
+                const getMotorSkillsColorScheme = (score) => {
+                  if (score >= 9.0) {
+                    return {
+                      bg: 'linear-gradient(135deg, #81c784 0%, #66bb6a 100%)',
+                      text: '#1b5e20',
+                      textLight: '#2e7d32',
+                      shadow: 'rgba(102, 187, 106, 0.3)'
+                    };
+                  } else if (score >= 7.5) {
+                    return {
+                      bg: 'linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%)',
+                      text: '#0d47a1',
+                      textLight: '#1565c0',
+                      shadow: 'rgba(66, 165, 245, 0.3)'
+                    };
+                  } else if (score >= 6.0) {
+                    return {
+                      bg: 'linear-gradient(135deg, #ffd54f 0%, #ffca28 100%)',
+                      text: '#f57f17',
+                      textLight: '#f9a825',
+                      shadow: 'rgba(255, 202, 40, 0.3)'
+                    };
+                  } else if (score >= 4.0) {
+                    return {
+                      bg: 'linear-gradient(135deg, #ffb74d 0%, #ffa726 100%)',
+                      text: '#e65100',
+                      textLight: '#ef6c00',
+                      shadow: 'rgba(255, 167, 38, 0.3)'
+                    };
+                  } else {
+                    return {
+                      bg: 'linear-gradient(135deg, #e57373 0%, #ef5350 100%)',
+                      text: '#b71c1c',
+                      textLight: '#c62828',
+                      shadow: 'rgba(239, 83, 80, 0.3)'
+                    };
+                  }
+                };
 
+                const grossColors = getMotorSkillsColorScheme(motorSkills.grossMotorAvg);
+                const fineColors = getMotorSkillsColorScheme(motorSkills.fineMotorAvg);
+                const balanceColors = getMotorSkillsColorScheme(motorSkills.balanceAvg);
+                const strengthColors = getMotorSkillsColorScheme(motorSkills.strengthAvg);
+
+                return `
               <!-- Gross Motor -->
-              <div style="background: linear-gradient(135deg, #a8d5e2, #91c9db); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(168,213,226,0.3); transition: transform 0.2s;">
+              <div style="background: ${grossColors.bg}; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px ${grossColors.shadow}; transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                   <span style="font-size: 24px; margin-right: 8px;">🏃</span>
-                  <div style="color: #2c5f6f; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Gross<br>Motor</div>
+                  <div style="color: ${grossColors.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Gross<br>Motor</div>
                 </div>
                 <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                  <div style="color: #2c5f6f; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.grossMotorAvg.toFixed(1)}</div>
-                  <div style="color: #4a7a8a; font-size: 18px; font-weight: 600;">/10</div>
+                  <div style="color: ${grossColors.text}; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.grossMotorAvg.toFixed(1)}</div>
+                  <div style="color: ${grossColors.textLight}; font-size: 18px; font-weight: 600;">/10</div>
                 </div>
-                <div style="color: #2c5f6f; font-size: 10px; font-weight: 500;">${motorSkills.grossMotor ? Object.keys(motorSkills.grossMotor).length + ' skills' : 'No data'}</div>
+                <div style="color: ${grossColors.text}; font-size: 10px; font-weight: 500;">${motorSkills.grossMotor ? Object.keys(motorSkills.grossMotor).length + ' skills' : 'No data'}</div>
               </div>
 
               <!-- Fine Motor -->
-              <div style="background: linear-gradient(135deg, #ffd4a3, #ffc78f); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(255,212,163,0.3); transition: transform 0.2s;">
+              <div style="background: ${fineColors.bg}; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px ${fineColors.shadow}; transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                   <span style="font-size: 24px; margin-right: 8px;">✋</span>
-                  <div style="color: #8b5a2b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Fine<br>Motor</div>
+                  <div style="color: ${fineColors.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Fine<br>Motor</div>
                 </div>
                 <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                  <div style="color: #8b5a2b; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.fineMotorAvg.toFixed(1)}</div>
-                  <div style="color: #a67747; font-size: 18px; font-weight: 600;">/10</div>
+                  <div style="color: ${fineColors.text}; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.fineMotorAvg.toFixed(1)}</div>
+                  <div style="color: ${fineColors.textLight}; font-size: 18px; font-weight: 600;">/10</div>
                 </div>
-                <div style="color: #8b5a2b; font-size: 10px; font-weight: 500;">${motorSkills.fineMotor ? Object.keys(motorSkills.fineMotor).length + ' skills' : 'No data'}</div>
+                <div style="color: ${fineColors.text}; font-size: 10px; font-weight: 500;">${motorSkills.fineMotor ? Object.keys(motorSkills.fineMotor).length + ' skills' : 'No data'}</div>
               </div>
 
               <!-- Balance & Coordination -->
-              <div style="background: linear-gradient(135deg, #d4a5d4, #c690c6); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(212,165,212,0.3); transition: transform 0.2s;">
+              <div style="background: ${balanceColors.bg}; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px ${balanceColors.shadow}; transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                   <span style="font-size: 24px; margin-right: 8px;">⚖️</span>
-                  <div style="color: #6b3a6b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Balance &<br>Coordination</div>
+                  <div style="color: ${balanceColors.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Balance &<br>Coordination</div>
                 </div>
                 <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                  <div style="color: #6b3a6b; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.balanceAvg.toFixed(1)}</div>
-                  <div style="color: #8a5a8a; font-size: 18px; font-weight: 600;">/10</div>
+                  <div style="color: ${balanceColors.text}; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.balanceAvg.toFixed(1)}</div>
+                  <div style="color: ${balanceColors.textLight}; font-size: 18px; font-weight: 600;">/10</div>
                 </div>
-                <div style="color: #6b3a6b; font-size: 10px; font-weight: 500;">${motorSkills.balance ? Object.keys(motorSkills.balance).length + ' skills' : 'No data'}</div>
+                <div style="color: ${balanceColors.text}; font-size: 10px; font-weight: 500;">${motorSkills.balance ? Object.keys(motorSkills.balance).length + ' skills' : 'No data'}</div>
               </div>
 
               <!-- Strength & Endurance -->
-              <div style="background: linear-gradient(135deg, #b8dda8, #a4d091); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(184,221,168,0.3); transition: transform 0.2s;">
+              <div style="background: ${strengthColors.bg}; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px ${strengthColors.shadow}; transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                   <span style="font-size: 24px; margin-right: 8px;">💪</span>
-                  <div style="color: #3d6b2f; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Strength &<br>Endurance</div>
+                  <div style="color: ${strengthColors.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Strength &<br>Endurance</div>
                 </div>
                 <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                  <div style="color: #3d6b2f; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.strengthAvg.toFixed(1)}</div>
-                  <div style="color: #5a8a47; font-size: 18px; font-weight: 600;">/10</div>
+                  <div style="color: ${strengthColors.text}; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.strengthAvg.toFixed(1)}</div>
+                  <div style="color: ${strengthColors.textLight}; font-size: 18px; font-weight: 600;">/10</div>
                 </div>
-                <div style="color: #3d6b2f; font-size: 10px; font-weight: 500;">${motorSkills.strength ? Object.keys(motorSkills.strength).length + ' skills' : 'No data'}</div>
+                <div style="color: ${strengthColors.text}; font-size: 10px; font-weight: 500;">${motorSkills.strength ? Object.keys(motorSkills.strength).length + ' skills' : 'No data'}</div>
               </div>
-
+                `;
+              })()}
             </div>
           </div>
 
@@ -2392,6 +3330,23 @@
       }
     }
 
+    // Toggle Nutritional Legend Tooltip
+    // Show Nutritional Legend on hover
+    window.showNutritionalLegend = function() {
+      const tooltip = document.getElementById('nutritionalLegendTooltip');
+      if (tooltip) {
+        tooltip.style.display = 'block';
+      }
+    }
+
+    // Hide Nutritional Legend when leaving
+    window.hideNutritionalLegend = function() {
+      const tooltip = document.getElementById('nutritionalLegendTooltip');
+      if (tooltip) {
+        tooltip.style.display = 'none';
+      }
+    }
+
     // Toggle BMI Legend Tooltip
     // Show BMI Legend on hover
     window.showBMILegend = function() {
@@ -2446,6 +3401,18 @@
       }
 
       const labels = motorSkillsData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+
+      // Calculate dynamic max value: find highest value across all data points and add 20% padding
+      const allValues = motorSkillsData.flatMap(d => [
+        d.overallScore,
+        d.grossMotor,
+        d.fineMotor,
+        d.balance,
+        d.strength
+      ]);
+      const maxDataValue = Math.max(...allValues);
+      const dynamicMax = Math.ceil(maxDataValue * 1.2); // Add 20% padding and round up
+
       const ctx = document.getElementById('motorSkillsHistoryChart');
 
       if (window.motorSkillsHistoryChartInstance) {
@@ -2457,6 +3424,77 @@
         data: {
           labels: labels,
           datasets: [
+            // Excellent Range (9.0-10+) - Green shaded area extending to chart max
+            {
+              label: 'Excellent Range (9.0-10)',
+              data: motorSkillsData.map(() => dynamicMax),
+              borderColor: 'rgba(76, 175, 80, 0)',
+              backgroundColor: 'rgba(76, 175, 80, 0.2)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 9.0 },
+                above: 'rgba(76, 175, 80, 0.2)'
+              },
+              order: 10
+            },
+            // Good Range (7.5-9.0) - Blue shaded area
+            {
+              label: 'Good Range (7.5-9.0)',
+              data: motorSkillsData.map(() => 9.0),
+              borderColor: 'rgba(33, 150, 243, 0)',
+              backgroundColor: 'rgba(33, 150, 243, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 7.5 },
+                above: 'rgba(33, 150, 243, 0.25)'
+              },
+              order: 9
+            },
+            // Average Range (6.0-7.5) - Yellow shaded area
+            {
+              label: 'Average Range (6.0-7.5)',
+              data: motorSkillsData.map(() => 7.5),
+              borderColor: 'rgba(255, 193, 7, 0)',
+              backgroundColor: 'rgba(255, 193, 7, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 6.0 },
+                above: 'rgba(255, 193, 7, 0.25)'
+              },
+              order: 8
+            },
+            // Below Average Range (4.0-6.0) - Orange shaded area
+            {
+              label: 'Below Average Range (4.0-6.0)',
+              data: motorSkillsData.map(() => 6.0),
+              borderColor: 'rgba(255, 152, 0, 0)',
+              backgroundColor: 'rgba(255, 152, 0, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 4.0 },
+                above: 'rgba(255, 152, 0, 0.25)'
+              },
+              order: 7
+            },
+            // Concern Range (0-4.0) - Red shaded area
+            {
+              label: 'Concern Range (0-4.0)',
+              data: motorSkillsData.map(() => 4.0),
+              borderColor: 'rgba(244, 67, 54, 0)',
+              backgroundColor: 'rgba(244, 67, 54, 0.2)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 0 },
+                above: 'rgba(244, 67, 54, 0.2)'
+              },
+              order: 6
+            },
+            // Overall Score - Main line
             {
               label: 'Overall Score',
               data: motorSkillsData.map(d => d.overallScore),
@@ -2464,10 +3502,12 @@
               borderColor: 'rgba(46, 204, 113, 1)',
               borderWidth: 3,
               tension: 0.4,
-              fill: true,
+              fill: false,
               pointRadius: 6,
-              pointHoverRadius: 8
+              pointHoverRadius: 8,
+              order: 1
             },
+            // Gross Motor
             {
               label: 'Gross Motor',
               data: motorSkillsData.map(d => d.grossMotor),
@@ -2477,8 +3517,10 @@
               tension: 0.4,
               fill: false,
               pointRadius: 4,
-              pointHoverRadius: 6
+              pointHoverRadius: 6,
+              order: 2
             },
+            // Fine Motor
             {
               label: 'Fine Motor',
               data: motorSkillsData.map(d => d.fineMotor),
@@ -2488,8 +3530,10 @@
               tension: 0.4,
               fill: false,
               pointRadius: 4,
-              pointHoverRadius: 6
+              pointHoverRadius: 6,
+              order: 3
             },
+            // Balance & Coordination
             {
               label: 'Balance & Coordination',
               data: motorSkillsData.map(d => d.balance),
@@ -2499,8 +3543,10 @@
               tension: 0.4,
               fill: false,
               pointRadius: 4,
-              pointHoverRadius: 6
+              pointHoverRadius: 6,
+              order: 4
             },
+            // Strength & Endurance
             {
               label: 'Strength & Endurance',
               data: motorSkillsData.map(d => d.strength),
@@ -2510,44 +3556,95 @@
               tension: 0.4,
               fill: false,
               pointRadius: 4,
-              pointHoverRadius: 6
+              pointHoverRadius: 6,
+              order: 5
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: true,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
           plugins: {
             datalabels: { display: false },
             legend: {
               display: true,
-              position: 'top'
+              position: 'bottom',
+              labels: {
+                padding: 12,
+                font: { size: 11 },
+                usePointStyle: true,
+                filter: function(item, chart) {
+                  // Hide range datasets from legend
+                  return !item.text.includes('Range');
+                }
+              }
             },
             title: {
               display: true,
-              text: 'Motor Skills Progress Across All Consultations',
+              text: 'Motor Skills Progress (WHO/CDC/MABC-2 Standards)',
               font: { size: 16, weight: 'bold' },
-              color: '#2c3e50'
+              color: '#2c3e50',
+              padding: { bottom: 15 }
             },
             tooltip: {
               callbacks: {
                 label: function(context) {
                   return context.dataset.label + ': ' + context.parsed.y.toFixed(1);
+                },
+                afterBody: function(context) {
+                  const score = context[0].parsed.y;
+                  if (score >= 9.0) return '\n🟢 Excellent';
+                  if (score >= 7.5) return '\n🔵 Good';
+                  if (score >= 6.0) return '\n🟡 Average';
+                  if (score >= 4.0) return '\n🟠 Below Average';
+                  return '\n🔴 Concern';
                 }
               }
             }
           },
           scales: {
             x: {
-              title: { display: true, text: 'Consultation Visits' }
+              title: {
+                display: true,
+                text: 'Consultation Timeline',
+                font: { size: 13, weight: 'bold' }
+              },
+              grid: {
+                display: false
+              }
             },
             y: {
               min: 0,
-              max: 10,
-              title: { display: true, text: 'Motor Skills Score (1-10)' },
+              max: dynamicMax,
+              title: {
+                display: true,
+                text: 'Motor Skills Score (0-10)',
+                font: { size: 13, weight: 'bold' }
+              },
+              grid: {
+                color: '#e0e0e0'
+              },
               ticks: {
-                stepSize: 1,
-                callback: (value) => value.toFixed(0)
+                stepSize: 0.5,
+                autoSkip: false,
+                callback: function(value) {
+                  // Round to handle floating point precision
+                  const rounded = Math.round(value * 10) / 10;
+
+                  // ONLY label the 5 clinical thresholds - nothing else
+                  if (rounded === 9.0) return '9.0 (Excellent)';
+                  if (rounded === 7.5) return '7.5 (Good)';
+                  if (rounded === 6.0) return '6.0 (Average)';
+                  if (rounded === 4.0) return '4.0 (Below Average)';
+                  if (rounded === 0) return '0 (Concern)';
+
+                  // Hide all other values
+                  return '';
+                }
               }
             }
           }
@@ -2674,7 +3771,7 @@
                   type: 'box',
                   yMin: 15,
                   yMax: 22,
-                  backgroundColor: 'rgba(76, 175, 80, 0.15)',
+                  backgroundColor: 'rgba(76, 175, 80, 0.2)',
                   borderColor: 'rgba(76, 175, 80, 0.3)',
                   borderWidth: 1,
                   label: {
