@@ -2147,22 +2147,29 @@
 
       if (!consultations || consultations.length === 0) return;
 
-      const latestConsult = consultations[consultations.length - 1];
+      // Check if ANY consultation has motor skills data (not null)
+      const hasMotorSkillsData = consultations.some(c => c.motorSkills && c.motorSkills.overallScore);
 
-      // Only show if motor skills data is available
-      if (!latestConsult.motorSkills || !latestConsult.motorSkills.overallScore) {
+      if (!hasMotorSkillsData) {
+        return; // No motor skills data at all, don't show the card
+      }
+
+      // Get the latest consultation with actual motor skills data
+      const latestConsultWithData = [...consultations].reverse().find(c => c.motorSkills && c.motorSkills.overallScore);
+
+      if (!latestConsultWithData) {
         return;
       }
 
-      const motorSkills = latestConsult.motorSkills;
+      const motorSkills = latestConsultWithData.motorSkills;
 
       // Calculate color and status based on overall score
       const getScoreColor = (score) => {
-        if (score >= 9) return '#27ae60'; // Excellent - Green
-        if (score >= 7.5) return '#81c784'; // Good - Light Green
-        if (score >= 6) return '#ff9800'; // Average - Orange
-        if (score >= 4) return '#ff5722'; // Below Average - Dark Orange
-        return '#e74c3c'; // Concern - Red
+        if (score >= 9) return '#4caf50'; // Excellent - Green
+        if (score >= 7.5) return '#2196f3'; // Good - Blue
+        if (score >= 6) return '#ffc107'; // Average - Yellow
+        if (score >= 4) return '#ff9800'; // Below Average - Orange
+        return '#f44336'; // Concern - Red
       };
 
       const getScoreCategory = (score) => {
@@ -2192,9 +2199,18 @@
 
         if (alertLevel && alertColors[alertLevel]) {
           const colors = alertColors[alertLevel];
+          let rangeInfo = '';
+          if (alertLevel === 'monitor') {
+            rangeInfo = 'Current score is in the Average range (6.0-7.4). Expected range for good development is 7.5+.';
+          } else if (alertLevel === 'warning') {
+            rangeInfo = 'Current score is Below Average (4.0-5.9). Expected range for age-appropriate development is 6.0+.';
+          } else if (alertLevel === 'critical') {
+            rangeInfo = 'Current score indicates Concern (<4.0). Immediate developmental assessment recommended. Expected range is 6.0+.';
+          }
           alertBanner = `
             <div style="background: ${colors.bg}; border: 2px solid ${colors.border}; color: ${colors.text}; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-              <strong>⚠️ Clinical Alert:</strong> Motor skills score is below expected range. Consider developmental assessment and intervention planning.
+              <strong>⚠️ Clinical Alert:</strong> ${rangeInfo}
+              <br><span style="font-size: 13px; margin-top: 5px; display: inline-block;">Consider developmental assessment and intervention planning.</span>
             </div>
           `;
         }
@@ -2206,53 +2222,129 @@
           <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
 
             <!-- Left: Overall Score Card -->
-            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+              <!-- Info Button -->
+              <button onmouseenter="showMotorSkillsLegend()" onmouseleave="hideMotorSkillsLegend()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #1976d2; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="Color Guide">
+                i
+              </button>
+
               <div style="color: rgba(255,255,255,0.95); font-size: 13px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall Score</div>
-              <div style="color: white; font-size: 72px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore.toFixed(1)}</div>
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <div style="color: white; font-size: 72px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore.toFixed(1)}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 28px; font-weight: 600;">/10</div>
+              </div>
               <div style="color: white; font-size: 16px; font-weight: 600; margin-top: 12px; text-align: center;">${scoreCategory}</div>
+
+              <!-- Progress Indicator -->
+              ${(() => {
+                const consultsWithData = consultations.filter(c => c.motorSkills && c.motorSkills.overallScore);
+                if (consultsWithData.length >= 2) {
+                  const currentConsult = consultsWithData[consultsWithData.length - 1];
+                  const prevConsult = consultsWithData[consultsWithData.length - 2];
+                  const prevScore = prevConsult.motorSkills.overallScore;
+                  const currentScore = currentConsult.motorSkills.overallScore;
+                  const scoreDiff = currentScore - prevScore;
+                  const arrow = scoreDiff > 0 ? '↑' : scoreDiff < 0 ? '↓' : '→';
+                  const bgColor = scoreDiff > 0 ? 'rgba(76, 175, 80, 0.25)' : scoreDiff < 0 ? 'rgba(244, 67, 54, 0.25)' : 'rgba(127, 140, 141, 0.2)';
+                  const borderColor = scoreDiff > 0 ? 'rgba(76, 175, 80, 0.5)' : scoreDiff < 0 ? 'rgba(244, 67, 54, 0.5)' : 'rgba(127, 140, 141, 0.4)';
+                  const status = scoreDiff > 0 ? 'Improved' : scoreDiff < 0 ? 'Declined' : 'Stable';
+                  return `
+                    <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); padding: 8px 10px; background: ${bgColor}; border: 2px solid ${borderColor}; border-radius: 8px; backdrop-filter: blur(10px);">
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="color: rgba(255,255,255,0.85); font-size: 8px; text-transform: uppercase; letter-spacing: 0.8px;">vs Last</div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <div style="color: white; font-size: 20px; font-weight: 900; line-height: 1;">${arrow}</div>
+                          <div style="color: white; font-size: 14px; font-weight: 800; line-height: 1;">${Math.abs(scoreDiff).toFixed(1)}</div>
+                          <div style="color: rgba(255,255,255,0.85); font-size: 8px; font-weight: 600;">${status}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }
+                return '';
+              })()}
+
+              <!-- Floating Legend Tooltip -->
+              <div id="motorSkillsLegendTooltip" onmouseenter="showMotorSkillsLegend()" onmouseleave="hideMotorSkillsLegend()" style="display: none; position: absolute; top: 45px; right: 8px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 100; width: 200px;">
+                <div style="color: #2c3e50; font-size: 11px; font-weight: 700; margin-bottom: 10px; text-align: center;">COLOR GUIDE</div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #4caf50; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>9.0 - 10.0</strong> Excellent</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #2196f3; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>7.5 - 8.9</strong> Good</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #ffc107; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>6.0 - 7.4</strong> Average</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #ff9800; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>4.0 - 5.9</strong> Below Avg</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 16px; height: 16px; border-radius: 3px; background: #f44336; flex-shrink: 0;"></div>
+                    <div style="font-size: 10px; color: #333;"><strong>&lt; 4.0</strong> Concern</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Right: Subcategories Grid -->
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
 
               <!-- Gross Motor -->
-              <div style="background: linear-gradient(135deg, #00c3c9, #00a3a9); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,195,201,0.25); transition: transform 0.2s;">
+              <div style="background: linear-gradient(135deg, #a8d5e2, #91c9db); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(168,213,226,0.3); transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                   <span style="font-size: 24px; margin-right: 8px;">🏃</span>
-                  <div style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Gross<br>Motor</div>
+                  <div style="color: #2c5f6f; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Gross<br>Motor</div>
                 </div>
-                <div style="color: white; font-size: 42px; font-weight: 800; line-height: 1; margin-bottom: 8px;">${motorSkills.grossMotorAvg.toFixed(1)}</div>
-                <div style="color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 500;">${motorSkills.grossMotor ? Object.keys(motorSkills.grossMotor).length + ' skills' : 'No data'}</div>
+                <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
+                  <div style="color: #2c5f6f; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.grossMotorAvg.toFixed(1)}</div>
+                  <div style="color: #4a7a8a; font-size: 18px; font-weight: 600;">/10</div>
+                </div>
+                <div style="color: #2c5f6f; font-size: 10px; font-weight: 500;">${motorSkills.grossMotor ? Object.keys(motorSkills.grossMotor).length + ' skills' : 'No data'}</div>
               </div>
 
               <!-- Fine Motor -->
-              <div style="background: linear-gradient(135deg, #9b59b6, #8e44ad); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(155,89,182,0.25); transition: transform 0.2s;">
+              <div style="background: linear-gradient(135deg, #ffd4a3, #ffc78f); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(255,212,163,0.3); transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                   <span style="font-size: 24px; margin-right: 8px;">✋</span>
-                  <div style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Fine<br>Motor</div>
+                  <div style="color: #8b5a2b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Fine<br>Motor</div>
                 </div>
-                <div style="color: white; font-size: 42px; font-weight: 800; line-height: 1; margin-bottom: 8px;">${motorSkills.fineMotorAvg.toFixed(1)}</div>
-                <div style="color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 500;">${motorSkills.fineMotor ? Object.keys(motorSkills.fineMotor).length + ' skills' : 'No data'}</div>
+                <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
+                  <div style="color: #8b5a2b; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.fineMotorAvg.toFixed(1)}</div>
+                  <div style="color: #a67747; font-size: 18px; font-weight: 600;">/10</div>
+                </div>
+                <div style="color: #8b5a2b; font-size: 10px; font-weight: 500;">${motorSkills.fineMotor ? Object.keys(motorSkills.fineMotor).length + ' skills' : 'No data'}</div>
               </div>
 
               <!-- Balance & Coordination -->
-              <div style="background: linear-gradient(135deg, #e67e22, #d35400); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(230,126,34,0.25); transition: transform 0.2s;">
+              <div style="background: linear-gradient(135deg, #d4a5d4, #c690c6); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(212,165,212,0.3); transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                   <span style="font-size: 24px; margin-right: 8px;">⚖️</span>
-                  <div style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Balance &<br>Coordination</div>
+                  <div style="color: #6b3a6b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Balance &<br>Coordination</div>
                 </div>
-                <div style="color: white; font-size: 42px; font-weight: 800; line-height: 1; margin-bottom: 8px;">${motorSkills.balanceAvg.toFixed(1)}</div>
-                <div style="color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 500;">${motorSkills.balance ? Object.keys(motorSkills.balance).length + ' skills' : 'No data'}</div>
+                <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
+                  <div style="color: #6b3a6b; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.balanceAvg.toFixed(1)}</div>
+                  <div style="color: #8a5a8a; font-size: 18px; font-weight: 600;">/10</div>
+                </div>
+                <div style="color: #6b3a6b; font-size: 10px; font-weight: 500;">${motorSkills.balance ? Object.keys(motorSkills.balance).length + ' skills' : 'No data'}</div>
               </div>
 
               <!-- Strength & Endurance -->
-              <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(231,76,60,0.25); transition: transform 0.2s;">
+              <div style="background: linear-gradient(135deg, #b8dda8, #a4d091); padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(184,221,168,0.3); transition: transform 0.2s;">
                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                   <span style="font-size: 24px; margin-right: 8px;">💪</span>
-                  <div style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Strength &<br>Endurance</div>
+                  <div style="color: #3d6b2f; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Strength &<br>Endurance</div>
                 </div>
-                <div style="color: white; font-size: 42px; font-weight: 800; line-height: 1; margin-bottom: 8px;">${motorSkills.strengthAvg.toFixed(1)}</div>
-                <div style="color: rgba(255,255,255,0.85); font-size: 10px; font-weight: 500;">${motorSkills.strength ? Object.keys(motorSkills.strength).length + ' skills' : 'No data'}</div>
+                <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
+                  <div style="color: #3d6b2f; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.strengthAvg.toFixed(1)}</div>
+                  <div style="color: #5a8a47; font-size: 18px; font-weight: 600;">/10</div>
+                </div>
+                <div style="color: #3d6b2f; font-size: 10px; font-weight: 500;">${motorSkills.strength ? Object.keys(motorSkills.strength).length + ' skills' : 'No data'}</div>
               </div>
 
             </div>
@@ -2265,26 +2357,6 @@
               <p style="color: #555; margin: 10px 0 0 0; line-height: 1.6;">${motorSkills.clinicalNotes}</p>
             </div>
           ` : ''}
-
-          <!-- Progress Indicator -->
-          ${consultations.length > 1 ? (() => {
-            const prevConsult = consultations[consultations.length - 2];
-            if (prevConsult.motorSkills && prevConsult.motorSkills.overallScore) {
-              const prevScore = prevConsult.motorSkills.overallScore;
-              const scoreDiff = overallScore - prevScore;
-              const arrow = scoreDiff > 0 ? '↑' : scoreDiff < 0 ? '↓' : '→';
-              const diffColor = scoreDiff > 0 ? '#27ae60' : scoreDiff < 0 ? '#e74c3c' : '#7f8c8d';
-              return `
-                <div style="text-align: center; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                  <span style="color: #7f8c8d; font-size: 14px;">Progress from last visit: </span>
-                  <span style="color: ${diffColor}; font-size: 18px; font-weight: 700;">
-                    ${arrow} ${Math.abs(scoreDiff).toFixed(1)} points
-                  </span>
-                </div>
-              `;
-            }
-            return '';
-          })() : ''}
         `;
       }
 
@@ -2315,6 +2387,23 @@
 
         // Draw history chart when switching to history view
         drawMotorSkillsHistoryChart();
+      }
+    }
+
+    // Toggle Motor Skills Legend Tooltip
+    // Show Motor Skills Legend on hover
+    window.showMotorSkillsLegend = function() {
+      const tooltip = document.getElementById('motorSkillsLegendTooltip');
+      if (tooltip) {
+        tooltip.style.display = 'block';
+      }
+    }
+
+    // Hide Motor Skills Legend when leaving
+    window.hideMotorSkillsLegend = function() {
+      const tooltip = document.getElementById('motorSkillsLegendTooltip');
+      if (tooltip) {
+        tooltip.style.display = 'none';
       }
     }
 
