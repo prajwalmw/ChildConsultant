@@ -1,7 +1,7 @@
 // Razorpay Configuration and Payment Handler
 
-// Razorpay Live API Key
-const RAZORPAY_KEY_ID = 'rzp_live_S2D7Q4ISUUW7c8';
+// Razorpay Live API Key (Prajwal Waingankar Account)
+const RAZORPAY_KEY_ID = 'rzp_live_S6y99PjkyiSG8O';
 
 // Package details configuration
 const PACKAGES = {
@@ -83,7 +83,7 @@ function initiateRazorpayPayment(packageType) {
     currency: 'INR',
     name: 'Aqiraa',
     description: detailedDescription,
-    image: 'https://child-consultant.web.app/images/logo.png', // Your logo URL
+    image: 'https://child-consultant.web.app/images/logo-razorpay.png', // Optimized logo for payment gateways (512x512, 302KB)
     prefill: {
       name: userName,
       email: userEmail,

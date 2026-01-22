@@ -359,12 +359,12 @@ function initiateDoctorPayment(doctor) {
   const userName = user ? user.displayName || '' : '';
 
   const options = {
-    key: 'rzp_live_S2D7Q4ISUUW7c8',
+    key: 'rzp_live_S6y99PjkyiSG8O',
     amount: doctor.price * 100,
     currency: 'INR',
     name: 'Aqiraa',
     description: `Consultation with ${doctor.name}`,
-    image: 'https://child-consultant.web.app/images/logo.png',
+    image: 'https://child-consultant.web.app/images/logo-razorpay.png',
     prefill: {
       name: userName,
       email: userEmail,
