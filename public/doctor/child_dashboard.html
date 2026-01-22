@@ -4255,7 +4255,7 @@
         return;
       }
 
-      const labels = socialData.map((d, i) => `Visit ${d.visitNumber}`);
+      const labels = socialData.map(d => [`Visit ${d.visitNumber}`, d.date.toLocaleDateString()]);
 
       const ctx = document.getElementById('socialHistoryChart').getContext('2d');
 
@@ -4419,7 +4419,13 @@
           plugins: {
             legend: {
               display: true,
-              position: 'bottom'
+              position: 'bottom',
+              labels: {
+                filter: function(legendItem, chartData) {
+                  // Hide background zone datasets from legend (only show data lines)
+                  return !legendItem.text.includes('Range');
+                }
+              }
             },
             tooltip: {
               callbacks: {
