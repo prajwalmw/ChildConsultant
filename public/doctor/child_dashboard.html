@@ -60,7 +60,8 @@
       margin-bottom: 20px;
     }
     canvas {
-      max-height: 400px;
+      max-height: 500px;
+      min-height: 450px;
     }
     .back-button {
       background-color: #f7a83d;
@@ -400,18 +401,16 @@
         <p id="parentNameHeader" style="color: #7f8c8d;"></p>
       </div>
 
-      <!-- WHO Standards Disclaimer -->
-      <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; color: #0d47a1; padding: 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);">
-        <div style="display: flex; align-items: center; gap: 15px;">
-          <div style="font-size: 40px; color: #1976d2;">
-            <i class="fa fa-certificate"></i>
+      <!-- Professional Clinical Disclaimer -->
+      <div style="background: #fff8e1; border-left: 4px solid #ff9800; padding: 16px 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="font-size: 22px; color: #f57c00; flex-shrink: 0; margin-top: 2px;">
+            <i class="fa fa-exclamation-circle"></i>
           </div>
           <div style="flex: 1;">
-            <h3 style="margin: 0 0 10px 0; color: #0d47a1; font-size: 19px; font-weight: bold;">
-              <i class="fa fa-check-circle" style="color: #4caf50;"></i> WHO Growth Standards Certified
-            </h3>
-            <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #1565c0;">
-              This dashboard follows the official <strong>World Health Organization (WHO) Child Growth Standards</strong> for calculating growth percentiles. All measurements and assessments are based on internationally recognized health standards using the <strong>LMS (Lambda-Mu-Sigma)</strong> method for accurate percentile calculations. These standards are used globally by healthcare professionals to monitor child development.
+            <h4 style="margin: 0 0 8px 0; color: #e65100; font-size: 15px; font-weight: 700;">Clinical Decision Support Tool</h4>
+            <p style="margin: 0; font-size: 13px; line-height: 1.7; color: #5d4037;">
+              <strong>For Healthcare Professional Use Only.</strong> This dashboard provides clinical screening and progress tracking based on WHO/CDC/AAP/USDA guidelines. All assessments are derived from reported measurements and observations. <strong>This tool is intended to supplement, not replace, professional clinical judgment, physical examination, and comprehensive patient evaluation.</strong> Healthcare providers must independently verify all data, consider complete medical history, and apply professional expertise when making diagnostic or treatment decisions. Scores and categorizations are interpretive aids for monitoring trends over time.
             </p>
           </div>
         </div>
@@ -436,9 +435,11 @@
       </div>
 
       <!-- ==================== PHYSICAL DEVELOPMENT SECTION ==================== -->
-      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #00c3c9;">
-        <i class="fa fa-child" style="color: #00c3c9; margin-right: 10px;"></i> Physical Development
-      </h2>
+      <div style="border-bottom: 4px solid #00c3c9; margin: 50px -20px 30px -20px; padding: 0 20px 15px 20px;">
+        <h2 style="color: #2c3e50; margin: 0;">
+          <i class="fa fa-child" style="color: #00c3c9; margin-right: 10px;"></i> Physical Development
+        </h2>
+      </div>
       <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
         Tracks growth metrics including BMI, weight, height, and head circumference based on WHO Child Growth Standards
       </p>
@@ -514,19 +515,14 @@
       </div>
 
       <!-- ==================== NUTRITIONAL HEALTH SECTION ==================== -->
-      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #27ae60;">
-        <i class="fa fa-heart" style="color: #27ae60; margin-right: 10px;"></i> Nutritional Health
-      </h2>
+      <div style="border-bottom: 4px solid #27ae60; margin: 50px -20px 30px -20px; padding: 0 20px 15px 20px;">
+        <h2 style="color: #2c3e50; margin: 0;">
+          <i class="fa fa-heart" style="color: #27ae60; margin-right: 10px;"></i> Nutritional Health
+        </h2>
+      </div>
       <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
         Comprehensive nutritional assessment including dietary balance, hydration levels (WHO standards), and sleep patterns (AASM guidelines)
       </p>
-
-      <!-- Compact Clinical Standards & Legal Disclaimer -->
-      <div style="background: rgba(52, 152, 219, 0.08); border-left: 3px solid #3498db; padding: 12px 15px; border-radius: 8px; margin-bottom: 20px;">
-        <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #2c3e50;">
-          <strong>📋 Clinical Standards:</strong> Assessments use WHO/USDA/AAP age-based guidelines. Scores are screening tools to guide consultation discussions. For concerns or intervention planning, consult with a registered dietitian or pediatric nutritionist.
-        </p>
-      </div>
 
       <!-- Nutritional Balance - Overall Health Card -->
       <div class="hydration-card" id="nutritionalBalanceCard" style="display: none;">
@@ -678,21 +674,60 @@
       </div>
 
       <!-- ==================== COGNITIVE DEVELOPMENT SECTION ==================== -->
-      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #9b59b6;">
-        <i class="fa fa-graduation-cap" style="color: #9b59b6; margin-right: 10px;"></i> Cognitive Development
-      </h2>
+      <div style="border-bottom: 4px solid #9b59b6; margin: 50px -20px 30px -20px; padding: 0 20px 15px 20px;">
+        <h2 style="color: #2c3e50; margin: 0;">
+          <i class="fa fa-graduation-cap" style="color: #9b59b6; margin-right: 10px;"></i> Cognitive Development
+        </h2>
+      </div>
       <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
-        Coming soon: Assessments for memory, problem-solving, language development, and learning milestones
+        Comprehensive cognitive assessment including attention, memory, problem-solving, language, and learning readiness based on Bayley-4, WPPSI-IV, WISC-V, DAS-II standards
       </p>
-      <div style="background: #f8f9fa; padding: 30px; border-radius: 15px; text-align: center; color: #95a5a6; margin-bottom: 30px;">
-        <i class="fa fa-hourglass-half" style="font-size: 48px; margin-bottom: 15px;"></i>
-        <p style="margin: 0; font-size: 16px;">Charts and assessments will be added in future updates</p>
+
+      <!-- Cognitive Development Index (CDI) Card -->
+      <div class="hydration-card" id="cognitiveCard" style="display: none;">
+        <div class="hydration-card-header">
+          <h3>🧠 Cognitive Development Index (CDI)</h3>
+          <div class="hydration-toggle">
+            <button class="hydration-toggle-btn active" onclick="switchCognitiveView('current')">Current</button>
+            <button class="hydration-toggle-btn" onclick="switchCognitiveView('history')">History</button>
+          </div>
+        </div>
+        <p class="subtitle">Age-appropriate cognitive assessment across attention, memory, problem-solving, language, and learning domains</p>
+
+        <!-- Condensed Clinical Standards Disclaimer -->
+        <div style="background: rgba(156,39,176,0.1); border-left: 3px solid #9c27b0; padding: 10px 12px; margin: 15px 0; border-radius: 6px;">
+          <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #6a1b9a;">
+            <strong>📋 Standards:</strong> Bayley-4, WPPSI-IV, WISC-V, DAS-II, CDC/AAP, UNICEF ECDI2030. <strong>⚠️ Note:</strong> Scores are developmental screening tools, not diagnostic assessments. Clinical evaluation recommended for scores <70.
+          </p>
+        </div>
+
+        <!-- Current View -->
+        <div class="hydration-view active" id="cognitiveCurrentView">
+          <div id="cognitiveScoreSection">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- History View (Line Chart) -->
+        <div class="hydration-view" id="cognitiveHistoryView">
+          <div style="margin: 20px 0;">
+            <canvas id="cognitiveHistoryChart" style="max-height: 450px;"></canvas>
+          </div>
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <strong>How to Read:</strong> Lines show progression of cognitive domain scores over time. Each color represents a domain: Attention, Memory, Problem-Solving, Language, and Learning Readiness.
+          </div>
+          <div style="background: #f3e5f5; border: 1px solid #9c27b0; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <strong>📋 Clinical Standards:</strong> CDI assessments follow Bayley-4 (Mean=100, SD=15), WPPSI-IV, WISC-V, and DAS-II standards. Scores: <70 (Significantly Delayed), 70-84 (Mildly Delayed), 85-115 (Normal), >115 (Accelerated). Professional evaluation recommended for persistent scores <85.
+          </div>
+        </div>
       </div>
 
       <!-- ==================== CREATIVITY SCALE SECTION ==================== -->
-      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #e67e22;">
-        <i class="fa fa-paint-brush" style="color: #e67e22; margin-right: 10px;"></i> Creativity Scale
-      </h2>
+      <div style="border-bottom: 4px solid #e67e22; margin: 50px -20px 30px -20px; padding: 0 20px 15px 20px;">
+        <h2 style="color: #2c3e50; margin: 0;">
+          <i class="fa fa-paint-brush" style="color: #e67e22; margin-right: 10px;"></i> Creativity Scale
+        </h2>
+      </div>
       <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
         Coming soon: Tracking artistic expression, imagination, innovative thinking, and creative problem-solving abilities
       </p>
@@ -702,9 +737,11 @@
       </div>
 
       <!-- ==================== PERSONALITY & CHARACTER SECTION ==================== -->
-      <h2 style="color: #2c3e50; margin: 50px 0 30px 0; padding-bottom: 15px; border-bottom: 3px solid #e74c3c;">
-        <i class="fa fa-user" style="color: #e74c3c; margin-right: 10px;"></i> Personality & Character
-      </h2>
+      <div style="border-bottom: 4px solid #e74c3c; margin: 50px -20px 30px -20px; padding: 0 20px 15px 20px;">
+        <h2 style="color: #2c3e50; margin: 0;">
+          <i class="fa fa-user" style="color: #e74c3c; margin-right: 10px;"></i> Personality & Character
+        </h2>
+      </div>
       <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 30px;">
         Coming soon: Behavioral patterns, emotional intelligence, social skills, and character development tracking
       </p>
@@ -1380,7 +1417,7 @@
           <div class="info-item"><strong>Initial Height:</strong> ${initialHeight ? initialHeight + ' cm' : 'N/A'}</div>
         `;
 
-        // Fetch consultations
+        // Fetch consultations (force server fetch to bypass cache)
         const consultationsRef = collection(db, 'patients', parentKey, 'children', currentPatientId, 'consultations');
         const consultationsQuery = query(consultationsRef, orderBy('date', 'asc'));
         const consultationsSnapshot = await getDocs(consultationsQuery);
@@ -1400,7 +1437,8 @@
             sleepQuality: data.sleepQuality,
             temperature: data.temperature,
             motorSkills: data.motorSkills,
-            nutritionalHealth: data.nutritionalHealth
+            nutritionalHealth: data.nutritionalHealth,
+            cognitiveHealth: data.cognitiveHealth
           });
         });
 
@@ -1583,6 +1621,9 @@
 
       // Display motor skills chart
       displayMotorSkillsChart(consultations, childData);
+
+      // Display cognitive development chart
+      displayCognitiveChart(consultations, childData);
     }
 
     // Calculate WHO recommended daily water intake based on age and weight
@@ -1775,7 +1816,7 @@
 
       const labels = hydrationData.map(d => {
         const date = d.date;
-        return `Visit ${d.visitNumber}\n${date.toLocaleDateString()}`;
+        return [`Visit ${d.visitNumber}`, date.toLocaleDateString()];
       });
 
       const ctx = document.getElementById('hydrationOverviewChart');
@@ -1893,7 +1934,12 @@
           },
           scales: {
             x: {
-              title: { display: true, text: 'Consultation Visits' }
+              title: { display: true, text: 'Consultation Visits' },
+              ticks: {
+                maxRotation: 0,
+                minRotation: 0,
+                autoSkip: false
+              }
             },
             y: {
               beginAtZero: false,
@@ -2074,7 +2120,7 @@
         return;
       }
 
-      const labels = sleepData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+      const labels = sleepData.map(d => [`Visit ${d.visitNumber}`, d.date.toLocaleDateString()]);
       const ctx = document.getElementById('sleepOverviewChart');
 
       if (window.sleepOverviewChartInstance) {
@@ -2154,7 +2200,14 @@
             }
           },
           scales: {
-            x: { title: { display: true, text: 'Consultation Visits' } },
+            x: {
+              title: { display: true, text: 'Consultation Visits' },
+              ticks: {
+                maxRotation: 0,
+                minRotation: 0,
+                autoSkip: false
+              }
+            },
             y: {
               beginAtZero: false,
               title: { display: true, text: 'Sleep Duration (hours)' },
@@ -2242,19 +2295,19 @@
           <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
 
             <!-- Left: Overall Score Card -->
-            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 25px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
 
               <!-- Color Guide Info Button -->
               <button onmouseenter="showNutritionalLegend()" onmouseleave="hideNutritionalLegend()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #27ae60; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="Color Guide">
                 i
               </button>
 
-              <div style="color: rgba(255,255,255,0.95); font-size: 13px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall Nutritional Score</div>
-              <div style="display: flex; align-items: baseline; gap: 8px;">
-                <div style="color: white; font-size: 72px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore}</div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 28px; font-weight: 600;">/100</div>
+              <div style="color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall Nutritional Score</div>
+              <div style="display: flex; align-items: baseline; gap: 5px;">
+                <div style="color: white; font-size: 52px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 22px; font-weight: 600;">/100</div>
               </div>
-              <div style="color: white; font-size: 16px; font-weight: 600; margin-top: 12px; text-align: center;">${scoreCategory}</div>
+              <div style="color: white; font-size: 14px; font-weight: 600; margin-top: 8px; text-align: center;">${scoreCategory}</div>
 
               <!-- Color Guide Tooltip -->
               <div id="nutritionalLegendTooltip" onmouseenter="showNutritionalLegend()" onmouseleave="hideNutritionalLegend()" style="display: none; position: absolute; top: 45px; right: 8px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 100; width: 220px;">
@@ -2285,8 +2338,8 @@
             </div>
 
             <!-- Right: Radar Chart -->
-            <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-              <canvas id="nutritionalRadarChart" style="max-height: 350px;"></canvas>
+            <div style="background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+              <canvas id="nutritionalRadarChart"></canvas>
             </div>
           </div>
 
@@ -2783,7 +2836,7 @@
         return;
       }
 
-      const labels = nutritionalData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+      const labels = nutritionalData.map(d => [`Visit ${d.visitNumber}`, d.date.toLocaleDateString()]);
 
       // Calculate dynamic max value: find highest value across all data points and add 20% padding
       const allNutritionalValues = nutritionalData.flatMap(d => [
@@ -2929,7 +2982,7 @@
         },
         options: {
           responsive: true,
-          maintainAspectRatio: true,
+          maintainAspectRatio: false,
           interaction: {
             mode: 'index',
             intersect: false
@@ -2970,6 +3023,11 @@
                 display: true,
                 text: 'Consultation Timeline',
                 font: { size: 13, weight: 'bold' }
+              },
+              ticks: {
+                maxRotation: 0,
+                minRotation: 0,
+                autoSkip: false
               },
               grid: {
                 display: false
@@ -3291,6 +3349,583 @@
       window.motorSkillsChildData = childData;
     }
 
+    // ==================== COGNITIVE DEVELOPMENT INDEX (CDI) FUNCTIONS ====================
+
+    // Helper function to get color based on Bayley-4 score
+    function getCognitiveScoreColor(score) {
+      if (score >= 116) return '#4caf50'; // Excellent: Green
+      if (score >= 100) return '#2196f3'; // Good: Blue
+      if (score >= 85) return '#ffc107';  // Average: Amber
+      if (score >= 70) return '#ff9800';  // Below Average: Orange
+      return '#f44336';                   // Concern: Red
+    }
+
+    // Display cognitive development chart
+    function displayCognitiveChart(consultations, childData) {
+      const cognitiveCard = document.getElementById('cognitiveCard');
+      const cognitiveScoreSection = document.getElementById('cognitiveScoreSection');
+
+      if (!consultations || consultations.length === 0) return;
+
+      // Check if ANY consultation has cognitive data
+      const hasCognitiveData = consultations.some(c => {
+        const cog = c.cognitiveHealth;
+        return cog && (cog.overallScore || cog.attentionAvg || cog.memoryAvg || cog.problemSolvingAvg || cog.languageAvg || cog.learningAvg);
+      });
+
+      if (!hasCognitiveData) {
+        return; // No cognitive data at all, don't show the card
+      }
+
+      // Get the latest consultation with actual cognitive data
+      const latestConsultWithData = [...consultations].reverse().find(c => {
+        const cog = c.cognitiveHealth;
+        return cog && (cog.overallScore || cog.attentionAvg || cog.memoryAvg || cog.problemSolvingAvg || cog.languageAvg || cog.learningAvg);
+      });
+
+      if (!latestConsultWithData) {
+        return;
+      }
+
+      const cognitive = latestConsultWithData.cognitiveHealth;
+
+      // Calculate overallScore if missing (for backward compatibility)
+      let overallScore = cognitive.overallScore;
+      if (!overallScore && (cognitive.attentionAvg || cognitive.memoryAvg || cognitive.problemSolvingAvg || cognitive.languageAvg || cognitive.learningAvg)) {
+        // Calculate from domain averages
+        const assessedScores = [
+          cognitive.attentionAvg,
+          cognitive.memoryAvg,
+          cognitive.problemSolvingAvg,
+          cognitive.languageAvg,
+          cognitive.learningAvg
+        ].filter(score => score && score > 0);
+
+        if (assessedScores.length > 0) {
+          const rawScore = assessedScores.reduce((a, b) => a + b, 0) / assessedScores.length;
+          overallScore = Math.round(rawScore * 13); // Convert 0-10 scale to 0-130 Bayley-4 scale
+        }
+      }
+
+      // Calculate color and status based on overall score (Bayley-4 scale: 0-130)
+      const getScoreColor = (score) => {
+        if (score >= 116) return '#4caf50'; // Excellent (>1 SD above mean) - Green
+        if (score >= 100) return '#2196f3'; // Good (Above Average) - Blue
+        if (score >= 85) return '#ffc107'; // Average - Yellow
+        if (score >= 70) return '#ff9800'; // Below Average (Mildly Delayed) - Orange
+        return '#f44336'; // Concern (Significantly Delayed) - Red
+      };
+
+      const getScoreCategory = (score) => {
+        if (score >= 116) return 'Excellent';
+        if (score >= 100) return 'Good';
+        if (score >= 85) return 'Average';
+        if (score >= 70) return 'Below Average';
+        return 'Concern - Evaluation Needed';
+      };
+      const scoreColor = getScoreColor(overallScore);
+      const scoreCategory = getScoreCategory(overallScore);
+      const alertLevel = cognitive.alertLevel || 'none';
+
+      // Render score display
+      if (cognitiveScoreSection) {
+        let alertBanner = '';
+        // Map alert levels to colors
+        const alertColors = {
+          excellent: null,
+          normal: null,
+          monitor: { bg: '#fff9e6', border: '#ffc107', text: '#856404' },
+          warning: { bg: '#fff3e0', border: '#ff9800', text: '#e65100' },
+          critical: { bg: '#ffebee', border: '#f44336', text: '#c62828' }
+        };
+
+        if (alertLevel && alertColors[alertLevel]) {
+          const colors = alertColors[alertLevel];
+          let rangeInfo = '';
+          if (alertLevel === 'monitor') {
+            rangeInfo = 'Current CDI score is in the average range (85-99). Expected range for typical development is 100+.';
+          } else if (alertLevel === 'warning') {
+            rangeInfo = 'Current CDI score indicates mild delay (70-84). Expected range for age-appropriate development is 85+. Consider developmental screening.';
+          } else if (alertLevel === 'critical') {
+            rangeInfo = 'Current CDI score indicates significant delay (<70). Comprehensive developmental evaluation strongly recommended.';
+          }
+          alertBanner = `
+            <div style="background: ${colors.bg}; border: 2px solid ${colors.border}; color: ${colors.text}; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <strong>⚠️ Clinical Alert:</strong> ${rangeInfo}
+              <br><span style="font-size: 13px; margin-top: 5px; display: inline-block;">Consult with developmental specialist or neuropsychologist for comprehensive assessment.</span>
+            </div>
+          `;
+        }
+
+        cognitiveScoreSection.innerHTML = `
+          ${alertBanner}
+
+          <!-- Main Score Layout - Side by Side -->
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
+
+            <!-- Left: Overall Score Card -->
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+
+              <button onmouseenter="showCognitiveLegend()" onmouseleave="hideCognitiveLegend()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #9b59b6; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="CDI Score Guide">
+                i
+              </button>
+
+              <!-- Legend Tooltip (hidden by default) -->
+              <div id="cognitiveLegendTooltip" style="display: none; position: absolute; top: 45px; right: 12px; background: white; border-radius: 10px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; width: 220px;">
+                <div style="font-size: 12px; font-weight: bold; color: #333; margin-bottom: 8px;">CDI Score Guide:</div>
+                <div style="font-size: 11px; line-height: 1.8;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background: #4caf50; border-radius: 3px;"></div>
+                    <span style="color: #333; font-weight: 600;">Excellent (116-130)</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background: #2196f3; border-radius: 3px;"></div>
+                    <span style="color: #333; font-weight: 600;">Good (100-115)</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background: #ffc107; border-radius: 3px;"></div>
+                    <span style="color: #333; font-weight: 600;">Average (85-99)</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background: #ff9800; border-radius: 3px;"></div>
+                    <span style="color: #333; font-weight: 600;">Below Avg (70-84)</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background: #f44336; border-radius: 3px;"></div>
+                    <span style="color: #333; font-weight: 600;">Concern (<70)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall CDI Score</div>
+              <div style="display: flex; align-items: baseline; gap: 5px;">
+                <div style="color: white; font-size: 56px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 24px; font-weight: 600;">/130</div>
+              </div>
+              <div style="color: white; font-size: 15px; font-weight: 600; margin-top: 8px; text-align: center;">${scoreCategory}</div>
+              <div style="color: rgba(255,255,255,0.85); font-size: 11px; margin-top: 12px; text-align: center; line-height: 1.4;">Bayley-4 Scale<br>(Mean=100, SD=15)</div>
+            </div>
+
+            <!-- Right: Domain Breakdown -->
+            <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+              <h4 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 16px;">Domain Scores</h4>
+
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${cognitive.attentionAvg ? (() => {
+                  const score = Math.round(cognitive.attentionAvg * 13);
+                  const color = getCognitiveScoreColor(score);
+                  return `
+                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
+                    <span style="font-size: 13px; color: #555; font-weight: 500;">👁️ Attention & Focus</span>
+                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
+                  </div>
+                  `;
+                })() : ''}
+
+                ${cognitive.memoryAvg ? (() => {
+                  const score = Math.round(cognitive.memoryAvg * 13);
+                  const color = getCognitiveScoreColor(score);
+                  return `
+                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
+                    <span style="font-size: 13px; color: #555; font-weight: 500;">🧠 Memory</span>
+                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
+                  </div>
+                  `;
+                })() : ''}
+
+                ${cognitive.problemSolvingAvg ? (() => {
+                  const score = Math.round(cognitive.problemSolvingAvg * 13);
+                  const color = getCognitiveScoreColor(score);
+                  return `
+                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
+                    <span style="font-size: 13px; color: #555; font-weight: 500;">🧩 Problem-Solving</span>
+                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
+                  </div>
+                  `;
+                })() : ''}
+
+                ${cognitive.languageAvg ? (() => {
+                  const score = Math.round(cognitive.languageAvg * 13);
+                  const color = getCognitiveScoreColor(score);
+                  return `
+                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
+                    <span style="font-size: 13px; color: #555; font-weight: 500;">💬 Language & Communication</span>
+                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
+                  </div>
+                  `;
+                })() : ''}
+
+                ${cognitive.learningAvg ? (() => {
+                  const score = Math.round(cognitive.learningAvg * 13);
+                  const color = getCognitiveScoreColor(score);
+                  return `
+                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
+                    <span style="font-size: 13px; color: #555; font-weight: 500;">📚 Learning Readiness</span>
+                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
+                  </div>
+                  `;
+                })() : ''}
+              </div>
+            </div>
+          </div>
+
+          ${cognitive.clinicalNotes ? `
+          <div style="background: #f3e5f5; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <strong style="color: #7b1fa2;">📝 Clinical Notes:</strong>
+            <p style="margin: 8px 0 0 0; color: #555; font-size: 13px; line-height: 1.6;">${cognitive.clinicalNotes}</p>
+          </div>
+          ` : ''}
+        `;
+      }
+
+      // Show cognitive card
+      if (cognitiveCard) cognitiveCard.style.display = 'block';
+
+      // Store consultations data globally for history chart
+      window.cognitiveConsultationsData = consultations;
+      window.cognitiveChildData = childData;
+    }
+
+    // Switch between Current and History views for cognitive
+    window.switchCognitiveView = function(view) {
+      const currentView = document.getElementById('cognitiveCurrentView');
+      const historyView = document.getElementById('cognitiveHistoryView');
+      const buttons = document.querySelectorAll('#cognitiveCard .hydration-toggle-btn');
+
+      if (view === 'current') {
+        currentView.classList.add('active');
+        historyView.classList.remove('active');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+      } else {
+        currentView.classList.remove('active');
+        historyView.classList.add('active');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+
+        // Draw history chart when switching to history view
+        drawCognitiveHistoryChart();
+      }
+    }
+
+    // Toggle Cognitive Legend Tooltip
+    window.showCognitiveLegend = function() {
+      const tooltip = document.getElementById('cognitiveLegendTooltip');
+      if (tooltip) {
+        tooltip.style.display = 'block';
+      }
+    }
+
+    window.hideCognitiveLegend = function() {
+      const tooltip = document.getElementById('cognitiveLegendTooltip');
+      if (tooltip) {
+        tooltip.style.display = 'none';
+      }
+    }
+
+    // Draw cognitive history chart
+    function drawCognitiveHistoryChart() {
+      if (typeof Chart === 'undefined') return;
+
+      const consultations = window.cognitiveConsultationsData || [];
+      if (!consultations || consultations.length === 0) return;
+
+      const cognitiveData = consultations
+        .map((consult, index) => {
+          const cog = consult.cognitiveHealth;
+          if (!cog) return null;
+
+          // Calculate overall score if missing
+          let overallScore = cog.overallScore;
+          if (!overallScore && (cog.attentionAvg || cog.memoryAvg || cog.problemSolvingAvg || cog.languageAvg || cog.learningAvg)) {
+            const assessedScores = [cog.attentionAvg, cog.memoryAvg, cog.problemSolvingAvg, cog.languageAvg, cog.learningAvg].filter(s => s && s > 0);
+            if (assessedScores.length > 0) {
+              const rawScore = assessedScores.reduce((a, b) => a + b, 0) / assessedScores.length;
+              overallScore = Math.round(rawScore * 13);
+            }
+          }
+
+          // Skip if no overall score and no domain averages
+          if (!overallScore && !cog.attentionAvg && !cog.memoryAvg && !cog.problemSolvingAvg && !cog.languageAvg && !cog.learningAvg) {
+            return null;
+          }
+
+          return {
+            visitNumber: index + 1,
+            date: consult.date?.toDate ? consult.date.toDate() : new Date(consult.date),
+            overall: overallScore,
+            attention: cog.attentionAvg ? Math.round(cog.attentionAvg * 13) : null,
+            memory: cog.memoryAvg ? Math.round(cog.memoryAvg * 13) : null,
+            problemSolving: cog.problemSolvingAvg ? Math.round(cog.problemSolvingAvg * 13) : null,
+            language: cog.languageAvg ? Math.round(cog.languageAvg * 13) : null,
+            learning: cog.learningAvg ? Math.round(cog.learningAvg * 13) : null
+          };
+        })
+        .filter(d => d !== null);
+
+      if (cognitiveData.length === 0) {
+        document.getElementById('cognitiveHistoryChart').parentElement.innerHTML =
+          '<p style="text-align: center; color: #95a5a6; padding: 40px;">No cognitive history data available</p>';
+        return;
+      }
+
+      const labels = cognitiveData.map(d => [`Visit ${d.visitNumber}`, d.date.toLocaleDateString()]);
+
+      // Calculate dynamic max value
+      const allValues = cognitiveData.flatMap(d => [
+        d.overall,
+        d.attention,
+        d.memory,
+        d.problemSolving,
+        d.language,
+        d.learning
+      ].filter(v => v !== null));
+      const maxValue = Math.max(...allValues);
+      const dynamicMax = Math.max(130, Math.ceil(maxValue * 1.1));
+
+      const ctx = document.getElementById('cognitiveHistoryChart');
+
+      if (window.cognitiveHistoryChartInstance) {
+        window.cognitiveHistoryChartInstance.destroy();
+      }
+
+      window.cognitiveHistoryChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            // Excellent Range (116-130) - Green shaded area
+            {
+              label: 'Excellent Range (116-130)',
+              data: cognitiveData.map(() => dynamicMax),
+              borderColor: 'rgba(76, 175, 80, 0)',
+              backgroundColor: 'rgba(76, 175, 80, 0.2)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 116 },
+                above: 'rgba(76, 175, 80, 0.2)'
+              },
+              order: 10
+            },
+            // Good Range (100-116) - Blue shaded area
+            {
+              label: 'Good Range (100-116)',
+              data: cognitiveData.map(() => 116),
+              borderColor: 'rgba(33, 150, 243, 0)',
+              backgroundColor: 'rgba(33, 150, 243, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 100 },
+                above: 'rgba(33, 150, 243, 0.25)'
+              },
+              order: 9
+            },
+            // Average Range (85-100) - Yellow shaded area
+            {
+              label: 'Average Range (85-100)',
+              data: cognitiveData.map(() => 100),
+              borderColor: 'rgba(255, 193, 7, 0)',
+              backgroundColor: 'rgba(255, 193, 7, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 85 },
+                above: 'rgba(255, 193, 7, 0.25)'
+              },
+              order: 8
+            },
+            // Below Average Range (70-85) - Orange shaded area
+            {
+              label: 'Below Average Range (70-85)',
+              data: cognitiveData.map(() => 85),
+              borderColor: 'rgba(255, 152, 0, 0)',
+              backgroundColor: 'rgba(255, 152, 0, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 70 },
+                above: 'rgba(255, 152, 0, 0.25)'
+              },
+              order: 7
+            },
+            // Concern Range (0-70) - Red shaded area
+            {
+              label: 'Concern Range (0-70)',
+              data: cognitiveData.map(() => 70),
+              borderColor: 'rgba(244, 67, 54, 0)',
+              backgroundColor: 'rgba(244, 67, 54, 0.25)',
+              borderWidth: 0,
+              pointRadius: 0,
+              fill: {
+                target: { value: 0 },
+                above: 'rgba(244, 67, 54, 0.25)'
+              },
+              order: 6
+            },
+            // Overall CDI Score
+            {
+              label: 'Overall CDI',
+              data: cognitiveData.map(d => d.overall),
+              backgroundColor: 'rgba(156, 39, 176, 0.1)',
+              borderColor: 'rgba(156, 39, 176, 1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              order: 1
+            },
+            // Attention & Focus
+            {
+              label: 'Attention',
+              data: cognitiveData.map(d => d.attention),
+              backgroundColor: 'rgba(33, 150, 243, 0.1)',
+              borderColor: 'rgba(33, 150, 243, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              order: 2
+            },
+            // Memory
+            {
+              label: 'Memory',
+              data: cognitiveData.map(d => d.memory),
+              backgroundColor: 'rgba(76, 175, 80, 0.1)',
+              borderColor: 'rgba(76, 175, 80, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              order: 3
+            },
+            // Problem-Solving
+            {
+              label: 'Problem-Solving',
+              data: cognitiveData.map(d => d.problemSolving),
+              backgroundColor: 'rgba(255, 152, 0, 0.1)',
+              borderColor: 'rgba(255, 152, 0, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              order: 4
+            },
+            // Language
+            {
+              label: 'Language',
+              data: cognitiveData.map(d => d.language),
+              backgroundColor: 'rgba(233, 30, 99, 0.1)',
+              borderColor: 'rgba(233, 30, 99, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              order: 5
+            },
+            // Learning Readiness
+            {
+              label: 'Learning',
+              data: cognitiveData.map(d => d.learning),
+              backgroundColor: 'rgba(103, 58, 183, 0.1)',
+              borderColor: 'rgba(103, 58, 183, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              order: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            datalabels: { display: false },
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                padding: 12,
+                font: { size: 11 },
+                usePointStyle: true,
+                filter: function(item, chart) {
+                  return !item.text.includes('Range');
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Cognitive Development Progress (Bayley-4, WPPSI-IV, WISC-V Standards)',
+              font: { size: 16, weight: 'bold' },
+              color: '#2c3e50',
+              padding: { bottom: 20 }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Consultation Visits',
+                font: { size: 13, weight: '600' }
+              },
+              ticks: {
+                maxRotation: 0,
+                minRotation: 0,
+                autoSkip: false,
+                font: { size: 11 }
+              },
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              beginAtZero: false,
+              min: 0,
+              max: dynamicMax,
+              title: {
+                display: true,
+                text: 'CDI Score (0-130)',
+                font: { size: 13, weight: '600' }
+              },
+              ticks: {
+                stepSize: null,
+                callback: function(value) {
+                  const thresholds = [0, 70, 85, 100, 116, 130];
+                  if (thresholds.includes(value)) {
+                    return value;
+                  }
+                  return '';
+                },
+                font: { size: 11 }
+              },
+              grid: {
+                color: function(context) {
+                  const thresholds = [70, 85, 100, 116];
+                  return thresholds.includes(context.tick.value) ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                },
+                lineWidth: function(context) {
+                  const thresholds = [70, 85, 100, 116];
+                  return thresholds.includes(context.tick.value) ? 2 : 1;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
     // Switch between Current and History views for motor skills
     window.switchMotorSkillsView = function(view) {
       const currentView = document.getElementById('motorSkillsCurrentView');
@@ -3400,9 +4035,9 @@
         return;
       }
 
-      const labels = motorSkillsData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+      const labels = motorSkillsData.map(d => [`Visit ${d.visitNumber}`, d.date.toLocaleDateString()]);
 
-      // Calculate dynamic max value: find highest value across all data points and add 20% padding
+      // Calculate dynamic max value: ensure minimum of 11 to show full clinical range with proper visual space
       const allValues = motorSkillsData.flatMap(d => [
         d.overallScore,
         d.grossMotor,
@@ -3411,7 +4046,7 @@
         d.strength
       ]);
       const maxDataValue = Math.max(...allValues);
-      const dynamicMax = Math.ceil(maxDataValue * 1.2); // Add 20% padding and round up
+      const dynamicMax = Math.max(11, Math.ceil(maxDataValue * 1.2)); // Minimum 11 to show Excellent zone (9-10+) with proper visual space
 
       const ctx = document.getElementById('motorSkillsHistoryChart');
 
@@ -3563,7 +4198,7 @@
         },
         options: {
           responsive: true,
-          maintainAspectRatio: true,
+          maintainAspectRatio: false,
           interaction: {
             mode: 'index',
             intersect: false
@@ -3612,6 +4247,11 @@
                 display: true,
                 text: 'Consultation Timeline',
                 font: { size: 13, weight: 'bold' }
+              },
+              ticks: {
+                maxRotation: 0,
+                minRotation: 0,
+                autoSkip: false
               },
               grid: {
                 display: false
@@ -3686,7 +4326,7 @@
         return;
       }
 
-      const labels = bmiData.map(d => `Visit ${d.visitNumber}\n${d.date.toLocaleDateString()}`);
+      const labels = bmiData.map(d => [`Visit ${d.visitNumber}`, d.date.toLocaleDateString()]);
       const ctx = document.getElementById('bmiOverviewChart');
 
       if (window.bmiOverviewChartInstance) {
@@ -3810,7 +4450,14 @@
             }
           },
           scales: {
-            x: { title: { display: true, text: 'Consultation Visits' } },
+            x: {
+              title: { display: true, text: 'Consultation Visits' },
+              ticks: {
+                maxRotation: 0,
+                minRotation: 0,
+                autoSkip: false
+              }
+            },
             y: {
               beginAtZero: false,
               title: { display: true, text: 'BMI (kg/m²)' },

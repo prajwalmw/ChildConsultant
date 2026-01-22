@@ -1,6 +1,12 @@
-# Motor Skills Migration Instructions
+# ChildConsultant Migration Instructions
 
-This guide will help you add the `motorSkills` field to all existing consultations in your Firebase database.
+This guide will help you add health assessment fields to all existing consultations in your Firebase database.
+
+## Available Migrations
+
+1. **Motor Skills Assessment** - Adds comprehensive motor development data
+2. **Nutritional Health Assessment** - Adds dietary and nutritional data
+3. **Cognitive Development Index (CDI)** - Adds cognitive assessment data (NEW!)
 
 ## Prerequisites
 
@@ -28,32 +34,58 @@ cd /Users/prajwalwaingankar/ChildConsultant
 npm install
 ```
 
-### Step 3: Run Migration
+### Step 3: Run Migrations
+
+Run all migrations in sequence:
 
 ```bash
+# Run Motor Skills migration
 npm run migrate:motor-skills
+
+# Run Nutritional Health migration
+npm run migrate:nutritional-health
+
+# Run Cognitive Development migration
+npm run migrate:cognitive-development
 ```
 
-Or directly:
+Or run them directly:
 
 ```bash
 node migrate-motor-skills.js
+node migrate-nutritional-health.js
+node migrate-cognitive-development.js
 ```
 
-## What This Migration Does
+## What These Migrations Do
 
-✅ Scans all patients → children → consultations in your database
-✅ Adds `motorSkills: null` to consultations that don't have it
-✅ Skips consultations that already have the field
-✅ Shows detailed progress logs
-✅ Provides statistics at the end
+### Motor Skills Migration
+✅ Adds comprehensive motor development data (gross motor, fine motor, balance, strength)
+✅ Generates age-appropriate realistic scores with progressive improvement over time
+✅ Follows WHO/CDC/MABC-2 standards
 
-## After Migration
+### Nutritional Health Migration
+✅ Adds dietary assessment data (energy, appetite, meal patterns, food groups)
+✅ Uses age-based WHO/AAP/USDA nutritional guidelines
+✅ Includes hydration and supplement data
 
-- Old consultations will have `motorSkills: null` (no assessment done)
-- New consultations will have full motor skills assessment data
-- The dashboard will properly show motor skills data when available
-- The history chart will work correctly for all consultations
+### Cognitive Development Migration (NEW!)
+✅ Adds Cognitive Development Index (CDI) scores across 5 domains:
+  - Attention & Focus
+  - Memory
+  - Problem-Solving
+  - Language & Communication
+  - Learning Readiness
+✅ Uses Bayley-4, WPPSI-IV, WISC-V, DAS-II clinical standards
+✅ Scores on 0-130 scale (Mean=100, SD=15)
+✅ Generates age-appropriate cognitive data with progressive improvement
+
+## After Migrations
+
+- All historical consultations will have realistic assessment data
+- New consultations will capture actual assessment inputs from doctors
+- Dashboard charts will display complete historical trends
+- All assessments follow clinical standards and age-appropriate expectations
 
 ## Safety
 
@@ -62,13 +94,15 @@ node migrate-motor-skills.js
 - ✅ Read-only service account recommended
 - ✅ Batch operations for performance
 
-## Cleanup (After Migration)
+## Cleanup (After All Migrations)
 
-Once migration is complete, you can safely delete:
+Once all migrations are complete, you can safely delete:
 - `migrate-motor-skills.js`
-- `serviceAccountKey.json` (IMPORTANT for security!)
+- `migrate-nutritional-health.js`
+- `migrate-cognitive-development.js`
+- `serviceAccountKey.json` (⚠️ CRITICAL for security - delete this file!)
 - This file (`MIGRATION-INSTRUCTIONS.md`)
-- Keep `package.json` only if you plan to run other scripts
+- `package.json` (if not using other npm scripts)
 
 ---
 
