@@ -6,7 +6,8 @@ This guide will help you add health assessment fields to all existing consultati
 
 1. **Motor Skills Assessment** - Adds comprehensive motor development data
 2. **Nutritional Health Assessment** - Adds dietary and nutritional data
-3. **Cognitive Development Index (CDI)** - Adds cognitive assessment data (NEW!)
+3. **Cognitive Development Index (CDI)** - Adds cognitive assessment data
+4. **Social Interaction Skills Assessment (SISA)** - Adds social skills assessment data (NEW!)
 
 ## Prerequisites
 
@@ -47,6 +48,9 @@ npm run migrate:nutritional-health
 
 # Run Cognitive Development migration
 npm run migrate:cognitive-development
+
+# Run Social Skills migration
+npm run migrate:social-skills
 ```
 
 Or run them directly:
@@ -55,6 +59,7 @@ Or run them directly:
 node migrate-motor-skills.js
 node migrate-nutritional-health.js
 node migrate-cognitive-development.js
+node migrate-social-skills.js
 ```
 
 ## What These Migrations Do
@@ -69,7 +74,7 @@ node migrate-cognitive-development.js
 ✅ Uses age-based WHO/AAP/USDA nutritional guidelines
 ✅ Includes hydration and supplement data
 
-### Cognitive Development Migration (NEW!)
+### Cognitive Development Migration
 ✅ Adds Cognitive Development Index (CDI) scores across 5 domains:
   - Attention & Focus
   - Memory
@@ -79,6 +84,18 @@ node migrate-cognitive-development.js
 ✅ Uses Bayley-4, WPPSI-IV, WISC-V, DAS-II clinical standards
 ✅ Scores on 0-130 scale (Mean=100, SD=15)
 ✅ Generates age-appropriate cognitive data with progressive improvement
+
+### Social Interaction Skills Migration (NEW!)
+✅ Adds Social Interaction Skills Assessment (SISA) scores across age-appropriate domains:
+  - Communication
+  - Cooperation
+  - Empathy
+  - Self-Control
+  - Engagement
+  - And more (varies by age group)
+✅ Uses SSIS (Social Skills Improvement System) and ASQ:SE-2 clinical standards
+✅ Scores on 0-100 percentile scale
+✅ Generates age-appropriate social skills data with progressive improvement
 
 ## After Migrations
 
@@ -100,6 +117,7 @@ Once all migrations are complete, you can safely delete:
 - `migrate-motor-skills.js`
 - `migrate-nutritional-health.js`
 - `migrate-cognitive-development.js`
+- `migrate-social-skills.js`
 - `serviceAccountKey.json` (⚠️ CRITICAL for security - delete this file!)
 - This file (`MIGRATION-INSTRUCTIONS.md`)
 - `package.json` (if not using other npm scripts)

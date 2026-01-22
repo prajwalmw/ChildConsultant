@@ -200,6 +200,9 @@
                     // Populate cognitive assessment based on child's age
                     populateCognitiveAssessment(patient.dob || patient.dateOfBirth);
 
+                    // Populate social skills assessment based on child's age
+                    populateSocialSkillsAssessment(patient.dob || patient.dateOfBirth);
+
                     document.getElementById('consultation-form').addEventListener('submit', handleFormSubmission);
                 })
                 .catch(error => {
@@ -623,6 +626,123 @@
             }
         };
 
+        // ==================== SOCIAL INTERACTION SKILLS QUESTIONS ====================
+        // Based on SSIS (Social Skills Improvement System) and ASQ:SE-2 Standards
+        // Age Groups: 2-3, 4-5, 6-8, 9-13 years
+        // Domains: Communication, Cooperation, Empathy, Self-Control, Engagement, Assertion, Responsibility
+
+        const socialSkillsQuestions = {
+            '2-3': {
+                ageLabel: '2-3 Years (Based on ASQ:SE-2)',
+                communication: [
+                    { id: 'comm_express', label: 'Expression of Needs', description: 'Can the child express basic needs using words or gestures?', scale: '0-10 (0=Cannot express, 10=Clearly expresses)' },
+                    { id: 'comm_respond', label: 'Response to Others', description: 'Does the child respond when called by name or spoken to?', scale: '0-10 (0=No response, 10=Always responds)' }
+                ],
+                interaction: [
+                    { id: 'interact_peers', label: 'Peer Interaction', description: 'Shows interest in other children, attempts to play near them?', scale: '0-10 (0=No interest, 10=Actively seeks peers)' },
+                    { id: 'interact_adults', label: 'Adult Interaction', description: 'Seeks comfort or help from familiar adults when needed?', scale: '0-10 (0=Avoids adults, 10=Appropriately seeks help)' }
+                ],
+                selfRegulation: [
+                    { id: 'reg_emotions', label: 'Emotional Regulation', description: 'Can calm down with help after being upset?', scale: '0-10 (0=Cannot calm, 10=Calms easily)' },
+                    { id: 'reg_transitions', label: 'Handling Transitions', description: 'Manages transitions between activities with support?', scale: '0-10 (0=Severe distress, 10=Smooth transitions)' }
+                ],
+                cooperation: [
+                    { id: 'coop_sharing', label: 'Sharing Awareness', description: 'Beginning to understand sharing, even if reluctant?', scale: '0-10 (0=Refuses to share, 10=Willingly shares)' }
+                ]
+            },
+            '4-5': {
+                ageLabel: '4-5 Years (Based on SSIS Preschool)',
+                communication: [
+                    { id: 'comm_sentences', label: 'Verbal Communication', description: 'Uses complete sentences to communicate with peers and adults?', scale: '0-10 (0=Rarely/unclear, 10=Clear sentences)' },
+                    { id: 'comm_listening', label: 'Listening Skills', description: 'Listens when others speak and shows understanding?', scale: '0-10 (0=Does not listen, 10=Active listener)' },
+                    { id: 'comm_appropriate', label: 'Appropriate Language', description: 'Uses polite words (please, thank you, excuse me)?', scale: '0-10 (0=Never uses, 10=Consistently uses)' }
+                ],
+                cooperation: [
+                    { id: 'coop_rules', label: 'Following Rules', description: 'Follows classroom/home rules and routines?', scale: '0-10 (0=Refuses rules, 10=Consistently follows)' },
+                    { id: 'coop_turnTaking', label: 'Turn-Taking', description: 'Takes turns during games and activities?', scale: '0-10 (0=Cannot take turns, 10=Patiently waits turn)' },
+                    { id: 'coop_sharing', label: 'Sharing', description: 'Shares toys and materials with other children?', scale: '0-10 (0=Refuses to share, 10=Willingly shares)' }
+                ],
+                empathy: [
+                    { id: 'emp_feelings', label: 'Recognizing Feelings', description: 'Recognizes when others are happy, sad, or upset?', scale: '0-10 (0=No recognition, 10=Identifies emotions)' },
+                    { id: 'emp_comfort', label: 'Showing Concern', description: 'Tries to comfort others who are upset or hurt?', scale: '0-10 (0=Ignores others, 10=Shows concern)' }
+                ],
+                selfControl: [
+                    { id: 'control_impulse', label: 'Impulse Control', description: 'Thinks before acting, controls impulses?', scale: '0-10 (0=Very impulsive, 10=Good control)' },
+                    { id: 'control_frustration', label: 'Frustration Tolerance', description: 'Handles frustration without tantrums or aggression?', scale: '0-10 (0=Frequent meltdowns, 10=Manages well)' }
+                ],
+                engagement: [
+                    { id: 'engage_group', label: 'Group Participation', description: 'Participates in group activities and games?', scale: '0-10 (0=Refuses participation, 10=Actively participates)' }
+                ]
+            },
+            '6-8': {
+                ageLabel: '6-8 Years (Based on SSIS Elementary)',
+                communication: [
+                    { id: 'comm_conversation', label: 'Conversation Skills', description: 'Starts and maintains conversations with peers?', scale: '0-10 (0=Cannot converse, 10=Good conversations)' },
+                    { id: 'comm_express', label: 'Expressing Feelings', description: 'Expresses feelings appropriately using words?', scale: '0-10 (0=Cannot express, 10=Articulates clearly)' },
+                    { id: 'comm_disagreement', label: 'Handling Disagreements', description: 'Disagrees with others without fighting or yelling?', scale: '0-10 (0=Aggressive disagreement, 10=Respectful disagreement)' }
+                ],
+                cooperation: [
+                    { id: 'coop_teamwork', label: 'Teamwork', description: 'Works well with others on group projects?', scale: '0-10 (0=Cannot work in group, 10=Excellent teamwork)' },
+                    { id: 'coop_helping', label: 'Helping Others', description: 'Offers help to classmates who need it?', scale: '0-10 (0=Never helps, 10=Frequently helps)' },
+                    { id: 'coop_completes', label: 'Completing Tasks', description: 'Completes assigned tasks and responsibilities?', scale: '0-10 (0=Rarely completes, 10=Always completes)' }
+                ],
+                assertion: [
+                    { id: 'assert_opinions', label: 'Expressing Opinions', description: 'States opinions and stands up for own views appropriately?', scale: '0-10 (0=Cannot assert, 10=Appropriately assertive)' },
+                    { id: 'assert_situations', label: 'Handling Situations', description: 'Says "no" to inappropriate requests from peers?', scale: '0-10 (0=Easily pressured, 10=Stands firm)' }
+                ],
+                responsibility: [
+                    { id: 'resp_materials', label: 'Caring for Materials', description: 'Takes care of personal belongings and school materials?', scale: '0-10 (0=Very careless, 10=Very responsible)' },
+                    { id: 'resp_mistakes', label: 'Accepting Responsibility', description: 'Accepts responsibility for own actions and mistakes?', scale: '0-10 (0=Blames others, 10=Accepts responsibility)' }
+                ],
+                empathy: [
+                    { id: 'emp_perspective', label: 'Perspective-Taking', description: 'Understands others\' feelings and perspectives?', scale: '0-10 (0=No understanding, 10=Good understanding)' },
+                    { id: 'emp_comfort', label: 'Comforting Others', description: 'Comforts or supports friends when they are upset?', scale: '0-10 (0=Ignores others, 10=Supportive friend)' }
+                ],
+                selfControl: [
+                    { id: 'control_temper', label: 'Temper Control', description: 'Controls temper when angry or frustrated?', scale: '0-10 (0=Frequent outbursts, 10=Good control)' },
+                    { id: 'control_waiting', label: 'Patience', description: 'Waits patiently for turn or attention?', scale: '0-10 (0=Very impatient, 10=Very patient)' }
+                ],
+                engagement: [
+                    { id: 'engage_activities', label: 'Social Engagement', description: 'Joins in social activities and play with peers?', scale: '0-10 (0=Socially isolated, 10=Well integrated)' }
+                ]
+            },
+            '9-13': {
+                ageLabel: '9-13 Years (Based on SSIS Secondary)',
+                communication: [
+                    { id: 'comm_conversation', label: 'Advanced Communication', description: 'Communicates ideas and opinions clearly in discussions?', scale: '0-10 (0=Poor communication, 10=Excellent communication)' },
+                    { id: 'comm_listening', label: 'Active Listening', description: 'Listens attentively and responds thoughtfully to others?', scale: '0-10 (0=Poor listener, 10=Excellent listener)' },
+                    { id: 'comm_conflict', label: 'Conflict Resolution', description: 'Uses words to resolve conflicts and disagreements?', scale: '0-10 (0=Aggressive/avoidant, 10=Resolves effectively)' }
+                ],
+                cooperation: [
+                    { id: 'coop_collaborative', label: 'Collaboration', description: 'Collaborates effectively on group assignments and projects?', scale: '0-10 (0=Cannot collaborate, 10=Excellent collaborator)' },
+                    { id: 'coop_leadership', label: 'Shared Leadership', description: 'Shares leadership roles and responsibilities in groups?', scale: '0-10 (0=Dominates/withdraws, 10=Balances roles)' },
+                    { id: 'coop_compromise', label: 'Compromise', description: 'Willing to compromise to reach group decisions?', scale: '0-10 (0=Inflexible, 10=Flexible/compromises)' }
+                ],
+                assertion: [
+                    { id: 'assert_boundaries', label: 'Setting Boundaries', description: 'Sets appropriate personal boundaries with peers?', scale: '0-10 (0=Poor boundaries, 10=Healthy boundaries)' },
+                    { id: 'assert_pressure', label: 'Peer Pressure Resistance', description: 'Resists negative peer pressure and influences?', scale: '0-10 (0=Easily influenced, 10=Strong resistance)' },
+                    { id: 'assert_speaking', label: 'Speaking Up', description: 'Speaks up when treated unfairly or inappropriately?', scale: '0-10 (0=Never speaks up, 10=Appropriately assertive)' }
+                ],
+                responsibility: [
+                    { id: 'resp_commitments', label: 'Meeting Commitments', description: 'Follows through on commitments and obligations?', scale: '0-10 (0=Unreliable, 10=Very reliable)' },
+                    { id: 'resp_accountability', label: 'Accountability', description: 'Takes accountability for choices and consequences?', scale: '0-10 (0=Blames others, 10=Fully accountable)' }
+                ],
+                empathy: [
+                    { id: 'emp_diverse', label: 'Respecting Differences', description: 'Respects and values diverse perspectives and backgrounds?', scale: '0-10 (0=Intolerant, 10=Very respectful)' },
+                    { id: 'emp_supportive', label: 'Being Supportive', description: 'Provides emotional support to friends in difficult times?', scale: '0-10 (0=Not supportive, 10=Very supportive)' },
+                    { id: 'emp_bullying', label: 'Standing Against Bullying', description: 'Stands up against bullying or exclusion of others?', scale: '0-10 (0=Passive/participates, 10=Actively opposes)' }
+                ],
+                selfControl: [
+                    { id: 'control_emotions', label: 'Emotional Regulation', description: 'Manages emotions appropriately in various situations?', scale: '0-10 (0=Poor regulation, 10=Excellent regulation)' },
+                    { id: 'control_stress', label: 'Stress Management', description: 'Handles stress and pressure in healthy ways?', scale: '0-10 (0=Poor coping, 10=Healthy coping)' }
+                ],
+                engagement: [
+                    { id: 'engage_friendships', label: 'Maintaining Friendships', description: 'Develops and maintains meaningful friendships?', scale: '0-10 (0=No friendships, 10=Strong friendships)' },
+                    { id: 'engage_community', label: 'Community Involvement', description: 'Participates in school/community social activities?', scale: '0-10 (0=Socially withdrawn, 10=Actively involved)' }
+                ]
+            }
+        };
+
         function populateCognitiveAssessment(dob) {
             const ageInMonths = calculateAgeInMonths(dob);
             if (!ageInMonths) {
@@ -760,6 +880,253 @@
             document.getElementById('cognitiveContainer').innerHTML = html;
         }
 
+        function populateSocialSkillsAssessment(dob) {
+            const ageInMonths = calculateAgeInMonths(dob);
+            if (!ageInMonths) {
+                document.getElementById('socialContainer').innerHTML =
+                    '<div style="background: #d1ecf1; padding: 20px; border-radius: 10px; color: #0c5460;"><i class="fa fa-exclamation-triangle"></i> Unable to determine child\'s age. Please ensure DOB is recorded.</div>';
+                return;
+            }
+
+            const ageGroup = getAgeGroup(ageInMonths);
+            const questions = socialSkillsQuestions[ageGroup];
+
+            let html = `
+                <div style="background: #d1ecf1; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <strong style="color: #0c5460;"><i class="fa fa-info-circle"></i> Age Group:</strong> ${questions.ageLabel} (${ageInMonths} months old)
+                    <br>
+                    <small style="color: #555;">Questions based on SSIS (Social Skills Improvement System) and ASQ:SE-2 standards</small>
+                </div>
+            `;
+
+            // Communication
+            if (questions.communication) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-comments" style="color: #3498db; margin-right: 8px;"></i> Communication
+                    </h4>
+                    <div class="row">
+                `;
+                questions.communication.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Cooperation
+            if (questions.cooperation) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-handshake" style="color: #3498db; margin-right: 8px;"></i> Cooperation
+                    </h4>
+                    <div class="row">
+                `;
+                questions.cooperation.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Empathy
+            if (questions.empathy) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-heart" style="color: #3498db; margin-right: 8px;"></i> Empathy
+                    </h4>
+                    <div class="row">
+                `;
+                questions.empathy.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Self-Control
+            if (questions.selfControl) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-balance-scale" style="color: #3498db; margin-right: 8px;"></i> Self-Control
+                    </h4>
+                    <div class="row">
+                `;
+                questions.selfControl.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Engagement
+            if (questions.engagement) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-user-friends" style="color: #3498db; margin-right: 8px;"></i> Social Engagement
+                    </h4>
+                    <div class="row">
+                `;
+                questions.engagement.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Interaction (for younger children)
+            if (questions.interaction) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-users" style="color: #3498db; margin-right: 8px;"></i> Social Interaction
+                    </h4>
+                    <div class="row">
+                `;
+                questions.interaction.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Self-Regulation (for younger children)
+            if (questions.selfRegulation) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-brain" style="color: #3498db; margin-right: 8px;"></i> Self-Regulation
+                    </h4>
+                    <div class="row">
+                `;
+                questions.selfRegulation.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Assertion (for older children)
+            if (questions.assertion) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-bullhorn" style="color: #3498db; margin-right: 8px;"></i> Assertion
+                    </h4>
+                    <div class="row">
+                `;
+                questions.assertion.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Responsibility (for older children)
+            if (questions.responsibility) {
+                html += `
+                    <h4 style="color: #2c3e50; margin-top: 20px; margin-bottom: 15px; font-weight: 700;">
+                        <i class="fa fa-certificate" style="color: #3498db; margin-right: 8px;"></i> Responsibility
+                    </h4>
+                    <div class="row">
+                `;
+                questions.responsibility.forEach(skill => {
+                    html += `
+                        <div class="col-md-6 form-group">
+                            <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                            </label>
+                            <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
+                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                                style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            document.getElementById('socialContainer').innerHTML = html;
+        }
+
         function collectCognitiveData(form) {
             const attention = {};
             const memory = {};
@@ -850,6 +1217,126 @@
                 category,
                 alertLevel,
                 clinicalNotes: form['cognitive-notes']?.value || '',
+                assessmentDate: new Date()
+            };
+        }
+
+        // Collect Social Interaction Skills Assessment data from form
+        function collectSocialSkillsData(form) {
+            const communication = {};
+            const cooperation = {};
+            const empathy = {};
+            const selfControl = {};
+            const engagement = {};
+            const interaction = {};
+            const selfRegulation = {};
+            const assertion = {};
+            const responsibility = {};
+
+            // Get all SISA inputs
+            const sisaInputs = form.querySelectorAll('[name^="sisa-"]');
+            sisaInputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                const skillId = input.name.replace('sisa-', '');
+
+                // Categorize by domain based on skill ID prefix
+                if (skillId.startsWith('comm_')) {
+                    communication[skillId] = value;
+                } else if (skillId.startsWith('coop_')) {
+                    cooperation[skillId] = value;
+                } else if (skillId.startsWith('emp_')) {
+                    empathy[skillId] = value;
+                } else if (skillId.startsWith('self_')) {
+                    selfControl[skillId] = value;
+                } else if (skillId.startsWith('engage_')) {
+                    engagement[skillId] = value;
+                } else if (skillId.startsWith('interact_')) {
+                    interaction[skillId] = value;
+                } else if (skillId.startsWith('reg_')) {
+                    selfRegulation[skillId] = value;
+                } else if (skillId.startsWith('assert_')) {
+                    assertion[skillId] = value;
+                } else if (skillId.startsWith('resp_')) {
+                    responsibility[skillId] = value;
+                }
+            });
+
+            // Calculate averages (only for assessed items with value > 0)
+            const calcAverage = (obj) => {
+                const values = Object.values(obj).filter(v => v > 0);
+                return values.length > 0 ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : 0;
+            };
+
+            const communicationAvg = parseFloat(calcAverage(communication));
+            const cooperationAvg = parseFloat(calcAverage(cooperation));
+            const empathyAvg = parseFloat(calcAverage(empathy));
+            const selfControlAvg = parseFloat(calcAverage(selfControl));
+            const engagementAvg = parseFloat(calcAverage(engagement));
+            const interactionAvg = parseFloat(calcAverage(interaction));
+            const selfRegulationAvg = parseFloat(calcAverage(selfRegulation));
+            const assertionAvg = parseFloat(calcAverage(assertion));
+            const responsibilityAvg = parseFloat(calcAverage(responsibility));
+
+            // Calculate overall score (0-10 scale converted to 0-100 percentile)
+            const assessedScores = [
+                communicationAvg, cooperationAvg, empathyAvg, selfControlAvg,
+                engagementAvg, interactionAvg, selfRegulationAvg, assertionAvg, responsibilityAvg
+            ].filter(score => score > 0);
+
+            const overallScore = assessedScores.length > 0
+                ? parseFloat(((assessedScores.reduce((a, b) => a + b, 0) / assessedScores.length) * 10).toFixed(2))
+                : 0;
+
+            // Determine category and alert level based on SSIS standards (0-100 percentile)
+            let category, alertLevel;
+            if (overallScore === 0) {
+                category = 'Not Assessed';
+                alertLevel = 'info';
+            } else if (overallScore >= 85) {
+                // 85th percentile+: Well Developed
+                category = 'Excellent';
+                alertLevel = 'excellent';
+            } else if (overallScore >= 70) {
+                // 70-84th percentile: Above Average
+                category = 'Good';
+                alertLevel = 'normal';
+            } else if (overallScore >= 40) {
+                // 40-69th percentile: Average Range
+                category = 'Average';
+                alertLevel = 'monitor';
+            } else if (overallScore >= 16) {
+                // 16-39th percentile: Below Average, Monitor
+                category = 'Below Average';
+                alertLevel = 'warning';
+            } else {
+                // <16th percentile: Concern, Intervention Needed
+                category = 'Concern';
+                alertLevel = 'critical';
+            }
+
+            return {
+                communication,
+                cooperation,
+                empathy,
+                selfControl,
+                engagement,
+                interaction,
+                selfRegulation,
+                assertion,
+                responsibility,
+                communicationAvg,
+                cooperationAvg,
+                empathyAvg,
+                selfControlAvg,
+                engagementAvg,
+                interactionAvg,
+                selfRegulationAvg,
+                assertionAvg,
+                responsibilityAvg,
+                overallScore,
+                category,
+                alertLevel,
+                clinicalNotes: form['social-notes']?.value || '',
                 assessmentDate: new Date()
             };
         }
@@ -960,6 +1447,9 @@
 
                 // Cognitive Development Index (Grouped)
                 cognitiveHealth: collectCognitiveData(form),
+
+                // Social Interaction Skills Assessment (Grouped)
+                socialSkills: collectSocialSkillsData(form),
 
                 // S.O.A.P. Notes (Grouped)
                 soapNotes: {
@@ -1443,24 +1933,27 @@
                             <textarea class="form-control" id="cognitive-notes" rows="3" placeholder="Any observations about attention, memory, problem-solving, language development, learning challenges, or recommendations..."></textarea>
                         </div>
 
-                        <!-- ==================== CREATIVE DEVELOPMENT SECTION (Coming Soon) ==================== -->
+                        <!-- ==================== SOCIAL INTERACTION SKILLS SECTION ==================== -->
                         <div class="section-separator">
-                            <h3 style="color: #e67e22;">
-                                <i class="fa fa-paint-brush"></i> Creative Development <span style="font-size: 14px; color: #95a5a6; font-weight: normal;">(Coming Soon)</span>
+                            <h3 style="color: #3498db;">
+                                <i class="fa fa-users"></i> Social Interaction Skills Assessment (SISA)
                             </h3>
                             <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
-                                Future features will track artistic expression, imagination, and creative problem-solving abilities
+                                <i class="fa fa-info-circle"></i> Age-appropriate assessment based on SSIS (Social Skills Improvement System) and ASQ:SE-2 standards
                             </p>
                         </div>
 
-                        <!-- ==================== PERSONALITY & CHARACTER SECTION (Coming Soon) ==================== -->
-                        <div class="section-separator">
-                            <h3 style="color: #e74c3c;">
-                                <i class="fa fa-user"></i> Personality & Character <span style="font-size: 14px; color: #95a5a6; font-weight: normal;">(Coming Soon)</span>
-                            </h3>
-                            <p style="color: #7f8c8d; font-size: 13px; margin-top: 10px;">
-                                Future features will assess social skills, emotional intelligence, behavioral patterns, and character development
-                            </p>
+                        <!-- SISA Assessment Container (Auto-populated based on child's age) -->
+                        <div id="socialContainer" style="margin-top: 20px;">
+                            <div style="background: #d1ecf1; padding: 20px; border-radius: 10px; color: #0c5460;">
+                                <i class="fa fa-exclamation-triangle"></i> Social interaction assessment questions will appear once child's date of birth is loaded.
+                            </div>
+                        </div>
+
+                        <!-- Social Skills Assessment Notes -->
+                        <div class="form-group">
+                            <label for="social-notes">Clinical Notes (Social Interaction Skills)</label>
+                            <textarea class="form-control" id="social-notes" rows="3" placeholder="Any observations about communication, cooperation, empathy, self-control, social engagement, or recommendations..."></textarea>
                         </div>
 
                         <div class="section-separator">
