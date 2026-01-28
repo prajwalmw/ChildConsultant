@@ -129,7 +129,7 @@
                         document.getElementById('register-child-form').addEventListener('submit', handleRegistration);
                         
                         const cancelBtn = document.getElementById('cancel-back-link');
-                        cancelBtn.href = `child_selection.html?parentId=${currentParentId}`;
+                        cancelBtn.href = 'doctor_portal.html';
                         setupCancelButton(); 
                     }
                 })
@@ -169,7 +169,7 @@
                 const docRef = await db.collection('patients').doc(parentKey).collection('children').add(childData);
 
                 alert(`Child registered successfully! Patient ID: ${docRef.id}`);
-                window.location.href = `child_selection.html?parentId=${currentParentId}`;
+                window.location.href = 'doctor_portal.html';
             } catch (error) {
                 console.error("Error registering child:", error);
                 alert('Error registering child. Please try again.');

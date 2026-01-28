@@ -169,7 +169,7 @@
 
             const backLink = document.getElementById('cancel-back-link');
             if(backLink) {
-                backLink.href = `child_selection.html?parentId=${currentParentId}`;
+                backLink.href = 'doctor_portal.html';
             }
             
             await fetchParentName(); 
@@ -181,7 +181,7 @@
                 .then(doc => {
                     if (!doc.exists) {
                         alert('Error: Patient not found under the specified parent.');
-                        window.location.href = `child_selection.html?parentId=${currentParentId}`;
+                        window.location.href = 'doctor_portal.html';
                         return;
                     }
                     const patient = doc.data();
@@ -208,7 +208,7 @@
                 .catch(error => {
                     console.error("Error fetching patient details:", error);
                     alert('Could not load patient details.');
-                    window.location.href = `child_selection.html?parentId=${currentParentId}`;
+                    window.location.href = 'doctor_portal.html';
                 });
         }
         
@@ -1496,7 +1496,7 @@
                         .set(consultationData);
 
                 alert(`Consultation notes saved successfully for ${currentPatientName}!`);
-                window.location.href = `child_selection.html?parentId=${currentParentId}`;
+                window.location.href = 'doctor_portal.html';
             } catch (error) {
                 console.error("Error saving consultation notes:", error);
                 alert(`Error saving consultation notes: ${error.message}. Please try again.`);

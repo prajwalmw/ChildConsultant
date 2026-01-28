@@ -145,7 +145,7 @@ label {
 .btn-primary,
 .btn-white,
 a.btn,
-button {
+button:not(.link-view-details) {
   color: var(--dark) !important;
 }
 

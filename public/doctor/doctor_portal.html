@@ -4,36 +4,596 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Doctor Portal | Select Parent</title>
+    <title>Doctor Portal | Patient Selection</title>
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
-
-    <!-- Child-Friendly UI/UX Enhancements -->
     <link rel="stylesheet" href="../css/child-friendly.css">
     <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <style>
+        /* Child-Friendly Medical Dashboard Design */
         .animsition-box {
-            padding-top: 100px;
+            padding-top: 80px;
             min-height: 100vh;
+            background: linear-gradient(135deg, #fef3f8 0%, #f0f9ff 50%, #faf5ff 100%);
+            position: relative;
         }
+
         .portal-container {
-            padding: 40px 0;
+            padding: 30px 0 60px 0;
+            position: relative;
         }
-        .parent-table th {
-            background-color: #00c3c9;
-            color: white;
+
+        /* Playful Header Section */
+        .page-header-section {
+            background: linear-gradient(135deg, #f41192 0%, #ff6b9d 100%);
+            padding: 32px 36px;
+            border-radius: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(244, 17, 146, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 24px;
+            position: relative;
+            overflow: hidden;
         }
-        .parent-table .btn-consult {
-            background-color: #f7a83d;
+        .page-header-section::before {
+            content: '🏥';
+            position: absolute;
+            font-size: 120px;
+            opacity: 0.1;
+            right: -20px;
+            top: -20px;
+            transform: rotate(-15deg);
+        }
+        .page-header-content {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        .section-title {
+            flex: 1;
+            min-width: 250px;
+        }
+        .section-title h1 {
+            color: white !important;
+            font-weight: 800 !important;
+            font-size: 32px !important;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        .section-title p {
+            color: rgba(255, 255, 255, 0.95) !important;
+            font-size: 15px !important;
+            font-weight: 500;
+            margin: 0;
+        }
+        .stats-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+        .stat-icon {
+            font-size: 32px;
+            color: #f41192;
+        }
+        .stat-details h3 {
+            color: #1e293b;
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 0 2px 0;
+        }
+        .stat-details p {
+            color: #64748b;
+            font-size: 11px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        /* Playful Search Bar */
+        .search-container {
+            margin-bottom: 24px;
+        }
+        .search-wrapper {
+            position: relative;
+        }
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #f41192;
+            font-size: 20px;
+            pointer-events: none;
+        }
+        .search-input {
+            width: 100%;
+            padding: 16px 20px 16px 52px;
+            font-size: 15px;
+            border: 3px solid #e0e7ff;
+            border-radius: 50px;
+            transition: all 0.3s;
+            background: white;
+            font-weight: 600;
+            color: #1e293b;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #f41192;
+            box-shadow: 0 0 0 4px rgba(244, 17, 146, 0.15);
+            background: white;
+            transform: translateY(-2px);
+        }
+        .search-input::placeholder {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* Colorful Parent Cards */
+        .parent-row {
+            background: white;
+            border-radius: 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            border: 3px solid transparent;
+        }
+        .parent-row:hover {
+            box-shadow: 0 8px 24px rgba(244, 17, 146, 0.2);
+            border-color: #fce7f3;
+            transform: translateY(-2px);
+        }
+        .parent-header {
+            padding: 20px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .parent-header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: linear-gradient(180deg, #f41192, #ff6b9d);
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 20px 0 0 20px;
+        }
+        .parent-header:hover::before {
+            opacity: 1;
+        }
+        .parent-header.expanded {
+            background: linear-gradient(135deg, #fef3f8 0%, #faf5ff 100%);
+            border-bottom: 2px solid #fce7f3;
+        }
+        .parent-header.expanded::before {
+            opacity: 1;
+        }
+        .parent-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .parent-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+        .parent-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #fef3f8 0%, #fce7f3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #f41192;
+            font-weight: 700;
+            flex-shrink: 0;
+            border: 2px solid #fbcfe8;
+        }
+        .child-count-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #fef3f8 0%, #fce7f3 100%);
+            color: #f41192;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 2px solid #fbcfe8;
+        }
+        .child-count-badge i {
+            margin-right: 4px;
+            font-size: 11px;
+        }
+        .parent-contact {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 400;
+            flex-wrap: wrap;
+        }
+        .parent-contact span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .parent-contact i {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        .expand-icon {
+            font-size: 18px;
+            color: #f41192;
+            transition: transform 0.3s;
+            background: linear-gradient(135deg, #fef3f8 0%, #fce7f3 100%);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 2px solid #fbcfe8;
+        }
+        .parent-header:hover .expand-icon {
+            background: linear-gradient(135deg, #f41192 0%, #ff6b9d 100%);
             color: white;
-            border: none;
-            padding: 5px 10px;
+            border-color: #f41192;
+        }
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+            background: linear-gradient(135deg, #f41192 0%, #ff6b9d 100%);
+            color: white;
+            border-color: #f41192;
+        }
+
+        /* Playful Children Container */
+        .children-container {
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #fef3f8 0%, #faf5ff 100%);
+            display: none;
+        }
+        .children-container.show {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .children-loading {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
             font-size: 14px;
-            border-radius: 4px;
+            font-weight: 500;
         }
-        .parent-table .btn-consult:hover {
-            background-color: #e09633;
+        .children-loading i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #3b82f6;
+        }
+        .no-children {
+            text-align: center;
+            padding: 30px 20px;
+            color: #64748b;
+            font-size: 14px;
+            background: white;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+        }
+        .no-children i {
+            font-size: 36px;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .no-children p {
+            margin-bottom: 12px;
+        }
+
+        /* Vibrant Child Cards */
+        .child-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 14px;
+            border: 3px solid #e0f2fe;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+        .child-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: linear-gradient(180deg, #10b981, #34d399);
+            border-radius: 16px 0 0 16px;
+        }
+        .child-card:hover {
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+            border-color: #a7f3d0;
+            transform: translateX(4px);
+        }
+        .child-card:last-child {
+            margin-bottom: 0;
+        }
+        .child-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .child-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .child-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+            border: 2px solid #6ee7b7;
+        }
+        .child-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+        .child-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .child-detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 2px solid #bae6fd;
+        }
+        .child-detail-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .child-detail-label i {
+            font-size: 10px;
+        }
+        .child-detail-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .child-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-action {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-action i {
+            font-size: 13px;
+        }
+        .btn-action:hover {
+            transform: translateY(-1px);
+        }
+        .btn-start-consult {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .btn-start-consult:hover {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+        .btn-view-records {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #b45309;
+            border: 2px solid #fbbf24;
+        }
+        .btn-view-records:hover {
+            background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+        }
+        .btn-view-dashboard {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border: 2px solid #60a5fa;
+        }
+        .btn-view-dashboard:hover {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+        }
+
+        /* Register & Back Buttons */
+        .action-buttons {
+            margin-top: 24px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-register {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+        }
+        .btn-register:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+            color: white;
+        }
+        .btn-back {
+            background: white;
+            color: #64748b;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+        .btn-back:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            color: #64748b;
+        }
+
+        /* Loading & Empty States */
+        .loading-state {
+            text-align: center;
+            padding: 80px 40px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e9f2;
+        }
+        .loading-state i {
+            font-size: 48px;
+            color: #0066cc;
+            margin-bottom: 16px;
+            animation: spin 1.2s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .loading-state p {
+            font-size: 15px;
+            font-weight: 500;
+            color: #5a6c7d;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: #5a6c7d;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e9f2;
+        }
+        .empty-state i {
+            color: #c5cfe0 !important;
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .empty-state p {
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .parent-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .parent-contact {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .child-actions {
+                width: 100%;
+            }
+            .btn-action {
+                flex: 1;
+                justify-content: center;
+            }
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -59,6 +619,9 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        let allParents = [];
+        let expandedParents = new Set();
+
         // --- Role-Based Access Check ---
         auth.onAuthStateChanged(user => {
             if (!user) {
@@ -74,7 +637,6 @@
                         window.location.href = '../index.html';
                     } else {
                         fetchParents();
-                        setupCancelButton(); 
                     }
                 })
                 .catch(error => {
@@ -83,55 +645,324 @@
                 });
         });
 
-        function fetchParents() {
-            const parentTableBody = document.getElementById('parent-table-body');
-            parentTableBody.innerHTML = '<tr><td colspan="4" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Parent Users...</td></tr>';
-
-            // Query only users where role is 'parent'
-            db.collection('users').where('role', '==', 'parent').get()
-                .then(snapshot => {
-                    parentTableBody.innerHTML = ''; 
-                    if (snapshot.empty) {
-                        parentTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No registered parent users found.</td></tr>';
-                        return;
-                    }
-
-                    snapshot.forEach(doc => {
-                        const parent = doc.data();
-                        const parentId = doc.id;
-                        
-                        // Use 'name' or fallback to 'displayName' from user data
-                        const parentName = parent.name || parent.displayName || 'N/A';
-                        
-                        const row = `
-                            <tr>
-                                <td>${parentName}</td>
-                                <td>${parent.email || 'N/A'}</td>
-                                <td>${parentId}</td>
-                                <td>
-                                    <a href="child_selection.html?parentId=${parentId}" class="btn btn-consult animsition-link">Select & View Children</a>
-                                </td>
-                            </tr>
-                        `;
-                        parentTableBody.innerHTML += row;
-                    });
-                })
-                .catch(error => {
-                    console.error("Error fetching parents:", error);
-                    parentTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading parent data.</td></tr>';
-                });
+        // --- Helper: Create Parent Key ---
+        function slugifyName(text) {
+            return text.toLowerCase().trim()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
         }
-        
-        // --- Confirmation for Back Button ---
-        function setupCancelButton() {
-            const backBtn = document.getElementById('back-to-home-btn');
-            if (backBtn) {
-                backBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    window.location.href = '../index.html';
-                });
+
+        function createParentKey(parentName, parentId) {
+            const nameSlug = slugifyName(parentName || 'unknown-parent');
+            return `${nameSlug}_${parentId}`;
+        }
+
+        // --- Calculate Age ---
+        function calculateAge(dob) {
+            if (!dob) return 'N/A';
+            const diff_ms = Date.now() - dob.getTime();
+            const age_dt = new Date(diff_ms);
+            const years = Math.abs(age_dt.getUTCFullYear() - 1970);
+            const months = age_dt.getUTCMonth();
+
+            if (years > 0) {
+                let ageStr = `${years} yrs`;
+                if (months > 0) ageStr += `, ${months} mos`;
+                return ageStr;
+            } else {
+                return `${months} mos`;
             }
         }
+
+        // --- Fetch All Parents ---
+        async function fetchParents() {
+            const container = document.getElementById('parents-container');
+            container.innerHTML = '<div class="loading-state"><i class="fa fa-spinner fa-spin"></i><p>Loading patients...</p></div>';
+
+            try {
+                const snapshot = await db.collection('users').where('role', '==', 'parent').get();
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><i class="fa fa-users"></i><p>No registered parent users found.</p></div>';
+                    document.getElementById('total-parents').textContent = '0';
+                    document.getElementById('total-children').textContent = '0';
+                    return;
+                }
+
+                allParents = [];
+                snapshot.forEach(doc => {
+                    allParents.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                // Update statistics
+                document.getElementById('total-parents').textContent = allParents.length;
+
+                renderParents(allParents);
+                calculateTotalChildren();
+            } catch (error) {
+                console.error("Error fetching parents:", error);
+                container.innerHTML = '<div class="empty-state" style="color: #e74c3c;"><i class="fa fa-exclamation-triangle"></i><p>Error loading patient data. Please try again.</p></div>';
+            }
+        }
+
+        // --- Calculate Total Children ---
+        async function calculateTotalChildren() {
+            let totalChildren = 0;
+
+            for (const parent of allParents) {
+                try {
+                    const parentName = parent.name || parent.displayName || 'N/A';
+                    const parentKey = createParentKey(parentName, parent.id);
+                    const snapshot = await db.collection('patients').doc(parentKey).collection('children').get();
+                    totalChildren += snapshot.size;
+                } catch (error) {
+                    console.error("Error counting children:", error);
+                }
+            }
+
+            document.getElementById('total-children').textContent = totalChildren;
+        }
+
+        // --- Render Parents ---
+        function renderParents(parents) {
+            const container = document.getElementById('parents-container');
+
+            if (parents.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fa fa-search"></i><p>No parents match your search.</p></div>';
+                return;
+            }
+
+            container.innerHTML = parents.map(parent => {
+                const parentName = parent.name || parent.displayName || 'N/A';
+                const email = parent.email || 'N/A';
+                const mobile = parent.mobile || parent.phoneNumber || 'N/A';
+                const nameParts = parentName.split(' ').filter(n => n.length > 0);
+                const initials = nameParts.length >= 2
+                    ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+                    : parentName.substring(0, 2).toUpperCase();
+
+                return `
+                    <div class="parent-row" id="parent-${parent.id}">
+                        <div class="parent-header" onclick="toggleParent('${parent.id}', '${parentName}')">
+                            <div class="parent-info">
+                                <div class="parent-avatar">${initials}</div>
+                                <div style="flex: 1;">
+                                    <div class="parent-name">
+                                        <span>${parentName}</span>
+                                        <span class="child-count-badge" id="badge-${parent.id}">
+                                            <i class="fa fa-child"></i> Loading...
+                                        </span>
+                                    </div>
+                                    <div class="parent-contact">
+                                        <span><i class="fa fa-envelope"></i>${email}</span>
+                                        <span><i class="fa fa-phone"></i>${mobile}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <i class="fa fa-chevron-down expand-icon" id="icon-${parent.id}"></i>
+                        </div>
+                        <div class="children-container" id="children-${parent.id}">
+                            <div class="children-loading">
+                                <i class="fa fa-spinner fa-spin"></i>
+                                <div>Loading children...</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Fetch child counts for badges
+            parents.forEach(parent => {
+                const parentName = parent.name || parent.displayName || 'N/A';
+                fetchChildCount(parent.id, parentName);
+            });
+        }
+
+        // --- Fetch Child Count for Badge ---
+        async function fetchChildCount(parentId, parentName) {
+            try {
+                const parentKey = createParentKey(parentName, parentId);
+                const snapshot = await db.collection('patients').doc(parentKey).collection('children').get();
+                const count = snapshot.size;
+
+                const badge = document.getElementById(`badge-${parentId}`);
+                if (badge) {
+                    badge.innerHTML = `<i class="fa fa-child"></i> ${count} ${count === 1 ? 'Child' : 'Children'}`;
+                }
+            } catch (error) {
+                console.error("Error fetching child count:", error);
+                const badge = document.getElementById(`badge-${parentId}`);
+                if (badge) {
+                    badge.innerHTML = `<i class="fa fa-child"></i> 0 Children`;
+                }
+            }
+        }
+
+        // --- Toggle Parent Row ---
+        async function toggleParent(parentId, parentName) {
+            const container = document.getElementById(`children-${parentId}`);
+            const icon = document.getElementById(`icon-${parentId}`);
+            const header = container.previousElementSibling;
+
+            if (expandedParents.has(parentId)) {
+                // Collapse
+                container.classList.remove('show');
+                icon.classList.remove('rotated');
+                header.classList.remove('expanded');
+                expandedParents.delete(parentId);
+            } else {
+                // Expand
+                container.classList.add('show');
+                icon.classList.add('rotated');
+                header.classList.add('expanded');
+                expandedParents.add(parentId);
+
+                // Fetch children if not already loaded
+                if (container.querySelector('.children-loading')) {
+                    await fetchChildren(parentId, parentName);
+                }
+            }
+        }
+
+        // --- Fetch Children for Parent ---
+        async function fetchChildren(parentId, parentName) {
+            const container = document.getElementById(`children-${parentId}`);
+
+            try {
+                const parentKey = createParentKey(parentName, parentId);
+                const snapshot = await db.collection('patients').doc(parentKey).collection('children').get();
+
+                if (snapshot.empty) {
+                    container.innerHTML = `
+                        <div class="no-children">
+                            <i class="fa fa-info-circle" style="font-size: 36px; margin-bottom: 10px; display: block;"></i>
+                            <p>No children registered for this parent.</p>
+                            <a href="register_child.html?parentId=${parentId}" class="btn-register" style="margin-top: 15px;">
+                                <i class="fa fa-plus-circle"></i> Register New Child
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const children = [];
+                snapshot.forEach(doc => {
+                    children.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                renderChildren(container, children, parentId);
+            } catch (error) {
+                console.error("Error fetching children:", error);
+                container.innerHTML = `
+                    <div class="no-children" style="color: #e74c3c;">
+                        <i class="fa fa-exclamation-triangle" style="font-size: 36px; margin-bottom: 10px; display: block;"></i>
+                        <p>Error loading children. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // --- Render Children ---
+        function renderChildren(container, children, parentId) {
+            container.innerHTML = children.map(child => {
+                const childName = child.name || 'N/A';
+                const patientId = child.id;
+                const dob = child.dob ? new Date(child.dob.seconds * 1000) : null;
+                const age = calculateAge(dob);
+                const gender = child.gender || 'N/A';
+                const dobDisplay = dob ? dob.toLocaleDateString('en-IN') : 'N/A';
+                const emoji = gender === 'Male' ? '👦' : gender === 'Female' ? '👧' : '👶';
+
+                return `
+                    <div class="child-card">
+                        <div class="child-header">
+                            <div class="child-name-row">
+                                <div class="child-avatar">${emoji}</div>
+                                <div class="child-name">${childName}</div>
+                            </div>
+                        </div>
+                        <div class="child-details">
+                            <div class="child-detail-item">
+                                <div class="child-detail-label">
+                                    <i class="fa fa-id-card"></i> Patient ID
+                                </div>
+                                <div class="child-detail-value">${patientId}</div>
+                            </div>
+                            <div class="child-detail-item">
+                                <div class="child-detail-label">
+                                    <i class="fa fa-birthday-cake"></i> Date of Birth
+                                </div>
+                                <div class="child-detail-value">${dobDisplay}</div>
+                            </div>
+                            <div class="child-detail-item">
+                                <div class="child-detail-label">
+                                    <i class="fa fa-calendar"></i> Age
+                                </div>
+                                <div class="child-detail-value">${age}</div>
+                            </div>
+                            <div class="child-detail-item">
+                                <div class="child-detail-label">
+                                    <i class="fa fa-venus-mars"></i> Gender
+                                </div>
+                                <div class="child-detail-value">${gender}</div>
+                            </div>
+                        </div>
+                        <div class="child-actions">
+                            <a href="patient_consultation.html?parentId=${parentId}&patientId=${patientId}" class="btn-action btn-start-consult">
+                                <i class="fa fa-stethoscope"></i> Start Consultation
+                            </a>
+                            <a href="view_consultations.html?parentId=${parentId}&patientId=${patientId}" class="btn-action btn-view-records">
+                                <i class="fa fa-file-medical"></i> View Records
+                            </a>
+                            <a href="child_dashboard.html?parentId=${parentId}&patientId=${patientId}" class="btn-action btn-view-dashboard">
+                                <i class="fa fa-chart-line"></i> Dashboard
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- Search Functionality ---
+        function handleSearch(query) {
+            query = query.toLowerCase().trim();
+
+            if (!query) {
+                renderParents(allParents);
+                return;
+            }
+
+            const filtered = allParents.filter(parent => {
+                const name = (parent.name || parent.displayName || '').toLowerCase();
+                const email = (parent.email || '').toLowerCase();
+                const mobile = (parent.mobile || parent.phoneNumber || '').toLowerCase();
+
+                return name.includes(query) || email.includes(query) || mobile.includes(query);
+            });
+
+            renderParents(filtered);
+        }
+
+        // Debounce search
+        let searchTimeout;
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        handleSearch(e.target.value);
+                    }, 300);
+                });
+            }
+        });
     </script>
 
     <div id="animsition-box" class="animsition-box">
@@ -139,7 +970,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                         <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                        <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
                     </div>
                 </div>
             </div>
@@ -148,27 +979,54 @@
         <div class="container portal-container">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="section-title">
-                        <h1>Doctor Portal: Select Parent</h1>
-                        <p>Select the parent user account for today's consultation.</p>
+                    <!-- Professional Header Section -->
+                    <div class="page-header-section">
+                        <div class="page-header-content">
+                            <div class="section-title">
+                                <h1>Patient Management</h1>
+                                <p>Manage consultations, view medical records, and track patient progress</p>
+                            </div>
+                            <div class="stats-row">
+                                <div class="stat-card">
+                                    <i class="fa fa-users stat-icon"></i>
+                                    <div class="stat-details">
+                                        <h3 id="total-parents">-</h3>
+                                        <p>Total Families</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <i class="fa fa-child stat-icon"></i>
+                                    <div class="stat-details">
+                                        <h3 id="total-children">-</h3>
+                                        <p>Total Patients</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-bordered parent-table">
-                            <thead>
-                                <tr>
-                                    <th>Parent Name</th>
-                                    <th>Email</th>
-                                    <th>Parent ID</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="parent-table-body">
-                                </tbody>
-                        </table>
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <div class="search-wrapper">
+                            <i class="fa fa-search search-icon"></i>
+                            <input
+                                type="text"
+                                id="search-input"
+                                class="search-input"
+                                placeholder="Search by parent name, email, or phone number..."
+                            >
+                        </div>
                     </div>
-                    
-                    <a href="../index.html" class="btn btn-default animsition-link" id="back-to-home-btn">Back to Home</a>
+
+                    <!-- Parents Container -->
+                    <div id="parents-container"></div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <a href="../index.html" class="btn-back animsition-link">
+                            <i class="fa fa-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

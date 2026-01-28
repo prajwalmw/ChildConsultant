@@ -7,7 +7,7 @@ const RAZORPAY_KEY_ID = 'rzp_live_S6y99PjkyiSG8O';
 const PACKAGES = {
   basic: {
     name: 'BASIC Package',
-    price: 1,
+    price: 10,
     originalPrice: 9600,
     sessions: 12,
     validity: '3 Months',
