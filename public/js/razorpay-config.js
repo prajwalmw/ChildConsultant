@@ -153,6 +153,16 @@ function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
     .then((docRef) => {
       console.log('Booking saved with ID:', docRef.id);
 
+      // Notify Aqiraa admin via EmailJS
+      if (typeof emailjs !== 'undefined') {
+        emailjs.send("service_zdtmdad", "template_0ljis7t", {
+          name: bookingData.userName || 'User',
+          email: bookingData.userEmail || 'N/A',
+          phone: 'N/A',
+          message: `NEW PACKAGE BOOKING ALERT\n\nPackage: ${packageDetails.name}\nSessions: ${packageDetails.sessions}\nValidity: ${packageDetails.validity}\nAmount: ₹${packageDetails.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
+        }).catch(err => console.error('Admin email notification failed:', err));
+      }
+
       // Show success message
       showPaymentSuccessMessage(packageDetails, paymentResponse.razorpay_payment_id);
 

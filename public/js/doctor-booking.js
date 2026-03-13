@@ -418,6 +418,17 @@ function handleDoctorPaymentSuccess(paymentResponse, doctor) {
   firebase.firestore().collection('doctor_bookings').add(bookingData)
     .then((docRef) => {
       sessionStorage.removeItem('selectedDoctor');
+
+      // Notify Aqiraa admin via EmailJS
+      if (typeof emailjs !== 'undefined') {
+        emailjs.send("service_zdtmdad", "template_0ljis7t", {
+          name: bookingData.userName || 'User',
+          email: bookingData.userEmail || 'N/A',
+          phone: 'N/A',
+          message: `NEW DOCTOR BOOKING ALERT\n\nDoctor: ${doctor.name}\nAmount: ₹${doctor.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
+        }).catch(err => console.error('Admin email notification failed:', err));
+      }
+
       alert(`✓ Booking Confirmed!\n\nYou have successfully booked a consultation with ${doctor.name}.\n\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\n\nYou will receive a confirmation email shortly.`);
       window.location.href = 'index.html';
     })
