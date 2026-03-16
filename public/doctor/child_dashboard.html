@@ -1432,7 +1432,7 @@
         document.getElementById('childInfoContent').innerHTML = `
           <div class="info-item"><strong>Name:</strong> ${childData.name}</div>
           <div class="info-item"><strong>Gender:</strong> ${childData.gender || 'N/A'}</div>
-          <div class="info-item"><strong>Date of Birth:</strong> ${dob ? dob.toLocaleDateString() : 'N/A'}</div>
+          <div class="info-item"><strong>Date of Birth:</strong> ${dob ? dob.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).replace(/(\d+)/, (d) => { const s = ['th','st','nd','rd']; const v = d % 100; return d + (s[(v-20)%10] || s[v] || s[0]); }) : 'N/A'}</div>
           <div class="info-item"><strong>Age:</strong> ${age}</div>
           <div class="info-item"><strong>Initial Weight:</strong> ${initialWeight ? initialWeight + ' kg' : 'N/A'}</div>
           <div class="info-item"><strong>Initial Height:</strong> ${initialHeight ? initialHeight + ' cm' : 'N/A'}</div>

@@ -255,7 +255,10 @@
             <div class="hero-caption text-center" style="margin-top: -70px; position: relative; z-index: 10;">
               <h1 class="hero-title">Nurturing Little Minds</h1>
               <h3 class="hero-text">Comprehensive Care | Every Milestone | Every Child</h3>
-              <a href="javascript:void(0);" id="get-started-btn" class="btn btn-white" onclick="event.preventDefault(); var packagesSection = document.getElementById('packages'); if(packagesSection) { packagesSection.scrollIntoView({behavior: 'smooth', block: 'start'}); } else { console.error('Packages section not found'); }">Get Started</a>
+              <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('doctor-booking').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Book Doctor</a>
+                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('packages').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Explore Packages</a>
+              </div>
             </div>
           </div>
         </div>
