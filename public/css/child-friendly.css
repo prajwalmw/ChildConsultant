@@ -129,6 +129,19 @@ label {
   color: var(--white) !important;
 }
 
+/* AI Chat Assistant - override global dark color rule */
+#ai-chat-header,
+#ai-chat-header *,
+#ai-chat-header .ai-header-title,
+#ai-chat-header .ai-header-subtitle,
+#ai-chat-header button,
+#ai-chat-header i {
+  color: #ffffff !important;
+}
+#ai-chat-header .ai-header-subtitle {
+  color: rgba(255,255,255,0.85) !important;
+}
+
 /* Navigation text */
 .navigation ul li a {
   color: var(--dark) !important;
