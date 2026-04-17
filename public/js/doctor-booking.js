@@ -13,10 +13,14 @@ async function fetchDoctorsFromFirestore() {
 
     // Filter active doctors and sort by displayOrder
     DOCTORS = snapshot.docs
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
+      .map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          finalPrice: (data.discountedPrice && data.discountedPrice < data.sessionPrice) ? data.discountedPrice : data.sessionPrice
+        };
+      })
       .filter(doc => doc.active === true)
       .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 
@@ -145,7 +149,11 @@ function showDoctorProfile(doctorId) {
 
               <div style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 15px 25px; border-radius: 15px; display: inline-block; margin-bottom: 15px;">
                 <div style="font-size: 14px; opacity: 0.9;">Appointment beginning at</div>
-                <div style="font-size: 28px; font-weight: 800;">₹${doctor.sessionPrice}</div>
+                <div style="font-size: 28px; font-weight: 800;">
+                  ${doctor.finalPrice < doctor.sessionPrice 
+                    ? `<span style="text-decoration: line-through; font-size: 18px; color: #ffcccc; margin-right: 10px;">₹${doctor.sessionPrice}</span>₹${doctor.finalPrice}` 
+                    : `₹${doctor.sessionPrice}`}
+                </div>
               </div>
 
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -214,7 +222,7 @@ function bookDoctorSession(doctorId) {
   sessionStorage.setItem('selectedDoctor', JSON.stringify({
     id: doctor.id,
     name: doctor.name,
-    price: doctor.sessionPrice
+    price: doctor.finalPrice
   }));
 
   // Close the modal
@@ -276,7 +284,7 @@ function showBookingInstructions(doctor) {
       <button onclick="document.getElementById('bookingInstructions').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">×</button>
       <h4 style="color: #f41192; margin-bottom: 10px; font-size: 18px;">📅 Booking ${doctor.name}</h4>
       <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-        Select your preferred date and time in the new tab. After scheduling, return here to complete your payment of <strong>₹${doctor.sessionPrice}</strong>.
+        Select your preferred date and time in the new tab. After scheduling, return here to complete your payment of <strong>₹${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong>.
       </p>
       <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">I've Scheduled - Proceed to Payment</button>
     </div>
@@ -320,9 +328,9 @@ function showPaymentInstructions(doctor, eventDetails) {
       <h4 style="color: #4CAF50; margin-bottom: 10px; font-size: 18px;">🎉 Appointment Scheduled!</h4>
       ${appointmentInfo}
       <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-        Complete your booking by paying <strong>₹${doctor.sessionPrice}</strong> to confirm your appointment with ${doctor.name}.
+        Complete your booking by paying <strong>₹${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong> to confirm your appointment with ${doctor.name}.
       </p>
-      <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ₹${doctor.sessionPrice}</button>
+      <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ₹${doctor.finalPrice || doctor.price || doctor.sessionPrice}</button>
     </div>
   `;
 

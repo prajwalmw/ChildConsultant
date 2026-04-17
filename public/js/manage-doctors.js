@@ -120,7 +120,11 @@ function renderDoctorsTable(doctors) {
               ${doctor.isTopRated ? '<span class="badge badge-top">Top Rated</span>' : ''}
             </td>
             <td>${doctor.experience || doctor.experienceYears + ' Years'}</td>
-            <td>₹${doctor.sessionPrice}</td>
+            <td>
+              ${doctor.discountedPrice && doctor.discountedPrice < doctor.sessionPrice 
+                ? `<span style="text-decoration: line-through; color: #999; font-size: 12px;">₹${doctor.sessionPrice}</span><br><span style="color: #f41192; font-weight: bold;">₹${doctor.discountedPrice}</span>` 
+                : `₹${doctor.sessionPrice}`}
+            </td>
             <td>
               <div style="display: flex; align-items: center; gap: 5px;">
                 <i class="fas fa-star" style="color: #FFD700;"></i>
@@ -210,6 +214,9 @@ async function editDoctor(doctorId) {
     document.getElementById('doctorExperience').value = doctor.experienceYears || parseInt(doctor.experience);
     document.getElementById('doctorQualification').value = doctor.qualification;
     document.getElementById('doctorPrice').value = doctor.sessionPrice;
+    if (document.getElementById('doctorDiscountedPrice')) {
+      document.getElementById('doctorDiscountedPrice').value = doctor.discountedPrice || doctor.sessionPrice;
+    }
     document.getElementById('doctorRating').value = doctor.rating;
     document.getElementById('doctorTotalRatings').value = doctor.totalRatings;
     document.getElementById('doctorDisplayOrder').value = doctor.displayOrder || 999;
@@ -431,6 +438,7 @@ async function handleSubmit(event) {
       experienceYears: experienceYears,
       qualification: document.getElementById('doctorQualification').value.trim(),
       sessionPrice: parseInt(document.getElementById('doctorPrice').value),
+      discountedPrice: document.getElementById('doctorDiscountedPrice') ? parseInt(document.getElementById('doctorDiscountedPrice').value) : parseInt(document.getElementById('doctorPrice').value),
       rating: parseFloat(document.getElementById('doctorRating').value),
       totalRatings: parseInt(document.getElementById('doctorTotalRatings').value),
       displayOrder: parseInt(document.getElementById('doctorDisplayOrder').value),
@@ -476,20 +484,4 @@ async function handleSubmit(event) {
   }
 }
 
-// Close modal when clicking outside
-document.getElementById('doctorModal').addEventListener('click', function(event) {
-  if (event.target === this) {
-    closeModal();
-  }
-});
-
-// Make functions global
-window.openAddModal = openAddModal;
-window.closeModal = closeModal;
-window.editDoctor = editDoctor;
-window.deleteDoctor = deleteDoctor;
-window.searchDoctors = searchDoctors;
-window.handleExpertiseInput = handleExpertiseInput;
-window.handleLanguageInput = handleLanguageInput;
-window.removeChip = removeChip;
-window.handleSubmit = handleSubmit;
+// Close m

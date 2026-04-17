@@ -799,7 +799,9 @@
                     View Profile <i class="fa fa-angle-right"></i>
                   </button>
                   <button onclick="bookDoctorSession('${doctor.id}')" class="btn-book-primary">
-                    <div class="btn-price-badge">₹${doctor.sessionPrice}</div>
+                    <div class="btn-price-badge">
+                      ${doctor.finalPrice < doctor.sessionPrice ? `<span style="text-decoration: line-through; font-size: 13px; margin-right: 5px; opacity: 0.8;">₹${doctor.sessionPrice}</span>₹${doctor.finalPrice}` : `₹${doctor.sessionPrice}`}
+                    </div>
                     <div class="btn-label">Book Consultation</div>
                   </button>
                 </div>
@@ -831,7 +833,8 @@
           // Filter by price range
           if (priceRange) {
             const [min, max] = priceRange.split('-').map(Number);
-            if (doctor.sessionPrice < min || doctor.sessionPrice > max) return false;
+            const activePrice = doctor.finalPrice < doctor.sessionPrice ? doctor.finalPrice : doctor.sessionPrice;
+            if (activePrice < min || activePrice > max) return false;
           }
 
           // Filter by rating
