@@ -114,84 +114,87 @@ function showDoctorProfile(doctorId) {
 
   const modalHTML = `
     <div id="doctorProfileModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
-      <div style="background: white; border-radius: 20px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+      <div style="background: white; border-radius: 24px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
         <button onclick="closeDoctorProfile()" style="position: absolute; top: 20px; right: 20px; background: #f41192; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10; box-shadow: 0 4px 12px rgba(244,17,146,0.3);">×</button>
 
         <div style="padding: 40px;">
           <div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">
             <div style="flex-shrink: 0;">
-              <img src="${doctor.image}" alt="${doctor.name}" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 5px solid #f41192;" onerror="this.src='images/doctors/default_placeholder.jpg'">
+              <img src="${doctor.image}" alt="${doctor.name}" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #FDF2F8; padding: 4px; box-shadow: 0 8px 16px rgba(244,17,146,0.08);" onerror="this.src='images/doctors/default_placeholder.jpg'">
               <div style="text-align: center; margin-top: 15px;">
-                <div style="font-size: 32px; font-weight: 800; color: #f41192;">${doctor.rating}</div>
+                <div style="font-size: 28px; font-weight: 800; color: #1E293B;">${doctor.rating}</div>
                 <div>${generateStarRating(doctor.rating)}</div>
                 <div style="font-size: 14px; color: #666; margin-top: 5px;">(${doctor.totalRatings} Ratings)</div>
               </div>
             </div>
 
             <div style="flex: 1; min-width: 300px;">
-              <h2 style="color: #f41192; font-size: 28px; margin-bottom: 5px;">${doctor.name}</h2>
-              <p style="font-size: 18px; color: #666; margin-bottom: 10px;">${doctor.title}</p>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                <h2 style="color: #1E293B; font-size: 28px; font-weight: 800; margin: 0; font-family: 'Fredoka', sans-serif;">${doctor.name}</h2>
+                <svg viewBox="0 0 24 24" width="24" height="24" title="Verified Medical Expert"><circle cx="12" cy="12" r="10" fill="#0EA5E9"/><path d="M9 12l2 2 4-4" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <p style="font-size: 17px; color: #f41192; font-weight: 600; margin-bottom: 16px;">${doctor.title}</p>
 
               <div style="display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap;">
-                <div>
-                  <i class="fa fa-graduation-cap" style="color: #f41192; margin-right: 5px;"></i>
-                  <strong>${doctor.qualification}</strong>
+                <div style="color: #4B5563; font-size: 15px;">
+                  <i class="fa fa-graduation-cap" style="color: #8B5CF6; width: 20px;"></i>
+                  ${doctor.qualification}
                 </div>
-                <div>
-                  <i class="fa fa-clock-o" style="color: #f41192; margin-right: 5px;"></i>
-                  <strong>${doctor.experience}</strong>
+                <div style="color: #4B5563; font-size: 15px;">
+                  <i class="fa fa-clock-o" style="color: #3B82F6; width: 20px;"></i>
+                  ${doctor.experience} Overall
                 </div>
                 <div>
                   <i class="fa fa-circle" style="color: #4CAF50; margin-right: 5px; font-size: 10px;"></i>
-                  <strong>${doctor.status}</strong>
+                  <strong style="color: #374151;">${doctor.status}</strong>
                 </div>
               </div>
 
-              <div style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 15px 25px; border-radius: 15px; display: inline-block; margin-bottom: 15px;">
-                <div style="font-size: 14px; opacity: 0.9;">Appointment beginning at</div>
-                <div style="font-size: 28px; font-weight: 800;">
+              <div style="background: linear-gradient(135deg, #FFF9FB, #F0F9FF); border: 2px solid #FDF2F8; color: #1E293B; padding: 16px 24px; border-radius: 16px; display: inline-block; margin-bottom: 20px;">
+                <div style="font-size: 12px; color: #64748B; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">Consultation Fee</div>
+                <div style="font-size: 28px; font-weight: 800; color: #9e0ff1;">
                   ${doctor.finalPrice < doctor.sessionPrice 
-                    ? `<span style="text-decoration: line-through; font-size: 18px; color: #ffcccc; margin-right: 10px;">₹${doctor.sessionPrice}</span>₹${doctor.finalPrice}` 
+                    ? `₹${doctor.finalPrice} <span style="text-decoration: line-through; font-size: 16px; color: #9CA3AF; margin-left: 6px; font-weight: 500;">₹${doctor.sessionPrice}</span>` 
                     : `₹${doctor.sessionPrice}`}
                 </div>
               </div>
 
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="bookDoctorSession('${doctor.id}')" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 15px 35px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.3); flex: 1; min-width: 180px;">Book an Appointment</button>
+                <button onclick="bookDoctorSession('${doctor.id}')" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 16px rgba(244,17,146,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(244,17,146,0.2)'" style="background: linear-gradient(135deg, #f41192, #9e0ff1); color: white; padding: 15px 30px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.2); flex: 1; min-width: 180px; transition: all 0.2s ease; font-family: 'Fredoka', sans-serif;">Book an Appointment</button>
               </div>
             </div>
           </div>
 
-          <hr style="border: none; border-top: 2px solid #f0f0f0; margin: 30px 0;">
+          <hr style="border: none; border-top: 2px dashed #F1F5F9; margin: 30px 0;">
 
           <div style="margin-bottom: 30px;">
-            <h3 style="color: #f41192; font-size: 22px; margin-bottom: 15px;">About</h3>
-            <p style="color: #666; line-height: 1.8; font-size: 15px;">${doctor.about}</p>
+            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'Fredoka', sans-serif;">About</h3>
+            <p style="color: #4B5563; line-height: 1.8; font-size: 15px;">${doctor.about}</p>
           </div>
 
           <div style="margin-bottom: 30px;">
-            <h3 style="color: #f41192; font-size: 22px; margin-bottom: 15px;">Area of Expertise</h3>
+            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'Fredoka', sans-serif;">Area of Expertise</h3>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
               ${doctor.expertise.map(exp => `
-                <span style="background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%); color: #f41192; padding: 8px 16px; border-radius: 20px; font-size: 14px; border: 2px solid #f41192;">${exp}</span>
+                <span style="background: #F0F9FF; color: #0EA5E9; padding: 8px 16px; border-radius: 12px; font-size: 14px; font-weight: 600;">${exp}</span>
               `).join('')}
             </div>
           </div>
 
           <div style="margin-bottom: 30px;">
-            <h3 style="color: #f41192; font-size: 22px; margin-bottom: 15px;">Languages Known</h3>
-            <p style="color: #666; font-size: 16px;">${doctor.languages.join(', ')}</p>
+            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'Fredoka', sans-serif;">Languages Known</h3>
+            <p style="color: #4B5563; font-size: 15px;">${doctor.languages.join(', ')}</p>
           </div>
 
           <div>
-            <h3 style="color: #f41192; font-size: 22px; margin-bottom: 15px;">Rating Breakdown</h3>
+            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'Fredoka', sans-serif;">Patient Reviews</h3>
             ${Object.entries(doctor.ratingBreakdown).reverse().map(([stars, percentage]) => `
               <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                <span style="width: 30px; font-weight: 600;">${stars} <i class="fa fa-star" style="color: #FFD700; font-size: 12px;"></i></span>
-                <div style="flex: 1; height: 8px; background: #f0f0f0; border-radius: 10px; overflow: hidden;">
-                  <div style="height: 100%; background: linear-gradient(90deg, #f41192, #FF6B9D); width: ${percentage}%; border-radius: 10px;"></div>
+                <span style="width: 30px; font-weight: 600; color: #374151; font-size: 13px;">${stars} <i class="fa fa-star" style="color: #F59E0B; font-size: 12px;"></i></span>
+                <div style="flex: 1; height: 8px; background: #F1F5F9; border-radius: 10px; overflow: hidden;">
+                  <div style="height: 100%; background: linear-gradient(90deg, #34D399, #10B981); width: ${percentage}%; border-radius: 10px;"></div>
                 </div>
-                <span style="width: 50px; text-align: right; color: #666; font-size: 14px;">${percentage}%</span>
+                <span style="width: 50px; text-align: right; color: #6B7280; font-size: 13px;">${percentage}%</span>
               </div>
             `).join('')}
           </div>
