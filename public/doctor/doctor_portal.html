@@ -631,9 +631,15 @@
 
             db.collection('users').doc(user.uid).get()
                 .then(doc => {
-                    const role = doc.data()?.role;
+                    const data = doc.data() || {};
+                    const role = data.role;
+                    const hasPortalAccess = data.hasPortalAccess === true;
+
                     if (role !== 'admin' && role !== 'doctor') {
                         alert('Access Denied. Doctors and Admins only.');
+                        window.location.href = '../index.html';
+                    } else if (role === 'doctor' && !hasPortalAccess) {
+                        alert('You currently have no active consultations. The Doctor Portal will become accessible once a patient books a session with you.');
                         window.location.href = '../index.html';
                     } else {
                         fetchParents();

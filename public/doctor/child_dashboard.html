@@ -5402,10 +5402,22 @@
     }
 
     // Check authentication and load dashboard
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         alert('Please sign in to view the dashboard');
         window.location.href = '../login.html';
+        return;
+      }
+
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const userData = userDoc.data() || {};
+      const role = userData.role;
+      const hasPortalAccess = userData.hasPortalAccess === true;
+
+      if (role === 'doctor' && !hasPortalAccess) {
+        alert('You currently have no active consultations. The Doctor Portal will become accessible once a patient books a session with you.');
+        window.location.href = '../index.html';
         return;
       }
 

@@ -150,6 +150,7 @@
         if (isNewUser) {
           // New user: create the document with default role 'parent'
           userData.role = "parent"; 
+          userData.hasPortalAccess = false; // Default flag for portal access
           userData.createdAt = timestamp;
           await userRef.set(userData);
         } else {

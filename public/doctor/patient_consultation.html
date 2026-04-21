@@ -72,15 +72,8 @@
 
         // Function to get query parameters from URL
         function getQueryVariable(variable) {
-            const query = window.location.search.substring(1);
-            const vars = query.split("&");
-            for (let i = 0; i < vars.length; i++) {
-                const pair = vars[i].split("=");
-                if (pair[0] == variable) {
-                    return pair[1];
-                }
-            }
-            return (false);
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(variable) || false;
         }
         
         // Helper function to sanitize name for use in a document ID
@@ -111,12 +104,16 @@
 
             db.collection('users').doc(user.uid).get()
                 .then(doc => {
-                    const userData = doc.data();
+                    const userData = doc.data() || {};
                     const role = userData?.role;
+                    const hasPortalAccess = userData?.hasPortalAccess === true;
                     currentDoctorName = userData?.name || userData?.displayName || user.displayName || 'Unknown Doctor';
 
                     if (role !== 'admin' && role !== 'doctor') {
                         alert('Access Denied. Doctors and Admins only.');
+                        window.location.href = '../index.html';
+                    } else if (role === 'doctor' && !hasPortalAccess) {
+                        alert('You currently have no active consultations. The Doctor Portal will become accessible once a patient books a session with you.');
                         window.location.href = '../index.html';
                     } else {
                         initializeForm();
@@ -159,7 +156,7 @@
         async function initializeForm() {
             currentPatientId = getQueryVariable('patientId');
             currentParentId = getQueryVariable('parentId'); 
-            const patientAge = decodeURIComponent(getQueryVariable('patientAge') || 'N/A'); // <<-- MODIFIED: Fetch and decode age
+            const patientAge = getQueryVariable('patientAge') || 'N/A'; // URLSearchParams auto-decodes
 
             if (!currentPatientId || !currentParentId) {
                 alert('Error: Patient ID or Parent ID not provided. Redirecting to Parent List.');

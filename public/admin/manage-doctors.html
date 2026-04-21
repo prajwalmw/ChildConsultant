@@ -450,6 +450,34 @@
       transform: none;
     }
 
+    /* Toggle Switch Styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px;
+      left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #4CAF50; }
+    input:checked + .slider:before { transform: translateX(22px); }
+    /* End Toggle Styles */
+
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
@@ -491,6 +519,9 @@
         <a href="../index.html" class="btn btn-secondary">
           <i class="fas fa-home"></i> Home
         </a>
+        <button onclick="openAccessModal()" class="btn btn-secondary">
+          <i class="fas fa-key"></i> Manage Access
+        </button>
         <button onclick="openAddModal()" class="btn btn-primary">
           <i class="fas fa-plus"></i> Add New Doctor
         </button>
@@ -671,11 +702,96 @@
     </div>
   </div>
 
+  <!-- Access Management Modal -->
+  <div id="accessModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 style="font-size: 20px;">Doctor Portal Access</h2>
+        <button class="btn-close" onclick="closeAccessModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="accessLoading" class="loading" style="display: none;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 30px; color: #f41192;"></i>
+          <p>Loading accounts...</p>
+        </div>
+        <table style="width: 100%; text-align: left; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f8f9fa; border-bottom: 2px solid #e9ecef;">
+              <th style="padding: 12px; color: #333;">Doctor Name</th>
+              <th style="padding: 12px; color: #333;">Email</th>
+              <th style="padding: 12px; text-align: center; color: #333;">Portal Access</th>
+            </tr>
+          </thead>
+          <tbody id="accessTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
   <script src="../js/manage-doctors.js"></script>
+  <script>
+    const dbAccess = firebase.firestore();
+
+    function openAccessModal() {
+      document.getElementById('accessModal').classList.add('active');
+      loadDoctorAccounts();
+    }
+
+    function closeAccessModal() {
+      document.getElementById('accessModal').classList.remove('active');
+    }
+
+    async function loadDoctorAccounts() {
+      const tbody = document.getElementById('accessTableBody');
+      const loading = document.getElementById('accessLoading');
+      tbody.innerHTML = '';
+      loading.style.display = 'block';
+
+      try {
+        const snapshot = await dbAccess.collection('users').where('role', '==', 'doctor').get();
+        loading.style.display = 'none';
+
+        if (snapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px;">No registered doctor accounts found.</td></tr>';
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const hasAccess = data.hasPortalAccess === true;
+          tbody.innerHTML += `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 12px;"><strong>${data.name || data.displayName || 'Unknown'}</strong></td>
+              <td style="padding: 12px; color: #666; font-size: 14px;">${data.email || 'N/A'}</td>
+              <td style="padding: 12px; text-align: center;">
+                <label class="switch">
+                  <input type="checkbox" ${hasAccess ? 'checked' : ''} onchange="togglePortalAccess('${doc.id}', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </td>
+            </tr>`;
+        });
+      } catch (error) {
+        console.error("Error loading doctor accounts:", error);
+        loading.style.display = 'none';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red; padding: 20px;">Error loading accounts.</td></tr>';
+      }
+    }
+
+    async function togglePortalAccess(userId, isGranted) {
+      try {
+        await dbAccess.collection('users').doc(userId).update({ hasPortalAccess: isGranted });
+      } catch (error) {
+        console.error("Error updating access:", error);
+        alert("Failed to update access. Please try again.");
+        loadDoctorAccounts(); // Revert visual state on failure
+      }
+    }
+  </script>
 </body>
 </html>

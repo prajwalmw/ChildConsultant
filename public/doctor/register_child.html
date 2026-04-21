@@ -120,9 +120,15 @@
 
             db.collection('users').doc(user.uid).get()
                 .then(doc => {
-                    const role = doc.data()?.role;
+                    const userData = doc.data() || {};
+                    const role = userData.role;
+                    const hasPortalAccess = userData.hasPortalAccess === true;
+
                     if (role !== 'admin' && role !== 'doctor') {
                         alert('Access Denied.');
+                        window.location.href = '../index.html';
+                    } else if (role === 'doctor' && !hasPortalAccess) {
+                        alert('You currently have no active consultations. The Doctor Portal will become accessible once a patient books a session with you.');
                         window.location.href = '../index.html';
                     } else {
                         fetchParentName(); 

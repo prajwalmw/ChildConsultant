@@ -95,9 +95,14 @@
                   menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
                   menuHtml += '<li><a href="admin/manage-doctors.html" title="Manage Doctors" class="animsition-link">Manage Doctors</a></li>';
                 } else if (role === 'doctor') {
-                  // Doctors see Dashboard and Doctor Portal
+                  // Doctors see Dashboard and Doctor Portal (if approved)
+                  const hasPortalAccess = doc.data().hasPortalAccess === true;
                   menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
-                  menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
+                  if (hasPortalAccess) {
+                    menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
+                  } else {
+                    menuHtml += '<li><a href="#" onclick="alert(\'You currently have no active consultations. The Doctor Portal will become accessible once a patient books a session with you.\'); return false;" title="Doctor Portal">Doctor Portal</a></li>';
+                  }
                 } else {
                   // For 'parent' or default role
                   menuHtml = '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>';
