@@ -275,6 +275,24 @@
         }
 
 
+        function toggleFollowUpDateRequired() {
+            const sel = document.getElementById('follow-up-required');
+            const dateInput = document.getElementById('next-follow-up-date');
+            if (!sel || !dateInput) return;
+            dateInput.required = sel.value === 'yes';
+            if (sel.value !== 'yes') {
+                dateInput.setCustomValidity('');
+            }
+        }
+
+        function setupFollowUpDateRequirement() {
+            const sel = document.getElementById('follow-up-required');
+            if (!sel || sel.dataset.followupWired === '1') return;
+            sel.dataset.followupWired = '1';
+            sel.addEventListener('change', toggleFollowUpDateRequired);
+            toggleFollowUpDateRequired();
+        }
+
         async function initializeForm() {
             currentPatientId = getQueryVariable('patientId');
             currentParentId = getQueryVariable('parentId'); 
@@ -324,6 +342,7 @@
 
                     document.getElementById('consultation-form').addEventListener('submit', handleFormSubmission);
                     setupSaveConfirmModal();
+                    setupFollowUpDateRequirement();
                 })
                 .catch(error => {
                     console.error("Error fetching patient details:", error);
@@ -465,6 +484,8 @@
                     <strong style="color: #2e7d32;"><i class="fa fa-info-circle"></i> Age Group:</strong> ${questions.ageLabel} (${ageInMonths} months old)
                     <br>
                     <small style="color: #555;">Questions are customized based on child's developmental stage</small>
+                    <br>
+                    <small style="color: #555;"><strong>Sliders:</strong> &quot;-&quot; means not assessed (default). Only items you move off zero are included in averages and saved scores.</small>
                 </div>
             `;
 
@@ -569,10 +590,10 @@
 
             motorSkillsInputs.forEach(input => {
                 const skillId = input.name.replace('motor-', '');
-                const value = parseInt(input.value);
+                const value = parseInt(input.value, 10);
 
-                // Only include values > 0 (skip "not assessed" items)
-                if (value === 0) return;
+                // Only include values > 0 (skip "not assessed" / default zero)
+                if (!Number.isFinite(value) || value === 0) return;
 
                 // Categorize based on skill ID
                 if (['walking', 'running', 'kickingBall', 'climbingStairs', 'hopping', 'pedalingTricycle',
@@ -879,6 +900,8 @@
                     <strong style="color: #7b1fa2;"><i class="fa fa-info-circle"></i> Age Group:</strong> ${questions.ageLabel} (${ageInMonths} months old)
                     <br>
                     <small style="color: #555;">Questions based on Bayley-4, WPPSI-IV, WISC-V, DAS-II, CDC/AAP, UNICEF ECDI2030 standards</small>
+                    <br>
+                    <small style="color: #555;"><strong>Sliders:</strong> &quot;-&quot; means not assessed (default). Only items you move off zero are included in CDI averages and saved scores.</small>
                 </div>
             `;
 
@@ -894,11 +917,11 @@
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">5.0</span>
+                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="5"
-                            oninput="document.getElementById('cdi-${skill.id}-value').textContent = this.value"
+                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="0"
+                            oninput="var v=parseFloat(this.value);document.getElementById('cdi-${skill.id}-value').textContent=(v===0?'-':this.value)"
                             style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                     </div>
                 `;
@@ -917,11 +940,11 @@
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">5.0</span>
+                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="5"
-                            oninput="document.getElementById('cdi-${skill.id}-value').textContent = this.value"
+                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="0"
+                            oninput="var v=parseFloat(this.value);document.getElementById('cdi-${skill.id}-value').textContent=(v===0?'-':this.value)"
                             style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                     </div>
                 `;
@@ -940,11 +963,11 @@
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">5.0</span>
+                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="5"
-                            oninput="document.getElementById('cdi-${skill.id}-value').textContent = this.value"
+                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="0"
+                            oninput="var v=parseFloat(this.value);document.getElementById('cdi-${skill.id}-value').textContent=(v===0?'-':this.value)"
                             style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                     </div>
                 `;
@@ -963,11 +986,11 @@
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">5.0</span>
+                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="5"
-                            oninput="document.getElementById('cdi-${skill.id}-value').textContent = this.value"
+                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="0"
+                            oninput="var v=parseFloat(this.value);document.getElementById('cdi-${skill.id}-value').textContent=(v===0?'-':this.value)"
                             style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                     </div>
                 `;
@@ -986,11 +1009,11 @@
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">5.0</span>
+                            <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="5"
-                            oninput="document.getElementById('cdi-${skill.id}-value').textContent = this.value"
+                        <input type="range" class="form-control-range" id="cdi-${skill.id}" name="cdi-${skill.id}" min="0" max="10" step="0.5" value="0"
+                            oninput="var v=parseFloat(this.value);document.getElementById('cdi-${skill.id}-value').textContent=(v===0?'-':this.value)"
                             style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                     </div>
                 `;
@@ -1016,6 +1039,8 @@
                     <strong style="color: #0c5460;"><i class="fa fa-info-circle"></i> Age Group:</strong> ${questions.ageLabel} (${ageInMonths} months old)
                     <br>
                     <small style="color: #555;">Questions based on SSIS (Social Skills Improvement System) and ASQ:SE-2 standards</small>
+                    <br>
+                    <small style="color: #555;"><strong>Sliders:</strong> &quot;-&quot; means not assessed (default). Only items you move off zero are included in SISA averages and saved scores.</small>
                 </div>
             `;
 
@@ -1032,11 +1057,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1057,11 +1082,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1082,11 +1107,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1107,11 +1132,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1132,11 +1157,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1157,11 +1182,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1182,11 +1207,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1207,11 +1232,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1232,11 +1257,11 @@
                         <div class="col-md-6 form-group">
                             <label for="sisa-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
-                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">5.0</span>
+                                <span id="sisa-${skill.id}-value" style="background: linear-gradient(135deg, #a8d5ff 0%, #c4e0ff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);">-</span>
                             </label>
                             <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
-                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="5"
-                                oninput="document.getElementById('sisa-${skill.id}-value').textContent = this.value"
+                            <input type="range" class="form-control-range" id="sisa-${skill.id}" name="sisa-${skill.id}" min="0" max="10" step="0.5" value="0"
+                                oninput="var v=parseFloat(this.value);document.getElementById('sisa-${skill.id}-value').textContent=(v===0?'-':this.value)"
                                 style="width: 100%; height: 6px; border-radius: 5px; background: linear-gradient(to right, #e74c3c 0%, #f39c12 25%, #f1c40f 50%, #3498db 75%, #27ae60 100%); outline: none; -webkit-appearance: none;">
                         </div>
                     `;
@@ -1257,7 +1282,8 @@
             // Get all CDI inputs
             const cdiInputs = form.querySelectorAll('[name^="cdi-"]');
             cdiInputs.forEach(input => {
-                const value = parseFloat(input.value) || 0;
+                const value = parseFloat(input.value);
+                if (!Number.isFinite(value) || value === 0) return;
                 const skillId = input.name.replace('cdi-', '');
 
                 // Categorize by domain based on skill ID prefix
@@ -1356,7 +1382,8 @@
             // Get all SISA inputs
             const sisaInputs = form.querySelectorAll('[name^="sisa-"]');
             sisaInputs.forEach(input => {
-                const value = parseFloat(input.value) || 0;
+                const value = parseFloat(input.value);
+                if (!Number.isFinite(value) || value === 0) return;
                 const skillId = input.name.replace('sisa-', '');
 
                 // Categorize by domain based on skill ID prefix
@@ -1643,9 +1670,9 @@
 
                 // Action/Follow-up (Grouped)
                 followUp: {
-                    prescriptionGiven: form['prescription-given'].checked,
-                    followUpRequired: form['follow-up-required'].checked,
-                    nextFollowUpDate: form['follow-up-required'].checked && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null
+                    prescriptionGiven: form['prescription-given'].value === 'yes',
+                    followUpRequired: form['follow-up-required'].value === 'yes',
+                    nextFollowUpDate: form['follow-up-required'].value === 'yes' && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null
                 },
 
                 // ===== BACKWARD COMPATIBILITY - Root level fields =====
@@ -1665,9 +1692,9 @@
                 objective: objective,
                 assessment: assessment,
                 plan: plan,
-                prescriptionGiven: form['prescription-given'].checked,
-                followUpRequired: form['follow-up-required'].checked,
-                nextFollowUpDate: form['follow-up-required'].checked && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null
+                prescriptionGiven: form['prescription-given'].value === 'yes',
+                followUpRequired: form['follow-up-required'].value === 'yes',
+                nextFollowUpDate: form['follow-up-required'].value === 'yes' && form['next-follow-up-date'].value ? new Date(form['next-follow-up-date'].value) : null
             };
 
             try {
@@ -2168,22 +2195,24 @@
 
                         <div class="row">
                             <div class="col-md-4 form-group">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" id="prescription-given"> Prescription Given
-                                    </label>
-                                </div>
+                                <label for="prescription-given">Prescription given <span class="text-danger" title="Required">*</span></label>
+                                <select class="form-control" id="prescription-given" name="prescription-given" required>
+                                    <option value="" disabled selected>Choose…</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
                             </div>
                             <div class="col-md-4 form-group">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" id="follow-up-required"> Follow-up Required
-                                    </label>
-                                </div>
+                                <label for="follow-up-required">Follow-up required <span class="text-danger" title="Required">*</span></label>
+                                <select class="form-control" id="follow-up-required" name="follow-up-required" required>
+                                    <option value="" disabled selected>Choose…</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
                             </div>
                             <div class="col-md-4 form-group">
-                                <label for="next-follow-up-date">Next Follow-up Date</label>
-                                <input type="date" class="form-control" id="next-follow-up-date">
+                                <label for="next-follow-up-date">Next follow-up date <small class="text-muted">(required if follow-up is Yes)</small></label>
+                                <input type="date" class="form-control" id="next-follow-up-date" name="next-follow-up-date">
                             </div>
                         </div>
 
