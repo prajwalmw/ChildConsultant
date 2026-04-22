@@ -222,6 +222,19 @@ async function editDoctor(doctorId) {
     document.getElementById('doctorDisplayOrder').value = doctor.displayOrder || 999;
     document.getElementById('doctorImageUrl').value = doctor.image;
 
+    // Populate Package Prices
+    if (document.getElementById('doctorBasicPrice')) document.getElementById('doctorBasicPrice').value = doctor.basicPrice || '';
+    if (document.getElementById('doctorBasicDiscountedPrice')) document.getElementById('doctorBasicDiscountedPrice').value = doctor.basicDiscountedPrice || '';
+    
+    if (document.getElementById('doctorStandardPrice')) document.getElementById('doctorStandardPrice').value = doctor.standardPrice || '';
+    if (document.getElementById('doctorStandardDiscountedPrice')) document.getElementById('doctorStandardDiscountedPrice').value = doctor.standardDiscountedPrice || '';
+    
+    if (document.getElementById('doctorPremiumPrice')) document.getElementById('doctorPremiumPrice').value = doctor.premiumPrice || '';
+    if (document.getElementById('doctorPremiumDiscountedPrice')) document.getElementById('doctorPremiumDiscountedPrice').value = doctor.premiumDiscountedPrice || '';
+    
+    if (document.getElementById('doctorElitePrice')) document.getElementById('doctorElitePrice').value = doctor.elitePrice || '';
+    if (document.getElementById('doctorEliteDiscountedPrice')) document.getElementById('doctorEliteDiscountedPrice').value = doctor.eliteDiscountedPrice || '';
+
     // Show existing image preview
     if (doctor.image) {
       document.getElementById('imagePreview').style.display = 'block';
@@ -439,6 +452,14 @@ async function handleSubmit(event) {
       qualification: document.getElementById('doctorQualification').value.trim(),
       sessionPrice: parseInt(document.getElementById('doctorPrice').value),
       discountedPrice: document.getElementById('doctorDiscountedPrice') ? parseInt(document.getElementById('doctorDiscountedPrice').value) : parseInt(document.getElementById('doctorPrice').value),
+      basicPrice: document.getElementById('doctorBasicPrice') && document.getElementById('doctorBasicPrice').value !== '' ? parseInt(document.getElementById('doctorBasicPrice').value) : 9600,
+      basicDiscountedPrice: document.getElementById('doctorBasicDiscountedPrice') && document.getElementById('doctorBasicDiscountedPrice').value !== '' ? parseInt(document.getElementById('doctorBasicDiscountedPrice').value) : 8448,
+      standardPrice: document.getElementById('doctorStandardPrice') && document.getElementById('doctorStandardPrice').value !== '' ? parseInt(document.getElementById('doctorStandardPrice').value) : 19200,
+      standardDiscountedPrice: document.getElementById('doctorStandardDiscountedPrice') && document.getElementById('doctorStandardDiscountedPrice').value !== '' ? parseInt(document.getElementById('doctorStandardDiscountedPrice').value) : 16320,
+      premiumPrice: document.getElementById('doctorPremiumPrice') && document.getElementById('doctorPremiumPrice').value !== '' ? parseInt(document.getElementById('doctorPremiumPrice').value) : 28800,
+      premiumDiscountedPrice: document.getElementById('doctorPremiumDiscountedPrice') && document.getElementById('doctorPremiumDiscountedPrice').value !== '' ? parseInt(document.getElementById('doctorPremiumDiscountedPrice').value) : 23616,
+      elitePrice: document.getElementById('doctorElitePrice') && document.getElementById('doctorElitePrice').value !== '' ? parseInt(document.getElementById('doctorElitePrice').value) : 38400,
+      eliteDiscountedPrice: document.getElementById('doctorEliteDiscountedPrice') && document.getElementById('doctorEliteDiscountedPrice').value !== '' ? parseInt(document.getElementById('doctorEliteDiscountedPrice').value) : 30336,
       rating: parseFloat(document.getElementById('doctorRating').value),
       totalRatings: parseInt(document.getElementById('doctorTotalRatings').value),
       displayOrder: parseInt(document.getElementById('doctorDisplayOrder').value),
