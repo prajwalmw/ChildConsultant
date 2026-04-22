@@ -23,6 +23,7 @@ let allDoctors = [];
 let expertiseArray = [];
 let languageArray = [];
 let editingDoctorId = null;
+let allPackages = [];
 
 // Check if user is admin
 auth.onAuthStateChanged(async (user) => {
@@ -44,6 +45,7 @@ auth.onAuthStateChanged(async (user) => {
 
     // Load doctors
     loadDoctors();
+    loadPackages();
   } catch (error) {
     console.error('Error checking user role:', error);
     alert('Error verifying permissions');
@@ -502,6 +504,149 @@ async function handleSubmit(event) {
   } finally {
     submitBtn.disabled = false;
     submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Doctor';
+  }
+}
+
+// ==========================================
+// PACKAGE MANAGEMENT LOGIC
+// ==========================================
+
+// Load all packages
+async function loadPackages() {
+  try {
+    const snapshot = await db.collection('packages').orderBy('displayOrder', 'asc').get();
+    allPackages = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    renderPackagesTable(allPackages);
+  } catch (error) {
+    console.error('Error loading packages:', error);
+    document.getElementById('packagesTableContainer').innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <h3>Error loading packages</h3>
+        <p>${error.message}</p>
+      </div>
+    `;
+  }
+}
+
+// Render packages table
+function renderPackagesTable(packages) {
+  const container = document.getElementById('packagesTableContainer');
+
+  if (packages.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-box"></i>
+        <h3>No packages found</h3>
+      </div>
+    `;
+    return;
+  }
+
+  const tableHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Package Name</th>
+          <th>Price</th>
+          <th>Sessions / Validity</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${packages.map(pkg => `
+          <tr>
+            <td>
+              <strong>${pkg.name}</strong>
+              ${pkg.isBestSeller ? '<span class="badge badge-top" style="margin-left: 8px;">Best Seller ⭐</span>' : ''}
+            </td>
+            <td>
+              <span style="text-decoration: line-through; color: #999; font-size: 12px;">₹${pkg.price.toLocaleString('en-IN')}</span><br>
+              <span style="color: #f41192; font-weight: bold; font-size: 16px;">₹${(pkg.discountedPrice || pkg.price).toLocaleString('en-IN')}</span>
+            </td>
+            <td>
+              <strong>${pkg.sessions} Sessions</strong><br>
+              <span style="color: #666; font-size: 13px;">${pkg.validityMonths} Months</span>
+            </td>
+            <td>
+              <span class="badge ${pkg.active ? 'badge-active' : 'badge-inactive'}">
+                ${pkg.active ? 'Active' : 'Inactive'}
+              </span>
+            </td>
+            <td>
+              <button class="btn-small btn-edit" onclick="editPackage('${pkg.id}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  container.innerHTML = tableHTML;
+}
+
+// Open edit package modal
+function editPackage(packageId) {
+  const pkg = allPackages.find(p => p.id === packageId);
+  if (!pkg) return;
+
+  document.getElementById('packageId').value = pkg.id;
+  document.getElementById('packageName').value = pkg.name + ' Package';
+  document.getElementById('packagePrice').value = pkg.price;
+  document.getElementById('packageDiscountedPrice').value = pkg.discountedPrice || pkg.price;
+  document.getElementById('packageActive').value = pkg.active.toString();
+  document.getElementById('packageBestSeller').checked = pkg.isBestSeller || false;
+
+  document.getElementById('packageModal').classList.add('active');
+}
+
+// Close package modal
+function closePackageModal() {
+  document.getElementById('packageModal').classList.remove('active');
+}
+
+// Handle package form submit
+async function handlePackageSubmit(event) {
+  event.preventDefault();
+
+  const submitBtn = document.getElementById('submitPackageBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+  try {
+    const packageId = document.getElementById('packageId').value;
+    const price = parseInt(document.getElementById('packagePrice').value);
+    const discountedPrice = parseInt(document.getElementById('packageDiscountedPrice').value);
+    
+    // Get original package to calculate per-session price dynamically
+    const pkg = allPackages.find(p => p.id === packageId);
+    const sessions = pkg ? pkg.sessions : 1;
+
+    await db.collection('packages').doc(packageId).update({
+      price: price,
+      discountedPrice: discountedPrice,
+      originalPricePerSession: Math.round(price / sessions),
+      discountedPricePerSession: Math.round(discountedPrice / sessions),
+      active: document.getElementById('packageActive').value === 'true',
+      isBestSeller: document.getElementById('packageBestSeller').checked,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    closePackageModal();
+    loadPackages(); // Reload table
+    
+  } catch (error) {
+    console.error('Error saving package:', error);
+    alert('Error saving package: ' + error.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Package';
   }
 }
 

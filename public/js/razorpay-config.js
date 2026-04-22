@@ -3,41 +3,7 @@
 // Razorpay Live API Key (Prajwal Waingankar Account)
 const RAZORPAY_KEY_ID = 'rzp_live_S6y99PjkyiSG8O';
 
-// Package details configuration
-const PACKAGES = {
-  basic: {
-    name: 'BASIC Package',
-    price: 10,
-    originalPrice: 9600,
-    sessions: 12,
-    validity: '3 Months',
-    description: '12 Sessions • 3 Months Validity • Customized counselling'
-  },
-  standard: {
-    name: 'STANDARD Package',
-    price: 16320,
-    originalPrice: 19200,
-    sessions: 24,
-    validity: '6 Months',
-    description: '24 Sessions • 6 Months Validity • Customized counselling'
-  },
-  premium: {
-    name: 'PREMIUM Package (Best Seller)',
-    price: 23616,
-    originalPrice: 28800,
-    sessions: 36,
-    validity: '9 Months',
-    description: '36 Sessions • 9 Months Validity • Customized counselling'
-  },
-  elite: {
-    name: 'ELITE Package',
-    price: 30336,
-    originalPrice: 38400,
-    sessions: 48,
-    validity: '12 Months',
-    description: '48 Sessions • 12 Months Validity • Customized counselling'
-  }
-};
+// Packages are now fetched dynamically from Firestore.
 
 // Initialize Firebase (if not already initialized)
 function initializeFirebaseForPayment() {
@@ -49,7 +15,7 @@ function initializeFirebaseForPayment() {
 }
 
 // Handle Razorpay Payment
-function initiateRazorpayPayment(packageType) {
+async function initiateRazorpayPayment(packageType) {
   // Check if Razorpay is loaded
   if (typeof Razorpay === 'undefined') {
     alert('Payment system is loading. Please try again in a moment.');
@@ -62,63 +28,78 @@ function initiateRazorpayPayment(packageType) {
     return;
   }
 
-  const packageDetails = PACKAGES[packageType];
-  if (!packageDetails) {
-    alert('Invalid package selected');
-    return;
-  }
-
-  // Get current user (if logged in)
-  const user = firebase.auth().currentUser;
-  const userEmail = user ? user.email : '';
-  const userName = user ? user.displayName || '' : '';
-
-  // Create detailed description for payment (single line for better visibility)
-  const detailedDescription = `${packageDetails.name} - ${packageDetails.sessions} Sessions, ${packageDetails.validity} Validity`;
-
-  // Razorpay options
-  const options = {
-    key: RAZORPAY_KEY_ID,
-    amount: packageDetails.price * 100, // Amount in paise (multiply by 100)
-    currency: 'INR',
-    name: 'Aqiraa',
-    description: detailedDescription,
-    image: 'https://child-consultant.web.app/images/logo-razorpay.png', // Optimized logo for payment gateways (512x512, 302KB)
-    prefill: {
-      name: userName,
-      email: userEmail,
-      contact: ''
-    },
-    notes: {
-      package_name: packageDetails.name,
-      package_type: packageType,
-      total_sessions: packageDetails.sessions,
-      validity_period: packageDetails.validity,
-      original_price: `₹${packageDetails.originalPrice}`,
-      discounted_price: `₹${packageDetails.price}`,
-      price_per_session: `₹${Math.round(packageDetails.price / packageDetails.sessions)}`
-    },
-    theme: {
-      color: '#f41192'
-    },
-    handler: function(response) {
-      // Payment successful
-      handlePaymentSuccess(response, packageType, packageDetails);
-    },
-    modal: {
-      ondismiss: function() {
-        console.log('Payment cancelled by user');
-      }
+  try {
+    const pkgDoc = await firebase.firestore().collection('packages').doc(packageType).get();
+    if (!pkgDoc.exists) {
+      alert('Invalid package selected');
+      return;
     }
-  };
 
-  const razorpayInstance = new Razorpay(options);
+    const pkgData = pkgDoc.data();
+    const packageDetails = {
+      name: pkgData.name + ' Package' + (pkgData.isBestSeller ? ' (Best Seller)' : ''),
+      price: pkgData.discountedPrice || pkgData.price,
+      originalPrice: pkgData.price,
+      sessions: pkgData.sessions,
+      validity: pkgData.validityMonths + ' Months',
+      description: `${pkgData.sessions} Sessions • ${pkgData.validityMonths} Months Validity • Customized counselling`
+    };
 
-  razorpayInstance.on('payment.failed', function(response) {
-    handlePaymentFailure(response);
-  });
+    // Get current user (if logged in)
+    const user = firebase.auth().currentUser;
+    const userEmail = user ? user.email : '';
+    const userName = user ? user.displayName || '' : '';
 
-  razorpayInstance.open();
+    // Create detailed description for payment (single line for better visibility)
+    const detailedDescription = `${packageDetails.name} - ${packageDetails.sessions} Sessions, ${packageDetails.validity} Validity`;
+
+    // Razorpay options
+    const options = {
+      key: RAZORPAY_KEY_ID,
+      amount: packageDetails.price * 100, // Amount in paise (multiply by 100)
+      currency: 'INR',
+      name: 'Aqiraa',
+      description: detailedDescription,
+      image: 'https://child-consultant.web.app/images/logo-razorpay.png',
+      prefill: {
+        name: userName,
+        email: userEmail,
+        contact: ''
+      },
+      notes: {
+        package_name: packageDetails.name,
+        package_type: packageType,
+        total_sessions: packageDetails.sessions,
+        validity_period: packageDetails.validity,
+        original_price: `₹${packageDetails.originalPrice}`,
+        discounted_price: `₹${packageDetails.price}`,
+        price_per_session: `₹${Math.round(packageDetails.price / packageDetails.sessions)}`
+      },
+      theme: {
+        color: '#f41192'
+      },
+      handler: function(response) {
+        // Payment successful
+        handlePaymentSuccess(response, packageType, packageDetails);
+      },
+      modal: {
+        ondismiss: function() {
+          console.log('Payment cancelled by user');
+        }
+      }
+    };
+
+    const razorpayInstance = new Razorpay(options);
+
+    razorpayInstance.on('payment.failed', function(response) {
+      handlePaymentFailure(response);
+    });
+
+    razorpayInstance.open();
+  } catch (error) {
+    console.error('Error fetching package details:', error);
+    alert('Failed to initialize payment. Please try again.');
+  }
 }
 
 // Handle successful payment
