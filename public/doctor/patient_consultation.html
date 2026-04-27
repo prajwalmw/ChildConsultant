@@ -296,7 +296,6 @@
         async function initializeForm() {
             currentPatientId = getQueryVariable('patientId');
             currentParentId = getQueryVariable('parentId'); 
-            const patientAge = getQueryVariable('patientAge') || 'N/A'; // URLSearchParams auto-decodes
 
             if (!currentPatientId || !currentParentId) {
                 alert('Error: Patient ID or Parent ID not provided. Redirecting to Parent List.');
@@ -327,7 +326,13 @@
 
                     document.getElementById('patient-name-display').textContent = currentPatientName;
                     document.getElementById('patient-id-display').textContent = currentPatientId;
-                    document.getElementById('patient-age-display').textContent = patientAge; // <<-- MODIFIED: Display age
+                    var ageFromRecord = getDisplayAgeFromPatient(patient);
+                    var ageFromUrl = getQueryVariable('patientAge');
+                    try {
+                        if (ageFromUrl) ageFromUrl = decodeURIComponent(String(ageFromUrl).replace(/\+/g, ' '));
+                    } catch (e) { /* ignore */ }
+                    document.getElementById('patient-age-display').textContent =
+                        (ageFromRecord !== 'N/A') ? ageFromRecord : (ageFromUrl || 'N/A');
 
                     document.getElementById('date-of-visit').value = getTodayDate();
 
@@ -364,18 +369,43 @@
             if (!dobString) return null;
 
             let dob;
-            if (dobString.seconds) {
-                // Firestore Timestamp
+            if (typeof dobString.toDate === 'function') {
+                dob = dobString.toDate();
+            } else if (dobString.seconds !== undefined && dobString.seconds !== null) {
                 dob = new Date(dobString.seconds * 1000);
             } else if (typeof dobString === 'string') {
                 dob = new Date(dobString);
-            } else {
+            } else if (dobString instanceof Date) {
                 dob = dobString;
+            } else {
+                return null;
             }
+
+            if (isNaN(dob.getTime())) return null;
 
             const today = new Date();
             const months = (today.getFullYear() - dob.getFullYear()) * 12 + (today.getMonth() - dob.getMonth());
             return months;
+        }
+
+        /** Human-readable age for header — uses stored age or DOB from child record. */
+        function getDisplayAgeFromPatient(patient) {
+            if (!patient) return 'N/A';
+            const rawAge = patient.age;
+            if (rawAge != null && rawAge !== '' && !Number.isNaN(Number(rawAge))) {
+                const a = Number(rawAge);
+                if (a >= 0) return a + (a === 1 ? ' yr' : ' yrs');
+            }
+            const dob = patient.dob || patient.dateOfBirth;
+            if (!dob) return 'N/A';
+            const months = calculateAgeInMonths(dob);
+            if (months == null || months < 0 || !Number.isFinite(months)) return 'N/A';
+            const y = Math.floor(months / 12);
+            const m = months % 12;
+            if (y > 0 && m > 0) return y + ' yr ' + m + ' mo';
+            if (y > 0) return y + (y === 1 ? ' yr' : ' yrs');
+            if (m > 0) return m + (m === 1 ? ' mo' : ' mos');
+            return '0 mo';
         }
 
         // Motor Skills Questions by Age Group (WHO, CDC, MABC-2 Standards)

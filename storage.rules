@@ -18,6 +18,17 @@ service firebase.storage {
       allow write: if isAdmin();
     }
 
+    // Visit summary PDFs for parents (doctor portal uploads → wa.me shares the download link).
+    // Note: firestore.get() in Storage rules requires a Blaze plan; it caused silent upload failures on Spark.
+    // Writes: any signed-in user (doctor portal is auth-gated; path is parent UID — avoid exposing upload UI elsewhere).
+    match /shared_prescriptions/{parentId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        request.resource.size < 6 * 1024 * 1024 &&
+        request.resource.contentType == 'application/pdf' &&
+        fileName.matches('.*\\.pdf$');
+    }
+
     // General rule
     match /{allPaths=**} {
       allow read: if true;

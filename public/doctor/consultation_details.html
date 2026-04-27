@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consultation Details | Doctor Portal</title>
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/child-friendly.css">
+  <link rel="stylesheet" href="../css/font-awesome.min.css">
+  <style>
+    .animsition-box { padding-top: 100px; min-height: 100vh; }
+    .portal-container { padding: 40px 0 120px; }
+    .detail-card { background: #fff; border-radius: 12px; padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-left: 4px solid #00c3c9; }
+    .detail-card h3 { margin-top: 0; color: #00a8ae; font-size: 1.15rem; }
+    .kv { margin: 6px 0; }
+    .kv strong { color: #555; min-width: 160px; display: inline-block; }
+    .soap-block { white-space: pre-wrap; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 14px; }
+    .action-bar {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), #fff);
+      border-top: 1px solid #e0e0e0;
+      padding: 12px 16px;
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+    .action-bar .btn { min-width: 140px; }
+    @media print {
+      .no-print { display: none !important; }
+      .animsition-box { padding-top: 0; }
+      .portal-container { padding-bottom: 20px; }
+      .detail-card { box-shadow: none; border: 1px solid #ddd; }
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+      authDomain: "child-consultant.firebaseapp.com",
+      projectId: "child-consultant",
+      storageBucket: "child-consultant.appspot.com",
+      messagingSenderId: "985386588549",
+      appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function getQueryVariable(variable) {
+      const p = new URLSearchParams(window.location.search);
+      const v = p.get(variable);
+      return v === null ? false : v;
+    }
+
+    function slugifyName(text) {
+      return (text || '').toLowerCase().trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+    }
+
+    function createParentKey(parentName, parentId) {
+      return `${slugifyName(parentName || 'unknown-parent')}_${parentId}`;
+    }
+
+    function esc(s) {
+      if (s === null || s === undefined) return '';
+      const d = document.createElement('div');
+      d.textContent = String(s);
+      return d.innerHTML;
+    }
+
+    function fmtDate(v) {
+      if (!v) return 'N/A';
+      try {
+        const d = v.toDate ? v.toDate() : new Date(v);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch (e) { return 'N/A'; }
+    }
+
+    function fmtBool(v) {
+      if (v === true) return 'Yes';
+      if (v === false) return 'No';
+      return 'N/A';
+    }
+
+    function section(title, innerHtml) {
+      return `<div class="detail-card"><h3>${esc(title)}</h3>${innerHtml}</div>`;
+    }
+
+    function kvRow(label, val) {
+      return `<div class="kv"><strong>${esc(label)}</strong> <span>${val}</span></div>`;
+    }
+
+    function renderConsultation(c, patientName, parentName, consultId) {
+      const soap = c.soapNotes || {};
+      const subj = c.subjective != null ? c.subjective : soap.subjective;
+      const obj = c.objective != null ? c.objective : soap.objective;
+      const assess = c.assessment != null ? c.assessment : soap.assessment;
+      const plan = c.plan != null ? c.plan : soap.plan;
+
+      let html = '';
+      html += section('Visit', `
+        ${kvRow('Consultation ID', esc(consultId))}
+        ${kvRow('Doctor', esc(c.doctorName || c.doctorId || 'N/A'))}
+        ${kvRow('Date', esc(fmtDate(c.date || c.consultationDate)))}
+        ${kvRow('Type', esc(c.type || 'N/A'))}
+      `);
+
+      html += section('Vitals & basics', `
+        ${kvRow('Weight (kg)', esc(c.weight != null ? c.weight : (c.physicalHealth && c.physicalHealth.weight != null ? c.physicalHealth.weight : 'N/A')))}
+        ${kvRow('Height (cm)', esc(c.height != null ? c.height : (c.physicalHealth && c.physicalHealth.height != null ? c.physicalHealth.height : 'N/A')))}
+        ${kvRow('Temperature', esc(c.temperature || (c.physicalHealth && c.physicalHealth.temperature) || 'N/A'))}
+        ${kvRow('Symptom duration', esc(c.symptomDuration || (c.physicalHealth && c.physicalHealth.symptomDuration) || 'N/A'))}
+      `);
+
+      const soapCell = (t) => (t && String(t).trim()) ? esc(t) : '<em>Not recorded</em>';
+      html += section('S.O.A.P. notes', `
+        <div><strong>S — Subjective</strong><div class="soap-block">${soapCell(subj)}</div></div>
+        <div style="margin-top:12px"><strong>O — Objective</strong><div class="soap-block">${soapCell(obj)}</div></div>
+        <div style="margin-top:12px"><strong>A — Assessment</strong><div class="soap-block">${soapCell(assess)}</div></div>
+        <div style="margin-top:12px"><strong>P — Plan</strong><div class="soap-block">${soapCell(plan)}</div></div>
+      `);
+
+      html += section('Follow-up', `
+        ${kvRow('Prescription given', esc(fmtBool(c.prescriptionGiven)))}
+        ${kvRow('Follow-up required', esc(fmtBool(c.followUpRequired)))}
+        ${kvRow('Next follow-up date', esc(fmtDate(c.nextFollowUpDate)))}
+      `);
+
+      if (c.motorSkills && (c.motorSkills.overallScore || c.motorSkills.category)) {
+        html += section('Motor skills (summary)', `
+          ${kvRow('Overall score', esc(c.motorSkills.overallScore != null ? c.motorSkills.overallScore : 'N/A'))}
+          ${kvRow('Category', esc(c.motorSkills.category || 'N/A'))}
+        `);
+      }
+      if (c.cognitiveHealth && (c.cognitiveHealth.overallScore || c.cognitiveHealth.category)) {
+        html += section('Cognitive (CDI summary)', `
+          ${kvRow('Overall score', esc(c.cognitiveHealth.overallScore != null ? c.cognitiveHealth.overallScore : 'N/A'))}
+          ${kvRow('Category', esc(c.cognitiveHealth.category || 'N/A'))}
+        `);
+      }
+      if (c.socialSkills && (c.socialSkills.overallScore || c.socialSkills.category)) {
+        html += section('Social (SISA summary)', `
+          ${kvRow('Overall score', esc(c.socialSkills.overallScore != null ? c.socialSkills.overallScore : 'N/A'))}
+          ${kvRow('Category', esc(c.socialSkills.category || 'N/A'))}
+        `);
+      }
+
+      document.getElementById('detail-content').innerHTML = html;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      auth.onAuthStateChanged(user => {
+        if (!user) {
+          window.location.href = '../login.html';
+          return;
+        }
+        db.collection('users').doc(user.uid).get().then(doc => {
+          const userData = doc.data() || {};
+          const role = userData.role;
+          const hasPortalAccess = userData.hasPortalAccess === true;
+          if (role !== 'admin' && role !== 'doctor') {
+            alert('Access Denied.');
+            window.location.href = '../index.html';
+            return;
+          }
+          if (role === 'doctor' && !hasPortalAccess) {
+            alert('Doctor portal is not enabled for this account.');
+            window.location.href = '../index.html';
+            return;
+          }
+          loadConsultation();
+        });
+      });
+    });
+
+    async function loadConsultation() {
+      const patientId = getQueryVariable('patientId');
+      const parentId = getQueryVariable('parentId');
+      const consultationId = getQueryVariable('consultationId');
+      const rawPn = getQueryVariable('patientName');
+      const patientName = rawPn ? decodeURIComponent(rawPn.replace(/\+/g, ' ')) : 'Patient';
+
+      const back = document.getElementById('back-link');
+      const back2 = document.getElementById('back-link-2');
+      const listUrl = 'view_consultations.html?parentId=' + encodeURIComponent(parentId)
+        + '&patientId=' + encodeURIComponent(patientId)
+        + '&patientName=' + encodeURIComponent(patientName);
+      back.href = listUrl;
+      if (back2) back2.href = listUrl;
+
+      if (!patientId || !parentId || !consultationId) {
+        document.getElementById('detail-content').innerHTML = '<p class="text-danger">Missing patient, parent, or consultation ID.</p>';
+        return;
+      }
+
+      document.getElementById('patient-title').textContent = patientName;
+      document.getElementById('consult-id-display').textContent = consultationId;
+
+      try {
+        const parentDoc = await db.collection('users').doc(parentId).get();
+        const parentName = parentDoc.exists
+          ? (parentDoc.data().name || parentDoc.data().displayName || parentId)
+          : parentId;
+        document.getElementById('parent-title').textContent = parentName;
+
+        const parentKey = createParentKey(parentName, parentId);
+        const consultRef = db.collection('patients').doc(parentKey)
+          .collection('children').doc(patientId)
+          .collection('consultations').doc(consultationId);
+        const snap = await consultRef.get();
+        if (!snap.exists) {
+          document.getElementById('detail-content').innerHTML = '<p class="text-danger">This consultation could not be found.</p>';
+          return;
+        }
+        renderConsultation(snap.data(), patientName, parentName, consultationId);
+      } catch (e) {
+        console.error(e);
+        document.getElementById('detail-content').innerHTML = '<p class="text-danger">Error loading consultation.</p>';
+      }
+    }
+  </script>
+
+  <div id="animsition-box" class="animsition-box">
+    <div class="header no-print">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="logo"><a href="../index.html"><img src="../images/logo.png" alt="Logo"></a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container portal-container">
+      <div class="row">
+        <div class="col-lg-12">
+          <h1 style="color:#00c3c9;">Consultation details</h1>
+          <p class="lead"><strong id="patient-title">...</strong> — ID <span id="consult-id-display">...</span><br>
+            Parent: <strong id="parent-title">...</strong></p>
+          <p class="no-print"><a id="back-link" href="view_consultations.html" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back to records</a></p>
+          <div id="detail-content"><p><i class="fa fa-spinner fa-spin"></i> Loading…</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tiny-footer no-print">
+      <div class="container"><p>Doctor Portal Access</p></div>
+    </div>
+  </div>
+
+  <div class="action-bar no-print">
+    <a id="back-link-2" href="view_consultations.html" class="btn btn-default"><i class="fa fa-arrow-left"></i> Records</a>
+    <button type="button" class="btn btn-primary" onclick="window.print()"><i class="fa fa-print"></i> Print / Save PDF</button>
+  </div>
+
+  <script src="../js/jquery.min.js"></script>
+  <script src="../js/bootstrap.min.js"></script>
+</body>
+</html>

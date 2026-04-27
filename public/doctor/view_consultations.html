@@ -43,6 +43,48 @@
             background-color: #f7a83d;
             color: white;
         }
+        /*
+         * Force middle alignment: Bootstrap uses .table > tbody > tr > td { vertical-align: top }
+         * with equal specificity to our earlier rule — tie goes to load order, so top often won.
+         */
+        .table-responsive .table.table-bordered.consult-table > tbody > tr > td,
+        .table-responsive .table.table-bordered.upcoming-table > tbody > tr > td {
+            vertical-align: middle !important;
+            /* Default Bootstrap td padding (8px) feels tight with large controls — a bit more air in data rows */
+            padding-top: 12px !important;
+            padding-bottom: 12px !important;
+        }
+        /* Extra inset around action controls so buttons are not visually glued to grid lines */
+        .table-responsive .table.table-bordered.consult-table > tbody > tr > td.td-actions,
+        .table-responsive .table.table-bordered.upcoming-table > tbody > tr > td.td-actions {
+            padding: 16px 18px !important;
+        }
+        .consult-table > tbody > tr > td.td-actions,
+        .upcoming-table > tbody > tr > td.td-actions {
+            white-space: nowrap;
+        }
+        /* Row actions: comfortable tap targets (~44px), readable type — overrides child-friendly .btn padding */
+        .consult-table > tbody > tr > td.td-actions .btn,
+        .upcoming-table > tbody > tr > td.td-actions .btn {
+            min-height: 44px;
+            padding: 10px 22px !important;
+            font-size: 15px !important;
+            line-height: 1.3 !important;
+            border-radius: 10px !important;
+            vertical-align: middle !important;
+            margin: 0 !important;
+        }
+        .upcoming-table > tbody > tr > td.td-actions a.btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center;
+            gap: 8px;
+        }
+        .consult-table > tbody > tr > td.td-actions .btn:focus-visible,
+        .upcoming-table > tbody > tr > td.td-actions .btn:focus-visible {
+            outline: 3px solid rgba(0, 172, 193, 0.55);
+            outline-offset: 2px;
+        }
         .table-section {
             margin-bottom: 50px;
         }
@@ -52,6 +94,532 @@
         }
         .btn-view-details:hover {
             background-color: #45a049;
+        }
+        .upcoming-actions {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: flex-start;
+            vertical-align: middle;
+            margin: 0;
+        }
+        /* Primary vs secondary — global .btn / child-friendly.css makes warning+default look the same orange */
+        .upcoming-table .btn-upcoming-consult {
+            background: linear-gradient(135deg, #00b8c4 0%, #0097a7 100%) !important;
+            color: #fff !important;
+            border: none !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.04em !important;
+            text-transform: uppercase !important;
+            box-shadow: 0 2px 10px rgba(0, 151, 167, 0.35);
+        }
+        .upcoming-table .btn-upcoming-consult:hover,
+        .upcoming-table .btn-upcoming-consult:focus {
+            background: linear-gradient(135deg, #00a5b0 0%, #00838f 100%) !important;
+            color: #fff !important;
+            box-shadow: 0 4px 14px rgba(0, 131, 143, 0.4);
+        }
+        .upcoming-table .btn-upcoming-prior {
+            background: #fff !important;
+            color: #37474f !important;
+            border: 2px solid #78909c !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.03em !important;
+            text-transform: none !important;
+            box-shadow: none;
+        }
+        .upcoming-table .btn-upcoming-prior:hover,
+        .upcoming-table .btn-upcoming-prior:focus {
+            background: #eceff1 !important;
+            color: #263238 !important;
+            border-color: #546e7a !important;
+        }
+        /* Prescription modal — same type scale as doctor portal (style.css PT Sans 16px / h2 24px / h3 22px) */
+        #prescription-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(66, 66, 66, 0.45);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: auto;
+            font-family: 'PT Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            font-size: 16px !important;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+            color: #4a4e4e;
+        }
+        #prescription-modal-overlay.is-open {
+            display: flex;
+        }
+        .prescription-dialog {
+            background: #fffef9;
+            border-radius: 16px;
+            max-width: 920px;
+            width: 100%;
+            max-height: min(92vh, 900px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
+            border: 3px solid #00c3c9;
+        }
+        .prescription-dialog-header {
+            background: linear-gradient(135deg, #00c3c9 0%, #00a8ae 100%);
+            color: #fff !important;
+            padding: 18px 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px 18px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            overflow: visible;
+        }
+        /* Fredoka (child-friendly h2) has tall metrics and can clip with tight line-height — use UI stack here */
+        .prescription-dialog-title-block {
+            flex: 1 1 200px;
+            min-width: 0;
+            overflow: visible;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .prescription-dialog-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .prescription-close-x {
+            box-sizing: border-box;
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border: none;
+            background: #e53935;
+            color: #fff !important;
+            font-size: 22px;
+            line-height: 1;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .prescription-close-x:hover,
+        .prescription-close-x:focus {
+            background: #c62828;
+            color: #fff !important;
+            outline: none;
+        }
+        /* Modal chrome — larger than page body for clear hierarchy */
+        .prescription-dialog-header h2 {
+            margin: 0;
+            padding: 0;
+            color: #fff !important;
+            font-family: 'PT Sans', sans-serif !important;
+            font-size: 28px !important;
+            line-height: 1.2 !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.01em;
+        }
+        .prescription-dialog-header p {
+            margin: 6px 0 0;
+            padding: 0;
+            opacity: 1;
+            color: rgba(255, 255, 255, 0.92) !important;
+            font-family: 'PT Sans', sans-serif !important;
+            font-size: 18px !important;
+            line-height: 1.4 !important;
+            font-weight: 500;
+        }
+        .prescription-dialog-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+        .prescription-dialog-actions .btn {
+            border-radius: 999px;
+            font-size: 15px !important;
+            letter-spacing: 0.04em;
+            padding: 12px 18px !important;
+        }
+        @media (max-width: 640px) {
+            .prescription-dialog-actions {
+                flex-wrap: wrap;
+            }
+        }
+        .prescription-dialog-body {
+            overflow-y: auto;
+            padding: 0;
+            flex: 1;
+            display: block;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 195, 201, 0.4) transparent;
+        }
+        .prescription-dialog-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .prescription-dialog-body::-webkit-scrollbar-thumb {
+            background: rgba(0, 195, 201, 0.35);
+            border-radius: 8px;
+        }
+        .prescription-dialog-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        /*
+         * Single diagonal watermark: one real DOM node (not ::after) so PDF/export never duplicates it.
+         * Panels use translucent fills so the watermark reads as one continuous mark behind the record.
+         */
+        .prescription-content-layer {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 22px 24px;
+            min-height: 100%;
+            box-sizing: border-box;
+            background-color: #fffef9;
+            overflow: hidden;
+        }
+        .prescription-watermark {
+            position: absolute;
+            z-index: 0;
+            pointer-events: none;
+            left: 50%;
+            top: 50%;
+            width: min(240vmin, 2800px);
+            height: min(240vmin, 2800px);
+            margin: 0;
+            padding: 0;
+            border: 0;
+            transform: translate(-50%, -50%) rotate(-32deg);
+            background-color: transparent;
+            background-image: url('../images/logo.png');
+            background-position: center center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.08;
+        }
+        .prescription-content-layer > *:not(.prescription-watermark) {
+            position: relative;
+            z-index: 1;
+        }
+        .prescription-brand-strip {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid rgba(0, 195, 201, 0.35);
+        }
+        .prescription-brand-strip img {
+            height: 52px;
+            width: auto;
+            object-fit: contain;
+        }
+        .prescription-brand-name {
+            font-size: 1.875rem !important;
+            font-weight: 700;
+            color: #00a8ae !important;
+            line-height: 1.15;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .prescription-brand-tag {
+            font-size: 16px !important;
+            color: #666 !important;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .prescription-rx-badge {
+            display: inline-block;
+            font-weight: 700;
+            color: #f7a83d;
+            line-height: 1;
+            margin-bottom: 8px;
+            border: 3px solid #f7a83d;
+            border-radius: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.72);
+            font-family: 'PT Sans', sans-serif !important;
+            font-size: 1.25rem !important;
+        }
+        /*
+         * Clinical chips — same palette as public/doctor/child_dashboard.html:
+         * - Motor getScoreColor: #4caf50, #2196f3, #ffc107, #ff9800, #f44336
+         * - alertColors monitor / warning / critical on developmental sections
+         * - stat-card.orange / .teal for visit-type pills
+         */
+        .vital-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            border: 2px solid transparent;
+            line-height: 1.4;
+            font-size: 15px !important;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .vital-missing,
+        .vital-unknown {
+            background: #eceff1;
+            border-color: #bdbdbd;
+            color: #546e7a !important;
+        }
+        /* Excellent tier (score ≥9) — #4caf50 */
+        .vital-normal,
+        .vital-recorded {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #1b5e20 !important;
+        }
+        /* Good tier (score ≥7.5) — #2196f3 */
+        .vital-low {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            color: #0d47a1 !important;
+        }
+        /* Average tier (score ≥6) + dashboard monitor alert */
+        .vital-caution {
+            background: #fff9e6;
+            border-color: #ffc107;
+            color: #856404 !important;
+        }
+        /* Below average tier (score ≥4) — dashboard warning alert */
+        .vital-warning {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #e65100 !important;
+        }
+        /* Concern tier + dashboard critical alert — #f44336 */
+        .vital-alert {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828 !important;
+        }
+        .visit-type-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 15px !important;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        /* stat-card.orange — #f7a83d / #e09734 */
+        .visit-type-followup {
+            background: #fff8e1;
+            color: #e65100 !important;
+            border: 2px solid #f7a83d;
+        }
+        /* First visit — calm positive accent (no red/pink: reads as alert in clinical UI) */
+        .visit-type-initial {
+            background: #e8f5e9;
+            color: #1b5e20 !important;
+            border: 2px solid #66bb6a;
+        }
+        /* stat-card.teal — #1abc9c / #16a085 */
+        .visit-type-routine,
+        .visit-type-checkup {
+            background: #e0f7fa;
+            color: #00695c !important;
+            border: 2px solid #1abc9c;
+        }
+        .visit-type-default {
+            background: #f5f5f5;
+            color: #555 !important;
+            border: 2px solid #e0e0e0;
+        }
+        /* Development & screening — translucent panel so diagonal watermark stays visible (no solid white slab) */
+        .prescription-dev-list {
+            margin-top: 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 163, 170, 0.22);
+            background: rgba(255, 254, 249, 0.5);
+            overflow: hidden;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45) inset;
+        }
+        .prescription-dev-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 20px;
+            margin: 0;
+            padding: 15px 16px 15px 14px;
+            border-bottom: 1px solid rgba(238, 242, 244, 0.65);
+            border-left: 4px solid #cfd8dc;
+            font-size: 16px !important;
+            font-family: 'PT Sans', sans-serif !important;
+            background: rgba(255, 255, 255, 0.18);
+        }
+        .prescription-dev-list .prescription-dev-row:last-child {
+            border-bottom: none;
+        }
+        .prescription-dev-row--normal { border-left-color: #43a047; }
+        .prescription-dev-row--low { border-left-color: #1e88e5; }
+        .prescription-dev-row--caution { border-left-color: #ffb300; }
+        .prescription-dev-row--warning { border-left-color: #fb8c00; }
+        .prescription-dev-row--alert { border-left-color: #e53935; }
+        .prescription-dev-row--missing,
+        .prescription-dev-row--unknown,
+        .prescription-dev-row--recorded {
+            border-left-color: #90a4ae;
+        }
+        .prescription-dev-label {
+            flex: 0 1 11rem;
+            min-width: 9rem;
+            color: #455a64 !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+            line-height: 1.35;
+        }
+        .prescription-dev-main {
+            flex: 1 1 12rem;
+            min-width: 0;
+            line-height: 1.5;
+        }
+        .prescription-dev-muted {
+            font-size: 13px !important;
+            font-weight: 600;
+            color: #90a4ae !important;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .prescription-dev-val {
+            font-weight: 700;
+            font-size: 17px !important;
+            color: #006064 !important;
+            margin-left: 4px;
+        }
+        .prescription-dev-sep {
+            display: inline-block;
+            color: #cfd8dc;
+            padding: 0 10px;
+            font-size: 18px;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        .prescription-dev-status-text {
+            font-weight: 600;
+            font-size: 16px !important;
+            color: #263238 !important;
+        }
+        .diag-cell {
+            font-weight: 500;
+        }
+        .diag-has {
+            color: #424242 !important;
+        }
+        .diag-empty {
+            color: #9e9e9e !important;
+            font-style: italic;
+        }
+        .doctor-cell-name {
+            font-weight: 600;
+            color: #0d47a1 !important;
+        }
+        .doctor-cell-id {
+            font-size: 12px;
+            color: #78909c !important;
+            word-break: break-all;
+        }
+        .prescription-lead {
+            margin: 0 0 16px;
+            font-size: 16px !important;
+            line-height: 1.55 !important;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .prescription-section {
+            margin-bottom: 18px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed rgba(0, 195, 201, 0.45);
+            font-size: 16px !important;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .prescription-section:last-of-type {
+            border-bottom: none;
+        }
+        .prescription-section h3 {
+            margin: 0 0 10px;
+            color: #00a8ae !important;
+            font-size: 22px !important;
+            line-height: 1.35 !important;
+            font-weight: 600 !important;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .prescription-kv {
+            margin: 6px 0;
+            font-size: 16px !important;
+        }
+        .prescription-kv strong {
+            color: #555;
+            min-width: 150px;
+            display: inline-block;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+        }
+        .prescription-block {
+            white-space: pre-wrap;
+            background: rgba(255, 255, 255, 0.52);
+            padding: 12px 14px;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+            margin-top: 6px;
+            line-height: 1.55;
+            font-size: 16px !important;
+            font-family: 'PT Sans', sans-serif !important;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+        }
+        .prescription-assessment {
+            border-left-color: #f7a83d;
+            background: rgba(255, 248, 240, 0.52);
+        }
+        .prescription-footer {
+            margin-top: auto;
+            padding-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .prescription-doctor-card {
+            text-align: left;
+            max-width: 420px;
+            margin-left: auto;
+            padding: 16px 18px;
+            background: linear-gradient(145deg, rgba(232, 248, 248, 0.72) 0%, rgba(255, 255, 255, 0.65) 100%);
+            border-radius: 12px;
+            border: 2px solid #00c3c9;
+        }
+        .prescription-doctor-card h3 {
+            margin-top: 0;
+            color: #00a8ae !important;
+            font-size: 22px !important;
+            font-weight: 600 !important;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .prescription-doctor-card .sig-line {
+            border-top: 2px solid #424242;
+            max-width: 240px;
+            margin-top: 14px;
+            padding-top: 8px;
+        }
+        .prescription-doctor-card .prescription-kv strong {
+            min-width: 130px;
+        }
+        .prescription-ref-note {
+            margin-top: 4px;
+            font-size: 15px !important;
+            font-family: 'PT Sans', sans-serif !important;
+        }
+        .prescription-loading {
+            text-align: center;
+            padding: 40px 22px;
+            color: #555;
+            font-size: 17px !important;
+            font-family: 'PT Sans', sans-serif !important;
         }
         .date-past {
             color: #d9534f; /* Danger color for past dates */
@@ -65,6 +633,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="../js/nutritional-overall-calculator.js"></script>
 </head>
 
 <body class="animsition">
@@ -124,11 +694,617 @@
                 year: 'numeric', month: 'short', day: 'numeric'
             });
         }
+
+        function esc(s) {
+            if (s == null || s === undefined) return '';
+            const d = document.createElement('div');
+            d.textContent = String(s);
+            return d.innerHTML;
+        }
+
+        function fmtDate(v) {
+            if (!v) return 'N/A';
+            try {
+                const d = v.toDate ? v.toDate() : new Date(v);
+                if (isNaN(d.getTime())) return 'N/A';
+                return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) { return 'N/A'; }
+        }
+
+        function withTimeout(promise, ms, errMessage) {
+            var timeoutId;
+            var timeoutPromise = new Promise(function (_, reject) {
+                timeoutId = setTimeout(function () {
+                    reject(new Error(errMessage || 'Timed out'));
+                }, ms);
+            });
+            function clearT() {
+                if (timeoutId) clearTimeout(timeoutId);
+            }
+            return Promise.race([
+                promise.then(function (v) { clearT(); return v; }, function (e) { clearT(); throw e; }),
+                timeoutPromise
+            ]);
+        }
+
+        async function generatePrescriptionPdfBlob(element) {
+            if (typeof html2pdf === 'undefined') {
+                throw new Error('PDF library not loaded. Check your connection and refresh the page.');
+            }
+            /* html2pdf rasterizes the page (canvas → images in PDF), not real vector text — higher scale + JPEG quality = sharper type (larger file, slower). */
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: 'Aqiraa-visit-record.pdf',
+                image: { type: 'jpeg', quality: 0.97 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    letterRendering: true,
+                    foreignObjectRendering: false,
+                    backgroundColor: '#fffef9'
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'], avoid: ['.prescription-section', '.prescription-doctor-card', '.prescription-dev-list'] }
+            };
+            const chain = html2pdf().set(opt).from(element);
+            const out = chain.outputPdf('blob');
+            if (out && typeof out.then === 'function') {
+                return await out;
+            }
+            throw new Error('PDF export failed — try again or use another browser.');
+        }
+
+        function triggerBlobDownload(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'Aqiraa-visit-record.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+        }
+
+        function buildPrescriptionPdfFilename() {
+            var kid = String(currentPatientName || 'child').replace(/[^\w.-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').slice(0, 48) || 'child';
+            var cid = String(window.__prescriptionExportConsultId || 'visit').replace(/[^\w.-]+/g, '_').slice(0, 96) || 'visit';
+            return 'Aqiraa-' + kid + '-' + cid + '.pdf';
+        }
+
+        async function handlePrescriptionPdfDownload() {
+            const dlBtn = document.getElementById('prescription-btn-download-pdf');
+            if (!dlBtn || dlBtn.disabled) return;
+            const el = document.querySelector('#prescription-modal-inner .prescription-content-layer');
+            if (!el) {
+                alert('Open a consultation record first, then try downloading again.');
+                return;
+            }
+            const origHtml = dlBtn.innerHTML;
+            dlBtn.disabled = true;
+            dlBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Building PDF…';
+            await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
+            try {
+                const blob = await withTimeout(generatePrescriptionPdfBlob(el), 90000, 'PDF export took too long');
+                if (!blob || !(blob instanceof Blob)) {
+                    throw new Error('Invalid PDF data');
+                }
+                triggerBlobDownload(blob, buildPrescriptionPdfFilename());
+            } catch (e) {
+                console.error(e);
+                alert(e && e.message ? e.message : 'Could not create the PDF. Try again or use a different browser.');
+            } finally {
+                dlBtn.innerHTML = origHtml;
+                dlBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Temperature bands use the same traffic-light sequence as child_dashboard motor getScoreColor:
+         * green (#4caf50) → blue (#2196f3) → yellow (#ffc107) → red (#f44336). Informational only.
+         */
+        function classifyTemperature(raw) {
+            if (raw == null || raw === '') return { cls: 'missing', tip: '' };
+            const s0 = String(raw).trim();
+            if (!s0 || /^n\/?a$/i.test(s0)) return { cls: 'missing', tip: '' };
+            const lower = s0.toLowerCase();
+            const num = parseFloat(s0.replace(/[^\d.\-]/g, ''));
+            if (Number.isNaN(num)) return { cls: 'unknown', tip: 'Could not parse value' };
+
+            let celsius = num;
+            const looksF = /\bf\b|\bff\b|fahrenheit/i.test(lower) || (num >= 94 && num <= 108 && !/\bc\b|celsius|centigrade/i.test(lower));
+            if (looksF && num >= 94) celsius = (num - 32) * (5 / 9);
+            else if (num >= 94 && num <= 108 && !/\bc\b|celsius/i.test(lower)) celsius = (num - 32) * (5 / 9);
+
+            if (celsius < 35.0) return { cls: 'low', tip: 'Below typical — confirm with clinician if concerned' };
+            if (celsius < 36.0) return { cls: 'caution', tip: 'On the low side — context matters' };
+            if (celsius <= 37.5) return { cls: 'normal', tip: 'Typical non-fever range (informational)' };
+            if (celsius <= 38.0) return { cls: 'caution', tip: 'Low-grade fever range' };
+            return { cls: 'alert', tip: 'Fever range — follow your doctor’s advice' };
+        }
+
+        function formatTemperatureNumberForDisplay(num) {
+            if (Number.isNaN(num)) return '';
+            const rounded = Math.round(num * 10) / 10;
+            if (Math.abs(rounded - Math.round(rounded)) < 1e-9) return String(Math.round(rounded));
+            return rounded.toFixed(1).replace(/\.0$/, '');
+        }
+
+        /** Human-readable value with unit; bands in classifyTemperature still use °C internally. */
+        function temperatureDisplayWithUnit(raw) {
+            const s0 = String(raw != null ? raw : '').trim();
+            if (!s0 || /^n\/?a$/i.test(s0)) return null;
+            const lower = s0.toLowerCase();
+            const num = parseFloat(s0.replace(/[^\d.\-]/g, ''));
+            if (Number.isNaN(num)) return null;
+            const hasC = /\bc\b|celsius|centigrade|°\s*c|℃/i.test(lower) ||
+                /^\s*\d+(?:\.\d+)?\s*c\s*$/i.test(s0);
+            const hasF = /\bf\b|fahrenheit|°\s*f|℉/i.test(lower) ||
+                /^\s*\d+(?:\.\d+)?\s*f\s*$/i.test(s0);
+            var useF;
+            if (hasF) useF = true;
+            else if (hasC) useF = false;
+            else if (num >= 90 && num <= 110) useF = true;
+            else useF = false;
+            return formatTemperatureNumberForDisplay(num) + (useF ? '\u00a0°F' : '\u00a0°C');
+        }
+
+        function formatTemperaturePill(temp) {
+            const raw = temp != null && String(temp).trim() ? String(temp) : '';
+            if (!raw) return '<span class="vital-pill vital-missing">N/A</span>';
+            const cat = classifyTemperature(temp);
+            const tip = cat.tip ? ' title="' + esc(cat.tip) + '"' : '';
+            const labeled = temperatureDisplayWithUnit(raw);
+            const disp = labeled != null ? labeled : raw;
+            return '<span class="vital-pill vital-' + esc(cat.cls) + '"' + tip + '>' + esc(disp) + '</span>';
+        }
+
+        function formatNumericVitalPill(val, unit) {
+            if (val == null || val === '' || (typeof val === 'number' && Number.isNaN(val))) {
+                return '<span class="vital-pill vital-missing">N/A</span>';
+            }
+            return '<span class="vital-pill vital-recorded" title="Recorded at this visit">' +
+                esc(String(val)) + (unit ? ' ' + esc(unit) : '') + '</span>';
+        }
+
+        function classifySymptomDuration(raw) {
+            if (raw == null || raw === '') return { cls: 'missing', tip: '' };
+            const s = String(raw).trim();
+            if (!s || /^n\/?a$/i.test(s)) return { cls: 'missing', tip: '' };
+            const m = s.match(/(\d+(?:\.\d+)?)/);
+            if (!m) return { cls: 'unknown', tip: '' };
+            let days = parseFloat(m[1]);
+            if (/week/i.test(s)) days *= 7;
+            else if (/month/i.test(s)) days *= 30;
+            else if (/year/i.test(s)) days *= 365;
+            /* Bands mirror dashboard score tiers: green → yellow → orange → red */
+            if (days > 21) return { cls: 'alert', tip: 'Long-standing symptoms — ensure follow-up' };
+            if (days > 14) return { cls: 'warning', tip: 'Over two weeks — clinical review suggested' };
+            if (days > 7) return { cls: 'caution', tip: 'More than one week' };
+            return { cls: 'normal', tip: 'Duration noted' };
+        }
+
+        function formatSymptomDurationPill(symDur) {
+            const raw = symDur != null && String(symDur).trim() ? String(symDur) : '';
+            const disp = raw ? esc(raw) : 'N/A';
+            const cat = classifySymptomDuration(symDur);
+            const tip = cat.tip ? ' title="' + esc(cat.tip) + '"' : '';
+            return '<span class="vital-pill vital-' + esc(cat.cls) + '"' + tip + '>' + disp + '</span>';
+        }
+
+        function formatPrescriptionIssuedPill(v) {
+            if (v === true) {
+                return '<span class="vital-pill vital-recorded" title="Prescription / medicines issued at this visit">Yes</span>';
+            }
+            if (v === false) {
+                return '<span class="vital-pill vital-missing" title="No prescription issued">No</span>';
+            }
+            return '<span class="vital-pill vital-missing">N/A</span>';
+        }
+
+        function formatFollowUpRequiredPill(v) {
+            if (v === true) {
+                return '<span class="vital-pill vital-caution" title="Follow-up visit recommended">Yes</span>';
+            }
+            if (v === false) {
+                return '<span class="vital-pill vital-normal" title="No follow-up requested">No</span>';
+            }
+            return '<span class="vital-pill vital-missing">N/A</span>';
+        }
+
+        function formatNextFollowUpPill(c) {
+            const d = c.nextFollowUpDate;
+            const txt = fmtDate(d);
+            if (!d || txt === 'N/A') return '<span class="vital-pill vital-missing">N/A</span>';
+            try {
+                const dt = d.toDate ? d.toDate() : new Date(d);
+                if (isNaN(dt.getTime())) return '<span class="vital-pill vital-missing">N/A</span>';
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const cmp = new Date(dt);
+                cmp.setHours(0, 0, 0, 0);
+                /* Past = concern red (#f44336); today = monitor yellow; future = good blue (#2196f3) — dashboard motor tiers */
+                if (cmp < today) return '<span class="vital-pill vital-alert" title="Date is in the past — confirm in records">' + esc(txt) + '</span>';
+                if (cmp.getTime() === today.getTime()) return '<span class="vital-pill vital-caution" title="Due today">' + esc(txt) + '</span>';
+                return '<span class="vital-pill vital-low" title="Scheduled follow-up">' + esc(txt) + '</span>';
+            } catch (e) {
+                return '<span class="vital-pill vital-missing">' + esc(txt) + '</span>';
+            }
+        }
+
+        function formatVisitTypePill(typeStr) {
+            const t = (typeStr || 'N/A').trim();
+            const low = t.toLowerCase();
+            let cls = 'visit-type-default';
+            if (/follow/.test(low)) cls = 'visit-type-followup';
+            else if (/initial|first\s*visit/.test(low)) cls = 'visit-type-initial';
+            else if (/routine|check/.test(low)) cls = 'visit-type-routine';
+            return '<span class="visit-type-pill ' + cls + '">' + esc(t) + '</span>';
+        }
+
+        function shortenDoctorId(id) {
+            const s = String(id || '');
+            if (!s) return '';
+            return s.length > 14 ? s.slice(0, 8) + '…' + s.slice(-4) : s;
+        }
+
+        /** child_dashboard motor getScoreColor thresholds (0–10). */
+        function motorScoreTier(score) {
+            const s = Number(score);
+            if (Number.isNaN(s)) return 'missing';
+            if (s >= 9) return 'normal';
+            if (s >= 7.5) return 'low';
+            if (s >= 6) return 'caution';
+            if (s >= 4) return 'warning';
+            return 'alert';
+        }
+
+        /** child_dashboard cognitive Bayley-style 0–130 bands. */
+        function cognitiveScoreTier(score) {
+            const s = Number(score);
+            if (Number.isNaN(s)) return 'missing';
+            if (s >= 116) return 'normal';
+            if (s >= 100) return 'low';
+            if (s >= 85) return 'caution';
+            if (s >= 70) return 'warning';
+            return 'alert';
+        }
+
+        /** child_dashboard SISA-style 0–100 bands. */
+        function socialScoreTier(score) {
+            const s = Number(score);
+            if (Number.isNaN(s)) return 'missing';
+            if (s >= 85) return 'normal';
+            if (s >= 70) return 'low';
+            if (s >= 40) return 'caution';
+            if (s >= 16) return 'warning';
+            return 'alert';
+        }
+
+        /** Map category label text to same vital-* tiers as dashboard wording. */
+        function categoryTierFromLabel(cat) {
+            const t = String(cat || '').toLowerCase().trim();
+            if (!t) return 'missing';
+            if (/excellent|superior|very\s*good|above\s*typical/i.test(t)) return 'normal';
+            if (/good|above\s*average|high(\s|$)|strong/i.test(t)) return 'low';
+            if (/average|adequate|typical|mid|moderate/i.test(t)) return 'caution';
+            if (/below\s*average|mild|borderline/i.test(t)) return 'warning';
+            if (/concern|delay|significant|poor|low(\s|$)|intervention|evaluation|needed/i.test(t)) return 'alert';
+            return 'unknown';
+        }
+
+        /**
+         * Score text for prescription pills (value / scale max).
+         * Motor 0–10, CDI cognitive 0–130, SISA & nutritional overall 0–100 (same tiers as dashboard).
+         */
+        function formatScoreValueOverMax(s, maxOutOf) {
+            const max = Number(maxOutOf);
+            if (!Number.isFinite(max) || max <= 0) return String(s);
+            if (max <= 10) {
+                var v10 = Math.round(s * 100) / 100;
+                var t10 = (Math.abs(v10 - Math.round(v10)) < 1e-9) ? String(Math.round(v10)) : v10.toFixed(2).replace(/\.?0+$/, '');
+                return t10 + '/' + max;
+            }
+            if (max >= 130) {
+                return String(Math.round(s)) + '/' + max;
+            }
+            var v100 = Math.round(s * 100) / 100;
+            var t100 = (Math.abs(v100 - Math.round(v100)) < 1e-9) ? String(Math.round(v100)) : String(v100);
+            return t100 + '/' + max;
+        }
+
+        /**
+         * Flat row: label | Score value/max · status (tier = left accent only; no nested boxes).
+         */
+        function formatPrescriptionScreeningRow(label, score, tierFn, maxOutOf, category) {
+            const rawCat = category != null ? String(category).trim() : '';
+            const sNum = Number(score);
+            const hasScore = score != null && score !== '' && !Number.isNaN(sNum);
+            var scoreTier = hasScore ? tierFn(sNum) : 'missing';
+            var scoreLabel = '—';
+            if (hasScore) {
+                scoreLabel = (maxOutOf != null && Number.isFinite(Number(maxOutOf)))
+                    ? formatScoreValueOverMax(sNum, maxOutOf)
+                    : String(sNum);
+            }
+            var catTier = rawCat ? categoryTierFromLabel(rawCat) : 'missing';
+            var barTier = hasScore ? scoreTier : (rawCat ? (catTier === 'unknown' ? 'recorded' : catTier) : 'missing');
+            var catHtml = rawCat ? esc(rawCat) : esc('—');
+            return (
+                '<div class="prescription-dev-row prescription-dev-row--' + esc(barTier) + '" role="group" aria-label="' + esc(label) + '">' +
+                '<div class="prescription-dev-label">' + esc(label) + '</div>' +
+                '<div class="prescription-dev-main">' +
+                '<span class="prescription-dev-muted">Score</span>' +
+                '<span class="prescription-dev-val">' + esc(scoreLabel) + '</span>' +
+                '<span class="prescription-dev-sep" aria-hidden="true">·</span>' +
+                '<span class="prescription-dev-status-text">' + catHtml + '</span>' +
+                '</div></div>'
+            );
+        }
+
+        /** 0–100 nutritional overall score → same vital-* pill tiers as dashboard coloring. */
+        function nutritionalOverallTier(score) {
+            const s = Number(score);
+            if (Number.isNaN(s)) return 'missing';
+            if (s >= 85) return 'normal';
+            if (s >= 70) return 'low';
+            if (s >= 55) return 'caution';
+            if (s >= 40) return 'warning';
+            return 'alert';
+        }
+
+        function hasNutritionalScreeningFields(n) {
+            if (!n || typeof n !== 'object') return false;
+            return !!(n.energyLevel || n.appetite || n.skinHealth || n.hairQuality || n.nailHealth ||
+                n.mealsPerDay != null || n.breakfastRegularity || n.junkFoodFrequency ||
+                (n.fruitServings !== null && n.fruitServings !== undefined) ||
+                (n.vegetableServings !== null && n.vegetableServings !== undefined) ||
+                (n.dairyIntake !== null && n.dairyIntake !== undefined) ||
+                (n.supplements && n.supplements.length));
+        }
+
+        function formatDoctorDisplayName(name) {
+            const n = (name || '').trim();
+            if (!n) return 'Referring physician';
+            if (/^dr\.?\s/i.test(n)) return n;
+            return 'Dr. ' + n;
+        }
+
+        function soapOrEmpty(t) {
+            const s = t && String(t).trim();
+            return s ? esc(s) : '<em class="text-muted">Not recorded</em>';
+        }
+
+        /**
+         * Doctor display: users/{uid} (portal account) then, if needed, doctors/ by exact name
+         * (marketing profile has qualification + title/speciality).
+         */
+        async function fetchDoctorDetails(doctorUid, consultDoctorName) {
+            const out = {
+                preferredName: (consultDoctorName || '').trim(),
+                qualification: '',
+                speciality: ''
+            };
+            if (doctorUid && typeof doctorUid === 'string') {
+                try {
+                    const du = await db.collection('users').doc(doctorUid).get();
+                    if (du.exists) {
+                        const ud = du.data() || {};
+                        const un = (ud.name || ud.displayName || '').trim();
+                        if (un) out.preferredName = un;
+                        out.qualification = (ud.qualification || ud.degree || '').trim();
+                        out.speciality = (ud.specialization || ud.specialty || ud.speciality || ud.title || '').trim();
+                    }
+                } catch (err) { /* ignore */ }
+            }
+            const tryMatch = (out.preferredName || '').trim();
+            if (tryMatch && (!out.qualification || !out.speciality)) {
+                const variants = [tryMatch, tryMatch.replace(/^dr\.?\s+/i, '').trim()].filter(function (v, i, a) {
+                    return v && a.indexOf(v) === i;
+                });
+                for (let vi = 0; vi < variants.length; vi++) {
+                    const t = variants[vi];
+                    if (!t) continue;
+                    try {
+                        const qs = await db.collection('doctors').where('name', '==', t).limit(1).get();
+                        if (!qs.empty) {
+                            const dd = qs.docs[0].data() || {};
+                            if (!out.qualification) out.qualification = (dd.qualification || '').trim();
+                            if (!out.speciality) out.speciality = (dd.title || '').trim();
+                            break;
+                        }
+                    } catch (err) { /* query / index */ }
+                }
+            }
+            return out;
+        }
+
+        function buildPrescriptionHTML(c, consultId, doctorExtra, childProfile) {
+            doctorExtra = doctorExtra || {};
+            childProfile = childProfile || {};
+            const soap = c.soapNotes || {};
+            const subj = c.subjective != null ? c.subjective : soap.subjective;
+            const obj = c.objective != null ? c.objective : soap.objective;
+            const assess = c.assessment != null ? c.assessment : soap.assessment;
+            const plan = c.plan != null ? c.plan : soap.plan;
+
+            const w = c.weight != null ? c.weight : (c.physicalHealth && c.physicalHealth.weight != null ? c.physicalHealth.weight : null);
+            const h = c.height != null ? c.height : (c.physicalHealth && c.physicalHealth.height != null ? c.physicalHealth.height : null);
+            const temp = c.temperature || (c.physicalHealth && c.physicalHealth.temperature) || null;
+            const symDur = c.symptomDuration || (c.physicalHealth && c.physicalHealth.symptomDuration) || null;
+
+            let devBlocks = '';
+            if (c.motorSkills && (c.motorSkills.overallScore != null || c.motorSkills.category)) {
+                devBlocks += formatPrescriptionScreeningRow('Motor skills', c.motorSkills.overallScore, motorScoreTier, 10, c.motorSkills.category);
+            }
+            if (c.cognitiveHealth && (c.cognitiveHealth.overallScore != null || c.cognitiveHealth.category)) {
+                devBlocks += formatPrescriptionScreeningRow('Cognitive (CDI)', c.cognitiveHealth.overallScore, cognitiveScoreTier, 130, c.cognitiveHealth.category);
+            }
+            if (c.socialSkills && (c.socialSkills.overallScore != null || c.socialSkills.category)) {
+                devBlocks += formatPrescriptionScreeningRow('Social (SISA)', c.socialSkills.overallScore, socialScoreTier, 100, c.socialSkills.category);
+            }
+            if (hasNutritionalScreeningFields(c.nutritionalHealth) &&
+                typeof window.calculateNutritionalScoresPrescription === 'function' &&
+                typeof window.getNutritionalScoreCategoryPrescription === 'function') {
+                const nScores = window.calculateNutritionalScoresPrescription(
+                    c.nutritionalHealth, childProfile, c.date || c.consultationDate);
+                const nutOverall = nScores.overall;
+                const nutCat = window.getNutritionalScoreCategoryPrescription(nutOverall);
+                if (nutCat) {
+                    devBlocks += formatPrescriptionScreeningRow('Nutritional health', nutOverall, nutritionalOverallTier, 100, nutCat);
+                }
+            }
+
+            const dName = formatDoctorDisplayName(doctorExtra.preferredName || c.doctorName);
+            const dQual = (doctorExtra.qualification || '').trim() ? esc(doctorExtra.qualification.trim()) : '—';
+            const dSpec = (doctorExtra.speciality || '').trim() ? esc(doctorExtra.speciality.trim()) : '—';
+
+            const devSection = devBlocks
+                ? `<div class="prescription-section"><h3>Development &amp; screening notes</h3><div class="prescription-dev-list">${devBlocks}</div></div>`
+                : '';
+
+            return (
+                '<div class="prescription-content-layer">' +
+                '<div class="prescription-watermark" aria-hidden="true"></div>' +
+                '<div class="prescription-brand-strip">' +
+                '<img src="../images/logo.png" alt="Aqiraa" width="52" height="52">' +
+                '<div><div class="prescription-brand-name">Aqiraa</div>' +
+                '<div class="prescription-brand-tag">Pediatric consultation record</div></div></div>' +
+                '<div class="prescription-rx-badge">Rx</div>' +
+                '<p class="prescription-lead text-muted">This sheet summarizes the visit for your records. Keep it with your child\'s health file. Call your doctor or emergency services if your child\'s condition worsens.</p>' +
+                '<div class="prescription-section"><h3>Patient &amp; visit</h3>' +
+                `<div class="prescription-kv"><strong>Child</strong> ${esc(currentPatientName)}</div>` +
+                `<div class="prescription-kv"><strong>Parent / guardian</strong> ${esc(currentParentName)}</div>` +
+                `<div class="prescription-kv"><strong>Visit date</strong> ${esc(fmtDate(c.date || c.consultationDate))}</div>` +
+                `<div class="prescription-kv"><strong>Visit type</strong> ${formatVisitTypePill(c.type)}</div>` +
+                `<div class="prescription-kv"><strong>Consultation reference</strong> ${esc(consultId)}</div>` +
+                '<p class="text-muted prescription-ref-note">This is Aqiraa&rsquo;s internal reference for this visit (not a government medical registration number).</p>' +
+                '</div>' +
+                '<div class="prescription-section"><h3>Vitals &amp; basics</h3>' +
+                `<div class="prescription-kv"><strong>Weight</strong> ${formatNumericVitalPill(w, 'kg')}</div>` +
+                `<div class="prescription-kv"><strong>Height</strong> ${formatNumericVitalPill(h, 'cm')}</div>` +
+                `<div class="prescription-kv"><strong>Temperature</strong> ${formatTemperaturePill(temp)}</div>` +
+                `<div class="prescription-kv"><strong>Symptom duration</strong> ${formatSymptomDurationPill(symDur)}</div>` +
+                '</div>' +
+                '<div class="prescription-section"><h3>Diagnosis / clinical impression</h3>' +
+                `<div class="prescription-block prescription-assessment">${soapOrEmpty(assess)}</div></div>` +
+                '<div class="prescription-section"><h3>What you reported (subjective)</h3>' +
+                `<div class="prescription-block">${soapOrEmpty(subj)}</div></div>` +
+                '<div class="prescription-section"><h3>Exam &amp; findings (objective)</h3>' +
+                `<div class="prescription-block">${soapOrEmpty(obj)}</div></div>` +
+                '<div class="prescription-section"><h3>Plan &amp; advice</h3>' +
+                `<div class="prescription-block">${soapOrEmpty(plan)}</div></div>` +
+                '<div class="prescription-section"><h3>Medicines &amp; follow-up</h3>' +
+                '<div class="prescription-kv"><strong>Prescription issued</strong> ' + formatPrescriptionIssuedPill(c.prescriptionGiven) + '</div>' +
+                '<div class="prescription-kv"><strong>Follow-up visit needed</strong> ' + formatFollowUpRequiredPill(c.followUpRequired) + '</div>' +
+                '<div class="prescription-kv"><strong>Next follow-up date</strong> ' + formatNextFollowUpPill(c) + '</div>' +
+                '</div>' +
+                devSection +
+                '<div class="prescription-footer">' +
+                '<div class="prescription-doctor-card">' +
+                '<h3>Doctor details</h3>' +
+                `<div class="prescription-kv"><strong>Name</strong> ${esc(dName)}</div>` +
+                `<div class="prescription-kv"><strong>Qualification</strong> ${dQual}</div>` +
+                `<div class="prescription-kv"><strong>Speciality</strong> ${dSpec}</div>` +
+                '<div class="sig-line"></div>' +
+                '<p class="text-muted prescription-ref-note" style="margin:8px 0 0;">Treating physician — Aqiraa consultation record</p>' +
+                '</div></div></div>'
+            );
+        }
+
+        function closePrescriptionModal() {
+            const overlay = document.getElementById('prescription-modal-overlay');
+            if (!overlay) return;
+            overlay.classList.remove('is-open');
+            overlay.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            window.__prescriptionExportConsultId = null;
+        }
+
+        async function openPrescriptionModal(consultId) {
+            const overlay = document.getElementById('prescription-modal-overlay');
+            const inner = document.getElementById('prescription-modal-inner');
+            const sub = document.getElementById('prescription-modal-subtitle');
+            if (!overlay || !inner || !parentKey || !currentPatientId) return;
+
+            overlay.classList.add('is-open');
+            overlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            window.__prescriptionExportConsultId = null;
+            sub.textContent = currentPatientName + ' — loading…';
+            inner.innerHTML = '<div class="prescription-loading"><i class="fa fa-spinner fa-spin"></i> Loading consultation…</div>';
+
+            try {
+                const consultRef = db.collection('patients').doc(parentKey)
+                    .collection('children').doc(currentPatientId)
+                    .collection('consultations').doc(consultId);
+                const snap = await consultRef.get();
+                if (!snap.exists) {
+                    inner.innerHTML = '<p class="text-danger text-center" style="padding:24px;">This consultation could not be found.</p>';
+                    return;
+                }
+                const c = snap.data();
+                sub.textContent = currentPatientName + ' · Visit: ' + fmtDate(c.date || c.consultationDate);
+
+                const doctorExtra = await fetchDoctorDetails(c.doctorId, c.doctorName);
+                let childProfile = {};
+                try {
+                    const chSnap = await db.collection('patients').doc(parentKey)
+                        .collection('children').doc(currentPatientId).get();
+                    if (chSnap.exists) childProfile = chSnap.data() || {};
+                } catch (err) { /* ignore */ }
+                inner.innerHTML = buildPrescriptionHTML(c, consultId, doctorExtra, childProfile);
+                window.__prescriptionExportConsultId = consultId;
+            } catch (e) {
+                console.error(e);
+                inner.innerHTML = '<p class="text-danger text-center" style="padding:24px;">Error loading consultation.</p>';
+            }
+        }
+
+        function setupPrescriptionModal() {
+            const overlay = document.getElementById('prescription-modal-overlay');
+            if (!overlay) return;
+            const pastBody = document.getElementById('past-consultations-body');
+            const upBody = document.getElementById('upcoming-followups-body');
+            pastBody.addEventListener('click', handleConsultButtonClick);
+            upBody.addEventListener('click', handleConsultButtonClick);
+            overlay.addEventListener('click', function (e) {
+                if (e.target === overlay) closePrescriptionModal();
+            });
+            const closeBtn = overlay.querySelector('.prescription-close-x');
+            if (closeBtn) closeBtn.addEventListener('click', closePrescriptionModal);
+            const pdfBtn = document.getElementById('prescription-btn-download-pdf');
+            if (pdfBtn && !pdfBtn.dataset.pdfDownloadBound) {
+                pdfBtn.dataset.pdfDownloadBound = '1';
+                pdfBtn.addEventListener('click', function () { handlePrescriptionPdfDownload(); });
+            }
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && overlay.classList.contains('is-open')) {
+                    closePrescriptionModal();
+                }
+            });
+        }
+
+        function handleConsultButtonClick(e) {
+            const btn = e.target.closest('button[data-consult-id]');
+            if (!btn) return;
+            e.preventDefault();
+            const raw = btn.getAttribute('data-consult-id');
+            const id = raw ? decodeURIComponent(raw) : '';
+            if (id) openPrescriptionModal(id);
+        }
         
         function getPatientDetails() {
             currentPatientId = getQueryVariable('patientId');
-            currentParentId = getQueryVariable('parentId'); 
-            currentPatientName = decodeURIComponent(getQueryVariable('patientName') || 'Unknown Patient');
+            currentParentId = getQueryVariable('parentId');
+            const rawPatientName = getQueryVariable('patientName');
+            try {
+                currentPatientName = rawPatientName
+                    ? decodeURIComponent(String(rawPatientName).replace(/\+/g, ' '))
+                    : 'Unknown Patient';
+            } catch (e) {
+                currentPatientName = rawPatientName ? String(rawPatientName) : 'Unknown Patient';
+            }
 
             if (!currentPatientId || !currentParentId) {
                 alert('Error: Patient ID or Parent ID not provided.');
@@ -158,6 +1334,26 @@
                 document.getElementById('parent-name-display-info').textContent = currentParentName;
 
                 parentKey = createParentKey(currentParentName, currentParentId);
+
+                const qpPatientName = getQueryVariable('patientName');
+                const nameMissing = qpPatientName === false || !String(qpPatientName || '').trim();
+                if (nameMissing || currentPatientName === 'Unknown Patient') {
+                    try {
+                        const childSnap = await db.collection('patients').doc(parentKey)
+                            .collection('children').doc(currentPatientId).get();
+                        if (childSnap.exists) {
+                            const nm = (childSnap.data().name || '').trim();
+                            if (nm) {
+                                currentPatientName = nm;
+                                const nameEl = document.getElementById('patient-name-display');
+                                if (nameEl) nameEl.textContent = currentPatientName;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Could not load child name from records', e);
+                    }
+                }
+
                 fetchConsultations();
 
             } catch (error) {
@@ -171,7 +1367,7 @@
             const pastTableBody = document.getElementById('past-consultations-body');
             const upcomingTableBody = document.getElementById('upcoming-followups-body');
             pastTableBody.innerHTML = '<tr><td colspan="5" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading Records...</td></tr>';
-            upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming follow-ups found.</td></tr>'; // Default for upcoming
+            upcomingTableBody.innerHTML = '<tr><td colspan="3" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading follow-ups...</td></tr>';
 
             const today = new Date();
             today.setHours(0, 0, 0, 0); // Normalize time to midnight
@@ -183,8 +1379,12 @@
               .get()
               .then(snapshot => {
                   pastTableBody.innerHTML = '';
+                  upcomingTableBody.innerHTML = '';
                   let pastConsultsCount = 0;
                   let upcomingFollowupsCount = 0;
+                  const consultFormBase = 'patient_consultation.html?parentId=' + encodeURIComponent(currentParentId)
+                      + '&patientId=' + encodeURIComponent(currentPatientId)
+                      + '&patientName=' + encodeURIComponent(currentPatientName);
 
                   snapshot.forEach(doc => {
                       const consult = doc.data();
@@ -193,15 +1393,23 @@
                       // Check for Past Consultations (based on consultation date)
                       const consultDate = consult.date ? consult.date.toDate() : new Date(0);
                       const consultDateDisplay = formatFirestoreTimestamp(consult.date);
-                      
+                      const typeHtml = formatVisitTypePill(consult.type || 'N/A');
+                      const diagPlain = consult.assessment && String(consult.assessment).trim();
+                      const diagHtml = diagPlain
+                          ? '<span class="diag-cell diag-has">' + esc(String(consult.assessment).substring(0, 70)) + (String(consult.assessment).length > 70 ? '&hellip;' : '') + '</span>'
+                          : '<span class="diag-cell diag-empty">N/A</span>';
+                      const docHtml = consult.doctorName
+                          ? '<span class="doctor-cell-name">' + esc(consult.doctorName) + '</span>'
+                          : '<span class="doctor-cell-id" title="Doctor account reference">' + esc(shortenDoctorId(consult.doctorId) || '—') + '</span>';
+
                       const row = `
                           <tr>
                               <td>${consultDateDisplay}</td>
-                              <td>${consult.type || 'N/A'}</td>
-                              <td>${consult.assessment ? consult.assessment.substring(0, 70) + '...' : 'N/A'}</td>
-                              <td>${consult.doctorId || 'N/A'}</td>
-                              <td>
-                                  <a href="consultation_details.html?patientId=${currentPatientId}&parentId=${currentParentId}&consultationId=${consultId}" class="btn btn-view-details btn-sm animsition-link">View Details</a>
+                              <td>${typeHtml}</td>
+                              <td>${diagHtml}</td>
+                              <td>${docHtml}</td>
+                              <td class="td-actions">
+                                  <button type="button" class="btn btn-view-details" data-consult-id="${encodeURIComponent(consultId)}">View details</button>
                               </td>
                           </tr>
                       `;
@@ -214,16 +1422,19 @@
                       const followUpDate = consult.nextFollowUpDate ? consult.nextFollowUpDate.toDate() : null;
 
                       if (consult.followUpRequired && followUpDate && followUpDate > today) {
+                          const upTypeHtml = formatVisitTypePill(consult.type || 'N/A');
                           const followUpRow = `
                               <tr>
                                   <td class="date-upcoming">${formatFirestoreTimestamp(consult.nextFollowUpDate)}</td>
-                                  <td>${consult.type || 'N/A'}</td>
-                                  <td>
-                                      <a href="consultation_details.html?patientId=${currentPatientId}&parentId=${currentParentId}&consultationId=${consultId}" class="btn btn-view-details btn-sm animsition-link">View Original (ID: ${consultId})</a>
+                                  <td>${upTypeHtml}</td>
+                                  <td class="td-actions">
+                                      <div class="upcoming-actions">
+                                          <a href="${consultFormBase}" class="btn btn-upcoming-consult animsition-link" title="Start a new consultation for this child (scheduled follow-up)"><i class="fa fa-stethoscope"></i> Consult</a>
+                                          <button type="button" class="btn btn-upcoming-prior" data-consult-id="${encodeURIComponent(consultId)}" title="Open the last visit record that set this follow-up">Prior visit</button>
+                                      </div>
                                   </td>
                               </tr>
                           `;
-                          // Prepend to upcoming list to keep newest at top
                           upcomingTableBody.insertAdjacentHTML('afterbegin', followUpRow);
                           upcomingFollowupsCount++;
                       }
@@ -246,6 +1457,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', () => {
+            setupPrescriptionModal();
             auth.onAuthStateChanged(user => {
                 if (!user) {
                     window.location.href = '../login.html';
@@ -320,7 +1532,7 @@
                                         <th>Date</th>
                                         <th>Type</th>
                                         <th>Diagnosis Summary</th>
-                                        <th>Doctor ID</th>
+                                        <th>Doctor</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -343,6 +1555,26 @@
             </div>
         </div>
 
+    </div>
+
+    <div id="prescription-modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="prescription-modal-title">
+        <div class="prescription-dialog" role="document">
+            <div class="prescription-dialog-header">
+                <div class="prescription-dialog-title-block">
+                    <h2 id="prescription-modal-title">Consultation record</h2>
+                    <p id="prescription-modal-subtitle"></p>
+                </div>
+                <div class="prescription-dialog-header-right">
+                    <div class="prescription-dialog-actions">
+                        <button type="button" class="btn btn-warning" id="prescription-btn-download-pdf" title="Download this visit record as a PDF file"><i class="fa fa-download"></i> Download PDF</button>
+                    </div>
+                    <button type="button" class="prescription-close-x" aria-label="Close">&times;</button>
+                </div>
+            </div>
+            <div class="prescription-dialog-body" id="prescription-modal-inner">
+                <div class="prescription-loading"><i class="fa fa-spinner fa-spin"></i> Loading…</div>
+            </div>
+        </div>
     </div>
 
     <script src="../js/jquery.min.js"></script>

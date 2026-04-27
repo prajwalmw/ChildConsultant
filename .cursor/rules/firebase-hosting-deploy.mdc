@@ -1,0 +1,32 @@
+---
+description: Deploy Firebase Hosting after web app code changes (ChildConsultant)
+alwaysApply: true
+---
+
+# Firebase Hosting — deploy after changes
+
+The live site is **Firebase Hosting** (`firebase deploy`, project `child-consultant`, URL https://child-consultant.web.app). The owner expects the **hosted build to be updated whenever web-facing work is finished** in a session.
+
+## When to deploy
+
+- After you finish edits that affect the **static app** (especially anything under `public/`, including HTML/CSS/JS the portal serves).
+- Run deploy **before** telling the user work is complete, unless they explicitly asked **not** to deploy for this task.
+
+## Command
+
+From the repo root:
+
+```bash
+firebase deploy --only hosting
+```
+
+Use `full_network` (or equivalent) if the tool environment blocks outbound calls.
+
+## Do not conflate with Git
+
+- **Hosting deploy** = what makes https://child-consultant.web.app show new code.
+- **`git push`** = only when the user asks; do not push by default.
+
+## If deploy fails
+
+Report the error (e.g. not logged in to Firebase CLI). Do not claim the site is updated until deploy succeeds.

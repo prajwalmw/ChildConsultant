@@ -939,7 +939,7 @@
                             <a href="patient_consultation.html?parentId=${parentId}&patientId=${patientId}" class="btn-action btn-start-consult">
                                 <i class="fa fa-stethoscope"></i> Start Consultation
                             </a>
-                            <a href="view_consultations.html?parentId=${parentId}&patientId=${patientId}" class="btn-action btn-view-records" title="Past consultations for this child" aria-label="View records, ${visitLabel}">
+                            <a href="view_consultations.html?parentId=${encodeURIComponent(parentId)}&patientId=${encodeURIComponent(patientId)}&patientName=${encodeURIComponent(childName)}" class="btn-action btn-view-records" title="Past consultations for this child" aria-label="View records, ${visitLabel}">
                                 <i class="fa fa-file-medical"></i> View Records (${visitLabel})
                             </a>
                             <a href="child_dashboard.html?parentId=${parentId}&patientId=${patientId}" class="btn-action btn-view-dashboard">
