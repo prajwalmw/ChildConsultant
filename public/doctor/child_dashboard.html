@@ -277,6 +277,82 @@
       font-size: 14px;
       margin-bottom: 25px;
     }
+    /* History line charts: DOM legend — same pills everywhere (avoids canvas legend strikethrough + global button styles). */
+    .chart-external-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      align-items: center;
+      justify-content: center;
+      margin: 4px 0 18px;
+      padding: 12px 14px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+    }
+    .chart-external-legend button.ext-legend-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px !important;
+      margin: 0 !important;
+      border: 2px solid #94a3b8 !important;
+      border-radius: 999px !important;
+      background: #fff !important;
+      font-family: 'PT Sans', 'Segoe UI', sans-serif !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      line-height: 1.25 !important;
+      color: #2c3e50 !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+      cursor: pointer;
+      box-shadow: none !important;
+      transform: none !important;
+      transition: border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .chart-external-legend button.ext-legend-btn::before,
+    .chart-external-legend button.ext-legend-btn::after {
+      display: none !important;
+      content: none !important;
+    }
+    .chart-external-legend button.ext-legend-btn:hover {
+      border-color: #00acc1 !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .chart-external-legend button.ext-legend-btn:focus {
+      outline: none;
+    }
+    .chart-external-legend button.ext-legend-btn:focus-visible {
+      outline: 2px solid #00acc1;
+      outline-offset: 2px;
+    }
+    .chart-external-legend .ext-legend-btn--muted {
+      opacity: 0.48;
+      background: #eceff1 !important;
+      border-color: #90a4ae !important;
+      text-decoration: none !important;
+    }
+    .chart-external-legend .ext-legend-btn--muted .ext-legend-swatch {
+      opacity: 0.55;
+    }
+    .ext-legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+    }
+    .ext-legend-hint {
+      width: 100%;
+      margin: 6px 0 0;
+      text-align: center;
+      font-size: 12px;
+      color: #7f8c8d;
+    }
     .bullet-chart-container {
       margin: 20px 0;
     }
@@ -505,6 +581,7 @@
           <div style="margin: 20px 0;">
             <canvas id="motorSkillsHistoryChart" style="max-height: 400px;"></canvas>
           </div>
+          <div id="motorSkillsHistoryLegend" class="chart-external-legend" aria-label="Show or hide each series"></div>
           <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
             <strong>How to Read:</strong> Lines show progression of motor skills scores over time. Each color represents a subcategory: Gross Motor, Fine Motor, Balance, and Strength.
           </div>
@@ -547,6 +624,7 @@
           <div style="padding: 20px;">
             <canvas id="nutritionalHistoryChart" style="max-height: 400px;"></canvas>
           </div>
+          <div id="nutritionalHistoryLegend" class="chart-external-legend" aria-label="Show or hide each series"></div>
         </div>
       </div>
 
@@ -713,6 +791,7 @@
           <div style="margin: 20px 0;">
             <canvas id="cognitiveHistoryChart" style="max-height: 450px;"></canvas>
           </div>
+          <div id="cognitiveHistoryLegend" class="chart-external-legend" aria-label="Show or hide each series"></div>
           <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
             <strong>How to Read:</strong> Lines show progression of cognitive domain scores over time. Each color represents a domain: Attention, Memory, Problem-Solving, Language, and Learning Readiness.
           </div>
@@ -762,6 +841,7 @@
           <div style="margin: 20px 0;">
             <canvas id="socialHistoryChart" style="max-height: 450px;"></canvas>
           </div>
+          <div id="socialHistoryLegend" class="chart-external-legend" aria-label="Show or hide each series"></div>
           <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
             <strong>How to Read:</strong> Lines show progression of social skills domain scores over time. Each color represents a domain: Communication, Cooperation, Empathy, Self-Control, and Engagement.
           </div>
@@ -1471,7 +1551,6 @@
         // Hide loading indicator and show content
         if (loadingIndicator) loadingIndicator.style.display = 'none';
         if (childInfoSection) childInfoSection.style.display = 'block';
-        if (statsGrid) statsGrid.style.display = 'grid';
 
         // Hide chart section (not needed)
         // const growthChartSection = document.getElementById('growthChartSection');
@@ -1515,15 +1594,9 @@
       const statsGrid = document.getElementById('statsGrid');
       const bmiCard = document.getElementById('bmiCard');
       const bmiScoreSection = document.getElementById('bmiScoreSection');
-      const totalConsultations = consultations.length;
       const latestConsult = consultations[consultations.length - 1];
 
-      let statsHTML = `
-        <div class="stat-card green">
-          <h4>Total Consultations</h4>
-          <p class="stat-value">${totalConsultations}</p>
-        </div>
-      `;
+      let statsHTML = '';
 
       if (latestConsult) {
         if (latestConsult.weight) {
@@ -1631,7 +1704,10 @@
         }
       }
 
-      statsGrid.innerHTML = statsHTML;
+      if (statsGrid) {
+        statsGrid.innerHTML = statsHTML;
+        statsGrid.style.display = statsHTML.trim() ? 'grid' : 'none';
+      }
 
       // Display hydration chart
       displayHydrationChart(consultations, childData);
@@ -2857,6 +2933,8 @@
         .filter(d => d !== null);
 
       if (nutritionalData.length === 0) {
+        const nLeg = document.getElementById('nutritionalHistoryLegend');
+        if (nLeg) nLeg.innerHTML = '';
         document.getElementById('nutritionalHistoryChart').parentElement.innerHTML =
           '<p style="text-align: center; color: #95a5a6; padding: 40px;">No nutritional history data available</p>';
         return;
@@ -2879,6 +2957,8 @@
       if (window.nutritionalHistoryChartInstance) {
         window.nutritionalHistoryChartInstance.destroy();
       }
+      const nLegHost = document.getElementById('nutritionalHistoryLegend');
+      if (nLegHost) nLegHost.innerHTML = '';
 
       window.nutritionalHistoryChartInstance = new Chart(ctx, {
         type: 'line',
@@ -3009,6 +3089,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: false,
           interaction: {
             mode: 'index',
             intersect: false
@@ -3061,18 +3142,9 @@
             }
           },
           plugins: {
+            datalabels: false,
             legend: {
-              display: true,
-              position: 'bottom',
-              labels: {
-                padding: 12,
-                font: { size: 11 },
-                usePointStyle: true,
-                filter: function(item, chart) {
-                  // Hide range datasets from legend, only show main metrics and thresholds
-                  return !item.text.includes('Range');
-                }
-              }
+              display: false
             },
             title: {
               display: true,
@@ -3095,6 +3167,9 @@
           }
         }
       });
+      if (nLegHost) {
+        mountExternalLineChartLegend(window.nutritionalHistoryChartInstance, nLegHost);
+      }
     }
 
     // ==================== MOTOR SKILLS FUNCTIONS ====================
@@ -3690,6 +3765,8 @@
         .filter(d => d !== null);
 
       if (cognitiveData.length === 0) {
+        const cLeg0 = document.getElementById('cognitiveHistoryLegend');
+        if (cLeg0) cLeg0.innerHTML = '';
         document.getElementById('cognitiveHistoryChart').parentElement.innerHTML =
           '<p style="text-align: center; color: #95a5a6; padding: 40px;">No cognitive history data available</p>';
         return;
@@ -3710,6 +3787,8 @@
       const dynamicMax = Math.max(130, Math.ceil(maxValue * 1.1));
 
       const ctx = document.getElementById('cognitiveHistoryChart');
+      const cLegHost = document.getElementById('cognitiveHistoryLegend');
+      if (cLegHost) cLegHost.innerHTML = '';
 
       if (window.cognitiveHistoryChartInstance) {
         window.cognitiveHistoryChartInstance.destroy();
@@ -3873,23 +3952,15 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: false,
           interaction: {
             mode: 'index',
             intersect: false
           },
           plugins: {
-            datalabels: { display: false },
+            datalabels: false,
             legend: {
-              display: true,
-              position: 'bottom',
-              labels: {
-                padding: 12,
-                font: { size: 11 },
-                usePointStyle: true,
-                filter: function(item, chart) {
-                  return !item.text.includes('Range');
-                }
-              }
+              display: false
             },
             title: {
               display: true,
@@ -3950,6 +4021,9 @@
           }
         }
       });
+      if (cLegHost) {
+        mountExternalLineChartLegend(window.cognitiveHistoryChartInstance, cLegHost);
+      }
     }
 
     // Switch between Current and History views for motor skills
@@ -4250,6 +4324,8 @@
         .filter(d => d !== null);
 
       if (socialData.length === 0) {
+        const sLeg0 = document.getElementById('socialHistoryLegend');
+        if (sLeg0) sLeg0.innerHTML = '';
         document.getElementById('socialHistoryChart').parentElement.innerHTML =
           '<p style="text-align: center; color: #95a5a6; padding: 40px;">No social skills history data available</p>';
         return;
@@ -4258,6 +4334,8 @@
       const labels = socialData.map(d => [`Visit ${d.visitNumber}`, d.date.toLocaleDateString()]);
 
       const ctx = document.getElementById('socialHistoryChart').getContext('2d');
+      const sLegHost = document.getElementById('socialHistoryLegend');
+      if (sLegHost) sLegHost.innerHTML = '';
 
       if (window.socialHistoryChartInstance) {
         window.socialHistoryChartInstance.destroy();
@@ -4395,6 +4473,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: true,
+          animation: false,
           scales: {
             y: {
               beginAtZero: true,
@@ -4417,15 +4496,9 @@
             }
           },
           plugins: {
+            datalabels: false,
             legend: {
-              display: true,
-              position: 'bottom',
-              labels: {
-                filter: function(legendItem, chartData) {
-                  // Hide background zone datasets from legend (only show data lines)
-                  return !legendItem.text.includes('Range');
-                }
-              }
+              display: false
             },
             tooltip: {
               callbacks: {
@@ -4437,6 +4510,9 @@
           }
         }
       });
+      if (sLegHost) {
+        mountExternalLineChartLegend(window.socialHistoryChartInstance, sLegHost);
+      }
     }
 
     // Toggle Motor Skills Legend Tooltip
@@ -4496,6 +4572,47 @@
       }
     }
 
+    /** DOM buttons under chart — toggles datasets using Chart.js hide/show (same as default legend). */
+    function mountExternalLineChartLegend(chart, container) {
+      if (!chart || !container) return;
+      container.innerHTML = '';
+      const datasets = chart.data.datasets || [];
+      datasets.forEach((ds, datasetIndex) => {
+        const label = String(ds.label || '');
+        if (label.includes('Range')) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ext-legend-btn';
+        const col = typeof ds.borderColor === 'string' ? ds.borderColor : (ds.borderColor && ds.borderColor.default) || '#95a5a6';
+        if (!chart.isDatasetVisible(datasetIndex)) {
+          btn.classList.add('ext-legend-btn--muted');
+        }
+        const sw = document.createElement('span');
+        sw.className = 'ext-legend-swatch';
+        sw.style.background = col;
+        const tx = document.createElement('span');
+        tx.textContent = label || ('Series ' + (datasetIndex + 1));
+        btn.appendChild(sw);
+        btn.appendChild(tx);
+        const idx = datasetIndex;
+        btn.addEventListener('click', function () {
+          if (chart.isDatasetVisible(idx)) {
+            chart.hide(idx);
+          } else {
+            chart.show(idx);
+          }
+          /* 'none' = skip animations so lines hide/show immediately */
+          chart.update('none');
+          mountExternalLineChartLegend(chart, container);
+        });
+        container.appendChild(btn);
+      });
+      const hint = document.createElement('p');
+      hint.className = 'ext-legend-hint';
+      hint.textContent = 'Click a label to show or hide that line.';
+      container.appendChild(hint);
+    }
+
     // Draw motor skills history chart
     function drawMotorSkillsHistoryChart() {
       if (typeof Chart === 'undefined') return;
@@ -4521,6 +4638,8 @@
         .filter(d => d !== null);
 
       if (motorSkillsData.length === 0) {
+        const mLegEmpty = document.getElementById('motorSkillsHistoryLegend');
+        if (mLegEmpty) mLegEmpty.innerHTML = '';
         document.getElementById('motorSkillsHistoryChart').parentElement.innerHTML =
           '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No motor skills history data available.</p>';
         return;
@@ -4540,6 +4659,8 @@
       const dynamicMax = Math.max(11, Math.ceil(maxDataValue * 1.2)); // Minimum 11 to show Excellent zone (9-10+) with proper visual space
 
       const ctx = document.getElementById('motorSkillsHistoryChart');
+      const mLegHost = document.getElementById('motorSkillsHistoryLegend');
+      if (mLegHost) mLegHost.innerHTML = '';
 
       if (window.motorSkillsHistoryChartInstance) {
         window.motorSkillsHistoryChartInstance.destroy();
@@ -4690,24 +4811,15 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: false,
           interaction: {
             mode: 'index',
             intersect: false
           },
           plugins: {
-            datalabels: { display: false },
+            datalabels: false,
             legend: {
-              display: true,
-              position: 'bottom',
-              labels: {
-                padding: 12,
-                font: { size: 11 },
-                usePointStyle: true,
-                filter: function(item, chart) {
-                  // Hide range datasets from legend
-                  return !item.text.includes('Range');
-                }
-              }
+              display: false
             },
             title: {
               display: true,
@@ -4781,6 +4893,9 @@
           }
         }
       });
+      if (mLegHost) {
+        mountExternalLineChartLegend(window.motorSkillsHistoryChartInstance, mLegHost);
+      }
     }
 
 
