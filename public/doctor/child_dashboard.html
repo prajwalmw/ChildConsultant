@@ -2331,23 +2331,21 @@
 
       if (!consultations || consultations.length === 0) return;
 
-      // Check if ANY consultation has nutritional health data
-      const hasNutritionalData = consultations.some(c =>
+      const nutritionalHasData = (c) =>
+        c &&
         c.nutritionalHealth &&
         (c.nutritionalHealth.energyLevel || c.nutritionalHealth.appetite ||
-         c.nutritionalHealth.fruitServings || c.nutritionalHealth.vegetableServings)
-      );
+         c.nutritionalHealth.fruitServings || c.nutritionalHealth.vegetableServings);
+
+      // Check if ANY consultation has nutritional health data
+      const hasNutritionalData = consultations.some(c => nutritionalHasData(c));
 
       if (!hasNutritionalData) {
         return; // No nutritional data at all, don't show the card
       }
 
       // Get the latest consultation with nutritional data
-      const latestConsultWithData = [...consultations].reverse().find(c =>
-        c.nutritionalHealth &&
-        (c.nutritionalHealth.energyLevel || c.nutritionalHealth.appetite ||
-         c.nutritionalHealth.fruitServings || c.nutritionalHealth.vegetableServings)
-      );
+      const latestConsultWithData = [...consultations].reverse().find(c => nutritionalHasData(c));
 
       if (!latestConsultWithData) {
         return;
@@ -2363,6 +2361,15 @@
       const scoreColor = getNutritionalScoreColor(overallScore);
       const scoreCategory = getNutritionalScoreCategory(overallScore);
       const alertLevel = getNutritionalAlertLevel(overallScore);
+
+      // "vs Last" — compare overall score to previous nutritional consult with data
+      const nutritionalConsultsWithData = consultations.filter(c => nutritionalHasData(c));
+      const prevNutritionalOverallScore = (() => {
+        if (nutritionalConsultsWithData.length < 2) return null;
+        const prev = nutritionalConsultsWithData[nutritionalConsultsWithData.length - 2];
+        const prevScores = calculateNutritionalScores(prev.nutritionalHealth, childData);
+        return prevScores.overall;
+      })();
 
       // Render the current view
       if (nutritionalScoreSection) {
@@ -2394,22 +2401,47 @@
           ${alertBanner}
 
           <!-- Main Score and Radar Chart Layout -->
-          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 20px;">
 
             <!-- Left: Overall Score Card -->
-            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 25px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 18px 16px 60px 16px; border-radius: 16px; box-shadow: 0 8px 22px rgba(0,0,0,0.12); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
 
               <!-- Color Guide Info Button -->
               <button onmouseenter="showNutritionalLegend()" onmouseleave="hideNutritionalLegend()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #27ae60; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="Color Guide">
                 i
               </button>
 
-              <div style="color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall Nutritional Score</div>
-              <div style="display: flex; align-items: baseline; gap: 5px;">
-                <div style="color: white; font-size: 52px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore}</div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 22px; font-weight: 600;">/100</div>
+              <div style="color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.2px; text-align: center;">Overall Nutritional Score</div>
+              <div style="display: flex; align-items: baseline; gap: 4px;">
+                <div style="color: white; font-size: 46px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 20px; font-weight: 600;">/100</div>
               </div>
-              <div style="color: white; font-size: 14px; font-weight: 600; margin-top: 8px; text-align: center;">${scoreCategory}</div>
+              <div style="color: white; font-size: 13px; font-weight: 600; margin-top: 4px; text-align: center;">${scoreCategory}</div>
+
+              <!-- Progress Indicator -->
+              ${(() => {
+                if (typeof prevNutritionalOverallScore === 'number') {
+                  const scoreDiff = overallScore - prevNutritionalOverallScore;
+                  const arrow = scoreDiff > 0 ? '↑' : scoreDiff < 0 ? '↓' : '→';
+                  const arrowColor = scoreDiff > 0 ? '#4caf50' : scoreDiff < 0 ? '#f44336' : '#95a5a6';
+                  const textColor = scoreDiff > 0 ? '#2e7d32' : scoreDiff < 0 ? '#c62828' : '#546e7a';
+                  const borderColor = scoreDiff > 0 ? '#4caf50' : scoreDiff < 0 ? '#f44336' : '#95a5a6';
+                  const status = scoreDiff > 0 ? 'Improved' : scoreDiff < 0 ? 'Declined' : 'Stable';
+                  return `
+                    <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); padding: 10px 12px; background: white; border: 2px solid ${borderColor}; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="color: #7f8c8d; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">vs Last</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="color: ${arrowColor}; font-size: 22px; font-weight: 900; line-height: 1;">${arrow}</div>
+                          <div style="color: ${textColor}; font-size: 16px; font-weight: 800; line-height: 1;">${Math.abs(scoreDiff).toFixed(0)}</div>
+                          <div style="color: ${textColor}; font-size: 9px; font-weight: 700; text-transform: uppercase;">${status}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }
+                return '';
+              })()}
 
               <!-- Color Guide Tooltip -->
               <div id="nutritionalLegendTooltip" onmouseenter="showNutritionalLegend()" onmouseleave="hideNutritionalLegend()" style="display: none; position: absolute; top: 45px; right: 8px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 100; width: 220px;">
@@ -2446,9 +2478,9 @@
           </div>
 
           <!-- Detailed Breakdown -->
-          <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-top: 20px;">
-            <h4 style="margin: 0 0 20px 0; color: #2c3e50;">📊 Detailed Assessment</h4>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+          <div style="background: #f8f9fa; padding: 16px; border-radius: 12px; margin-top: 16px;">
+            <h4 style="margin: 0 0 12px 0; color: #2c3e50;">📊 Detailed Assessment</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
               ${generateDetailedMetrics(nutritionalHealth, scores)}
             </div>
           </div>
@@ -2715,6 +2747,53 @@
       };
     }
 
+    /** Raw consultation inputs under each nutritional pillar (same pattern as motor/CDI/SISA). */
+    function nutritionalPillarInputRowsHtml(nh, pillar, color) {
+      if (!nh || typeof nh !== 'object') {
+        return `<div style="color: ${color}; font-size: 10px; font-weight: 500; margin-top: 3px; opacity: 0.85;">No data</div>`;
+      }
+      const rows = [];
+      const push = (label, val) => {
+        if (val == null || val === '') return;
+        if (Array.isArray(val) && val.length === 0) return;
+        const text = Array.isArray(val)
+          ? val.map((x) => escapeHtmlMotor(String(x))).join(', ')
+          : escapeHtmlMotor(String(val));
+        rows.push({ label, value: text });
+      };
+      if (pillar === 'physical') {
+        push('Energy level', nh.energyLevel);
+        push('Appetite', nh.appetite);
+        push('Skin', nh.skinHealth);
+        push('Hair', nh.hairQuality);
+        push('Nails', nh.nailHealth);
+      } else if (pillar === 'dietary') {
+        if (nh.mealsPerDay !== null && nh.mealsPerDay !== undefined) push('Meals per day', nh.mealsPerDay);
+        push('Dietary pattern', nh.dietaryPattern);
+        push('Breakfast regularity', nh.breakfastRegularity);
+        push('Junk food frequency', nh.junkFoodFrequency);
+        if (nh.supplements && nh.supplements.length) push('Supplements', nh.supplements.join(', '));
+      } else if (pillar === 'foodGroups') {
+        if (nh.fruitServings !== null && nh.fruitServings !== undefined) push('Fruit servings', nh.fruitServings);
+        if (nh.vegetableServings !== null && nh.vegetableServings !== undefined) push('Vegetable servings', nh.vegetableServings);
+        if (nh.dairyIntake !== null && nh.dairyIntake !== undefined) push('Dairy intake', nh.dairyIntake);
+      }
+      if (!rows.length) {
+        return `<div style="color: ${color}; font-size: 10px; font-weight: 500; margin-top: 3px; opacity: 0.85;">No inputs recorded this visit</div>`;
+      }
+      const n = rows.length;
+      const countLabel = n === 1 ? '1 input recorded' : `${n} inputs recorded`;
+      const body = rows.map((r) => `<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-top: 1px; font-size: 10px; line-height: 1.25; color: ${color};">
+          <span style="text-align: left; font-weight: 600;">${escapeHtmlMotor(r.label)}</span>
+          <span style="font-weight: 800; white-space: nowrap;">${r.value}</span>
+        </div>`).join('');
+      return `
+        <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(0,0,0,0.12);">
+          <div style="font-size: 8px; font-weight: 700; letter-spacing: 0.35px; text-transform: uppercase; opacity: 0.88; margin-bottom: 2px; color: ${color};">${countLabel}</div>
+          <div>${body}</div>
+        </div>`;
+    }
+
     // Generate detailed metrics HTML
     function generateDetailedMetrics(nutritionalHealth, scores) {
       // Helper function to get color scheme based on nutritional score
@@ -2767,20 +2846,23 @@
       const foodGroupsColors = getNutritionalColorScheme(scores.foodGroups);
 
       return `
-        <div style="background: ${physicalColors.bg}; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px ${physicalColors.shadow};">
-          <div style="color: ${physicalColors.text}; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Physical Indicators</div>
-          <div style="font-size: 28px; font-weight: 800; color: ${physicalColors.text};">${scores.physical}<span style="font-size: 16px; color: ${physicalColors.textLight}; font-weight: 500;">/100</span></div>
-          <div style="font-size: 11px; color: ${physicalColors.textLight}; margin-top: 5px;">Energy, Appetite, Skin, Hair, Nails</div>
+        <div style="background: ${physicalColors.bg}; padding: 10px 10px; border-radius: 10px; box-shadow: 0 3px 10px ${physicalColors.shadow};">
+          <div style="color: ${physicalColors.text}; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Physical Indicators</div>
+          <div style="font-size: 24px; font-weight: 800; color: ${physicalColors.text}; line-height: 1;">${scores.physical}<span style="font-size: 14px; color: ${physicalColors.textLight}; font-weight: 500;">/100</span></div>
+          <div style="font-size: 10px; color: ${physicalColors.textLight}; margin-top: 3px;">Energy, Appetite, Skin, Hair, Nails</div>
+          ${nutritionalPillarInputRowsHtml(nutritionalHealth, 'physical', physicalColors.text)}
         </div>
-        <div style="background: ${dietaryColors.bg}; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px ${dietaryColors.shadow};">
-          <div style="color: ${dietaryColors.text}; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Dietary Patterns</div>
-          <div style="font-size: 28px; font-weight: 800; color: ${dietaryColors.text};">${scores.dietaryPatterns}<span style="font-size: 16px; color: ${dietaryColors.textLight}; font-weight: 500;">/100</span></div>
-          <div style="font-size: 11px; color: ${dietaryColors.textLight}; margin-top: 5px;">Meal frequency, Breakfast, Junk food</div>
+        <div style="background: ${dietaryColors.bg}; padding: 10px 10px; border-radius: 10px; box-shadow: 0 3px 10px ${dietaryColors.shadow};">
+          <div style="color: ${dietaryColors.text}; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Dietary Patterns</div>
+          <div style="font-size: 24px; font-weight: 800; color: ${dietaryColors.text}; line-height: 1;">${scores.dietaryPatterns}<span style="font-size: 14px; color: ${dietaryColors.textLight}; font-weight: 500;">/100</span></div>
+          <div style="font-size: 10px; color: ${dietaryColors.textLight}; margin-top: 3px;">Meal frequency, Breakfast, Junk food, Supplements</div>
+          ${nutritionalPillarInputRowsHtml(nutritionalHealth, 'dietary', dietaryColors.text)}
         </div>
-        <div style="background: ${foodGroupsColors.bg}; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px ${foodGroupsColors.shadow};">
-          <div style="color: ${foodGroupsColors.text}; font-size: 14px; font-weight: 600; margin-bottom: 8px;">Food Groups Balance</div>
-          <div style="font-size: 28px; font-weight: 800; color: ${foodGroupsColors.text};">${scores.foodGroups}<span style="font-size: 16px; color: ${foodGroupsColors.textLight}; font-weight: 500;">/100</span></div>
-          <div style="font-size: 11px; color: ${foodGroupsColors.textLight}; margin-top: 5px;">Fruits, Vegetables, Dairy intake</div>
+        <div style="background: ${foodGroupsColors.bg}; padding: 10px 10px; border-radius: 10px; box-shadow: 0 3px 10px ${foodGroupsColors.shadow};">
+          <div style="color: ${foodGroupsColors.text}; font-size: 13px; font-weight: 600; margin-bottom: 4px;">Food Groups Balance</div>
+          <div style="font-size: 24px; font-weight: 800; color: ${foodGroupsColors.text}; line-height: 1;">${scores.foodGroups}<span style="font-size: 14px; color: ${foodGroupsColors.textLight}; font-weight: 500;">/100</span></div>
+          <div style="font-size: 10px; color: ${foodGroupsColors.textLight}; margin-top: 3px;">Fruits, Vegetables, Dairy intake</div>
+          ${nutritionalPillarInputRowsHtml(nutritionalHealth, 'foodGroups', foodGroupsColors.text)}
         </div>
       `;
     }
@@ -3173,6 +3255,161 @@
     }
 
     // ==================== MOTOR SKILLS FUNCTIONS ====================
+    // Labels must match skill ids saved from patient_consultation.html (motor-* inputs).
+    const MOTOR_SKILL_LABELS = {
+      walking: 'Independent Walking',
+      running: 'Running',
+      kickingBall: 'Kicking Ball',
+      climbingStairs: 'Climbing Stairs',
+      hopping: 'Hopping on One Foot',
+      pedalingTricycle: 'Pedaling Tricycle',
+      catchingBall: 'Catching Ball',
+      climbing: 'Climbing',
+      skipping: 'Skipping',
+      jumpingRope: 'Jumping Rope',
+      ridingBicycle: 'Riding Bicycle',
+      sportsSkills: 'Sports Skills',
+      complexSports: 'Complex Sports Skills',
+      reactionTime: 'Reaction Time',
+      stackingBlocks: 'Stacking Blocks',
+      scribbling: 'Scribbling/Drawing',
+      usingUtensils: 'Using Spoon/Fork',
+      drawingShapes: 'Drawing Shapes',
+      cuttingScissors: 'Cutting with Scissors',
+      buttoningZipping: 'Buttoning/Zipping',
+      handwriting: 'Handwriting',
+      tyingShoelaces: 'Tying Shoelaces',
+      usingTools: 'Using Tools',
+      fineMotorPrecision: 'Fine Motor Precision',
+      throwingBall: 'Throwing Overhand',
+      balance: 'Balance',
+      balancingOneFoot: 'Balancing',
+      balanceBeam: 'Balance Beam',
+      advancedCoordination: 'Advanced Coordination',
+      stamina: 'Physical Stamina',
+      endurance: 'Endurance',
+      muscleTone: 'Muscle Tone'
+    };
+
+    function escapeHtmlMotor(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function motorSkillLabelFromId(id) {
+      if (MOTOR_SKILL_LABELS[id]) return MOTOR_SKILL_LABELS[id];
+      return String(id).replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).trim();
+    }
+
+    /** Generic assessed key→numeric score list (motor, CDI, SISA). */
+    function assessedItemsHtml(sectionObj, color, labelMap, labelFromIdFn, itemSingular, itemPlural) {
+      if (!sectionObj || typeof sectionObj !== 'object') {
+        return `<div style="color: ${color}; font-size: 10px; font-weight: 500; margin-top: 3px; opacity: 0.85;">No data</div>`;
+      }
+      const entries = Object.entries(sectionObj).filter(([, v]) => {
+        const n = Number(v);
+        return v != null && v !== '' && Number.isFinite(n) && n > 0;
+      });
+      if (!entries.length) {
+        return `<div style="color: ${color}; font-size: 10px; font-weight: 500; margin-top: 3px; opacity: 0.85;">No items assessed this visit</div>`;
+      }
+      const n = entries.length;
+      const countLabel = n === 1 ? `1 ${itemSingular} assessed` : `${n} ${itemPlural} assessed`;
+      const resolveLabel = typeof labelFromIdFn === 'function' ? labelFromIdFn : (id) => (labelMap && labelMap[id]) || String(id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      const rows = entries.map(([id, val]) => {
+        const label = resolveLabel(id);
+        const num = Number(val);
+        const scoreTxt = Number.isFinite(num) ? num.toFixed(1) : escapeHtmlMotor(val);
+        return `<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-top: 1px; font-size: 10px; line-height: 1.25; color: ${color};">
+          <span style="text-align: left; font-weight: 600;">${escapeHtmlMotor(label)}</span>
+          <span style="font-weight: 800; white-space: nowrap;">${scoreTxt}</span>
+        </div>`;
+      }).join('');
+      return `
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); color: ${color};">
+          <div style="font-size: 8px; font-weight: 700; letter-spacing: 0.35px; text-transform: uppercase; opacity: 0.88; margin-bottom: 6px;">${countLabel}</div>
+          <div>${rows}</div>
+        </div>`;
+    }
+
+    /** Lists each assessed motor skill + score. */
+    function motorCategoryAssessedHtml(sectionObj, color) {
+      return assessedItemsHtml(sectionObj, color, MOTOR_SKILL_LABELS, motorSkillLabelFromId, 'skill', 'skills');
+    }
+
+    /**
+     * Gradient "pillar" card colors (motor, CDI domain raw 0–10, SISA domain 0–10).
+     * Thresholds match motor sub-skill clinical bands.
+     */
+    function pillarColorSchemeFromTen(score) {
+      const s = Number(score);
+      if (!Number.isFinite(s)) {
+        return {
+          bg: 'linear-gradient(135deg, #eceff1 0%, #cfd8dc 100%)',
+          text: '#37474f',
+          textLight: '#546e7a',
+          shadow: 'rgba(120, 144, 156, 0.25)'
+        };
+      }
+      if (s >= 9.0) {
+        return {
+          bg: 'linear-gradient(135deg, #81c784 0%, #66bb6a 100%)',
+          text: '#1b5e20',
+          textLight: '#2e7d32',
+          shadow: 'rgba(102, 187, 106, 0.3)'
+        };
+      }
+      if (s >= 7.5) {
+        return {
+          bg: 'linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%)',
+          text: '#0d47a1',
+          textLight: '#1565c0',
+          shadow: 'rgba(66, 165, 245, 0.3)'
+        };
+      }
+      if (s >= 6.0) {
+        return {
+          bg: 'linear-gradient(135deg, #ffd54f 0%, #ffca28 100%)',
+          text: '#f57f17',
+          textLight: '#f9a825',
+          shadow: 'rgba(255, 202, 40, 0.3)'
+        };
+      }
+      if (s >= 4.0) {
+        return {
+          bg: 'linear-gradient(135deg, #ffb74d 0%, #ffa726 100%)',
+          text: '#e65100',
+          textLight: '#ef6c00',
+          shadow: 'rgba(255, 167, 38, 0.3)'
+        };
+      }
+      return {
+        bg: 'linear-gradient(135deg, #e57373 0%, #ef5350 100%)',
+        text: '#b71c1c',
+        textLight: '#c62828',
+        shadow: 'rgba(239, 83, 80, 0.3)'
+      };
+    }
+
+    /** Two-line uppercase titles for pillar cards (same idea as motor "Gross / Motor"). */
+    function pillarDomainTitleInnerHtml(title) {
+      if (title.includes(' / ')) {
+        const [a, b] = title.split(' / ');
+        return `${escapeHtmlMotor(a)} /<br>${escapeHtmlMotor(b)}`;
+      }
+      if (title.includes(' & ')) {
+        const [a, b] = title.split(' & ');
+        return `${escapeHtmlMotor(a)} &<br>${escapeHtmlMotor(b)}`;
+      }
+      const dash = title.indexOf('-');
+      if (dash > 0) {
+        return `${escapeHtmlMotor(title.slice(0, dash))}-<br>${escapeHtmlMotor(title.slice(dash + 1))}`;
+      }
+      return escapeHtmlMotor(title);
+    }
 
     // Display motor skills chart
     function displayMotorSkillsChart(consultations, childData) {
@@ -3219,6 +3456,9 @@
       const scoreCategory = getScoreCategory(overallScore);
       const alertLevel = motorSkills.alertLevel || 'none';
 
+      // Used by the main overall card progress indicator ("vs Last")
+      const consultsWithData = consultations.filter(c => c.motorSkills && c.motorSkills.overallScore);
+
       // Render score display
       if (motorSkillsScoreSection) {
         let alertBanner = '';
@@ -3253,25 +3493,24 @@
           ${alertBanner}
 
           <!-- Main Score Layout - Side by Side -->
-          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 20px;">
 
             <!-- Left: Overall Score Card -->
-            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 26px 20px; border-radius: 16px; box-shadow: 0 8px 22px rgba(0,0,0,0.12); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
               <!-- Info Button -->
               <button onmouseenter="showMotorSkillsLegend()" onmouseleave="hideMotorSkillsLegend()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #1976d2; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="Color Guide">
                 i
               </button>
 
-              <div style="color: rgba(255,255,255,0.95); font-size: 13px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall Score</div>
-              <div style="display: flex; align-items: baseline; gap: 8px;">
-                <div style="color: white; font-size: 72px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore.toFixed(1)}</div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 28px; font-weight: 600;">/10</div>
+              <div style="color: rgba(255,255,255,0.95); font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1.2px; text-align: center;">Overall Score</div>
+              <div style="display: flex; align-items: baseline; gap: 6px;">
+                <div style="color: white; font-size: 58px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore.toFixed(1)}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 22px; font-weight: 600;">/10</div>
               </div>
-              <div style="color: white; font-size: 16px; font-weight: 600; margin-top: 12px; text-align: center;">${scoreCategory}</div>
+              <div style="color: white; font-size: 14px; font-weight: 600; margin-top: 6px; text-align: center;">${scoreCategory}</div>
 
               <!-- Progress Indicator -->
               ${(() => {
-                const consultsWithData = consultations.filter(c => c.motorSkills && c.motorSkills.overallScore);
                 if (consultsWithData.length >= 2) {
                   const currentConsult = consultsWithData[consultsWithData.length - 1];
                   const prevConsult = consultsWithData[consultsWithData.length - 2];
@@ -3328,104 +3567,64 @@
             </div>
 
             <!-- Right: Subcategories Grid -->
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
               ${(() => {
-                // Helper function to get color scheme based on motor skills score
-                const getMotorSkillsColorScheme = (score) => {
-                  if (score >= 9.0) {
-                    return {
-                      bg: 'linear-gradient(135deg, #81c784 0%, #66bb6a 100%)',
-                      text: '#1b5e20',
-                      textLight: '#2e7d32',
-                      shadow: 'rgba(102, 187, 106, 0.3)'
-                    };
-                  } else if (score >= 7.5) {
-                    return {
-                      bg: 'linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%)',
-                      text: '#0d47a1',
-                      textLight: '#1565c0',
-                      shadow: 'rgba(66, 165, 245, 0.3)'
-                    };
-                  } else if (score >= 6.0) {
-                    return {
-                      bg: 'linear-gradient(135deg, #ffd54f 0%, #ffca28 100%)',
-                      text: '#f57f17',
-                      textLight: '#f9a825',
-                      shadow: 'rgba(255, 202, 40, 0.3)'
-                    };
-                  } else if (score >= 4.0) {
-                    return {
-                      bg: 'linear-gradient(135deg, #ffb74d 0%, #ffa726 100%)',
-                      text: '#e65100',
-                      textLight: '#ef6c00',
-                      shadow: 'rgba(255, 167, 38, 0.3)'
-                    };
-                  } else {
-                    return {
-                      bg: 'linear-gradient(135deg, #e57373 0%, #ef5350 100%)',
-                      text: '#b71c1c',
-                      textLight: '#c62828',
-                      shadow: 'rgba(239, 83, 80, 0.3)'
-                    };
-                  }
-                };
-
-                const grossColors = getMotorSkillsColorScheme(motorSkills.grossMotorAvg);
-                const fineColors = getMotorSkillsColorScheme(motorSkills.fineMotorAvg);
-                const balanceColors = getMotorSkillsColorScheme(motorSkills.balanceAvg);
-                const strengthColors = getMotorSkillsColorScheme(motorSkills.strengthAvg);
+                const grossColors = pillarColorSchemeFromTen(motorSkills.grossMotorAvg);
+                const fineColors = pillarColorSchemeFromTen(motorSkills.fineMotorAvg);
+                const balanceColors = pillarColorSchemeFromTen(motorSkills.balanceAvg);
+                const strengthColors = pillarColorSchemeFromTen(motorSkills.strengthAvg);
 
                 return `
               <!-- Gross Motor -->
-              <div style="background: ${grossColors.bg}; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px ${grossColors.shadow}; transition: transform 0.2s;">
-                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                  <span style="font-size: 24px; margin-right: 8px;">🏃</span>
-                  <div style="color: ${grossColors.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Gross<br>Motor</div>
+              <div style="background: ${grossColors.bg}; padding: 12px 12px; border-radius: 12px; box-shadow: 0 3px 10px ${grossColors.shadow}; transition: transform 0.2s;">
+                <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                  <span style="font-size: 20px; margin-right: 6px;">🏃</span>
+                  <div style="color: ${grossColors.text}; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.25;">Gross<br>Motor</div>
                 </div>
-                <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                  <div style="color: ${grossColors.text}; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.grossMotorAvg.toFixed(1)}</div>
-                  <div style="color: ${grossColors.textLight}; font-size: 18px; font-weight: 600;">/10</div>
+                <div style="display: flex; align-items: baseline; gap: 3px; margin-bottom: 2px;">
+                  <div style="color: ${grossColors.text}; font-size: 34px; font-weight: 800; line-height: 1;">${motorSkills.grossMotorAvg.toFixed(1)}</div>
+                  <div style="color: ${grossColors.textLight}; font-size: 15px; font-weight: 600;">/10</div>
                 </div>
-                <div style="color: ${grossColors.text}; font-size: 10px; font-weight: 500;">${motorSkills.grossMotor ? Object.keys(motorSkills.grossMotor).length + ' skills' : 'No data'}</div>
+                ${motorCategoryAssessedHtml(motorSkills.grossMotor, grossColors.text)}
               </div>
 
               <!-- Fine Motor -->
-              <div style="background: ${fineColors.bg}; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px ${fineColors.shadow}; transition: transform 0.2s;">
-                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                  <span style="font-size: 24px; margin-right: 8px;">✋</span>
-                  <div style="color: ${fineColors.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Fine<br>Motor</div>
+              <div style="background: ${fineColors.bg}; padding: 12px 12px; border-radius: 12px; box-shadow: 0 3px 10px ${fineColors.shadow}; transition: transform 0.2s;">
+                <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                  <span style="font-size: 20px; margin-right: 6px;">✋</span>
+                  <div style="color: ${fineColors.text}; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.25;">Fine<br>Motor</div>
                 </div>
-                <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                  <div style="color: ${fineColors.text}; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.fineMotorAvg.toFixed(1)}</div>
-                  <div style="color: ${fineColors.textLight}; font-size: 18px; font-weight: 600;">/10</div>
+                <div style="display: flex; align-items: baseline; gap: 3px; margin-bottom: 2px;">
+                  <div style="color: ${fineColors.text}; font-size: 34px; font-weight: 800; line-height: 1;">${motorSkills.fineMotorAvg.toFixed(1)}</div>
+                  <div style="color: ${fineColors.textLight}; font-size: 15px; font-weight: 600;">/10</div>
                 </div>
-                <div style="color: ${fineColors.text}; font-size: 10px; font-weight: 500;">${motorSkills.fineMotor ? Object.keys(motorSkills.fineMotor).length + ' skills' : 'No data'}</div>
+                ${motorCategoryAssessedHtml(motorSkills.fineMotor, fineColors.text)}
               </div>
 
               <!-- Balance & Coordination -->
-              <div style="background: ${balanceColors.bg}; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px ${balanceColors.shadow}; transition: transform 0.2s;">
-                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                  <span style="font-size: 24px; margin-right: 8px;">⚖️</span>
-                  <div style="color: ${balanceColors.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Balance &<br>Coordination</div>
+              <div style="background: ${balanceColors.bg}; padding: 12px 12px; border-radius: 12px; box-shadow: 0 3px 10px ${balanceColors.shadow}; transition: transform 0.2s;">
+                <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                  <span style="font-size: 20px; margin-right: 6px;">⚖️</span>
+                  <div style="color: ${balanceColors.text}; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.25;">Balance &<br>Coordination</div>
                 </div>
-                <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                  <div style="color: ${balanceColors.text}; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.balanceAvg.toFixed(1)}</div>
-                  <div style="color: ${balanceColors.textLight}; font-size: 18px; font-weight: 600;">/10</div>
+                <div style="display: flex; align-items: baseline; gap: 3px; margin-bottom: 2px;">
+                  <div style="color: ${balanceColors.text}; font-size: 34px; font-weight: 800; line-height: 1;">${motorSkills.balanceAvg.toFixed(1)}</div>
+                  <div style="color: ${balanceColors.textLight}; font-size: 15px; font-weight: 600;">/10</div>
                 </div>
-                <div style="color: ${balanceColors.text}; font-size: 10px; font-weight: 500;">${motorSkills.balance ? Object.keys(motorSkills.balance).length + ' skills' : 'No data'}</div>
+                ${motorCategoryAssessedHtml(motorSkills.balance, balanceColors.text)}
               </div>
 
               <!-- Strength & Endurance -->
-              <div style="background: ${strengthColors.bg}; padding: 25px 20px; border-radius: 15px; box-shadow: 0 5px 15px ${strengthColors.shadow}; transition: transform 0.2s;">
-                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                  <span style="font-size: 24px; margin-right: 8px;">💪</span>
-                  <div style="color: ${strengthColors.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3;">Strength &<br>Endurance</div>
+              <div style="background: ${strengthColors.bg}; padding: 12px 12px; border-radius: 12px; box-shadow: 0 3px 10px ${strengthColors.shadow}; transition: transform 0.2s;">
+                <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                  <span style="font-size: 20px; margin-right: 6px;">💪</span>
+                  <div style="color: ${strengthColors.text}; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.25;">Strength &<br>Endurance</div>
                 </div>
-                <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                  <div style="color: ${strengthColors.text}; font-size: 42px; font-weight: 800; line-height: 1;">${motorSkills.strengthAvg.toFixed(1)}</div>
-                  <div style="color: ${strengthColors.textLight}; font-size: 18px; font-weight: 600;">/10</div>
+                <div style="display: flex; align-items: baseline; gap: 3px; margin-bottom: 2px;">
+                  <div style="color: ${strengthColors.text}; font-size: 34px; font-weight: 800; line-height: 1;">${motorSkills.strengthAvg.toFixed(1)}</div>
+                  <div style="color: ${strengthColors.textLight}; font-size: 15px; font-weight: 600;">/10</div>
                 </div>
-                <div style="color: ${strengthColors.text}; font-size: 10px; font-weight: 500;">${motorSkills.strength ? Object.keys(motorSkills.strength).length + ' skills' : 'No data'}</div>
+                ${motorCategoryAssessedHtml(motorSkills.strength, strengthColors.text)}
               </div>
                 `;
               })()}
@@ -3461,6 +3660,110 @@
       return '#f44336';                   // Concern: Red
     }
 
+    // CDI item labels — ids must match patient_consultation.html cognitiveQuestions (cdi-*).
+    const CDI_SKILL_LABELS = {
+      attention_engage: 'Sustained Engagement',
+      attention_instructions: 'Following Instructions',
+      attention_activity: 'Activity Completion',
+      attention_multistep: 'Multi-Step Instructions',
+      attention_classroom: 'Classroom Focus',
+      attention_distractions: 'Ignoring Distractions',
+      attention_sustained: 'Sustained Attention',
+      attention_planning: 'Planning & Organization',
+      memory_objects: 'Object Recognition',
+      memory_people: 'Familiar People',
+      memory_sequences: 'Sequence Recall',
+      memory_stories: 'Story Recall',
+      memory_academic: 'Academic Information',
+      memory_instructions: 'Multi-Part Instructions',
+      memory_complex: 'Complex Information',
+      memory_longterm: 'Long-Term Memory',
+      problem_shapes: 'Shape Sorting',
+      problem_cause: 'Cause & Effect',
+      problem_puzzles: 'Puzzle Solving',
+      problem_strategies: 'Problem Strategies',
+      problem_math: 'Math Problem-Solving',
+      problem_logic: 'Logical Thinking',
+      problem_abstract: 'Abstract Thinking',
+      problem_critical: 'Critical Thinking',
+      language_vocabulary: 'Vocabulary',
+      language_questions: 'Asking Questions',
+      language_sentences: 'Sentence Structure',
+      language_conversation: 'Conversation Skills',
+      language_reading: 'Reading Comprehension',
+      language_expression: 'Written Expression',
+      language_advanced: 'Advanced Language',
+      language_writing: 'Writing Skills',
+      learning_imitation: 'Imitation',
+      learning_curiosity: 'Curiosity',
+      learning_alphabet: 'Pre-Literacy',
+      learning_engagement: 'Learning Engagement',
+      learning_independence: 'Independent Learning',
+      learning_strategies: 'Learning Strategies',
+      learning_selfregulation: 'Self-Regulation',
+      learning_metacognition: 'Metacognition'
+    };
+
+    function cdiSkillLabelFromId(id) {
+      if (CDI_SKILL_LABELS[id]) return CDI_SKILL_LABELS[id];
+      return String(id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    // SISA item labels — ids must match patient_consultation.html socialSkillsQuestions (sisa-*).
+    const SISA_SKILL_LABELS = {
+      comm_express: 'Expression of Needs',
+      comm_respond: 'Response to Others',
+      comm_sentences: 'Verbal Communication',
+      comm_listening: 'Listening Skills',
+      comm_appropriate: 'Appropriate Language',
+      comm_conversation: 'Conversation & Discussion Skills',
+      comm_disagreement: 'Handling Disagreements',
+      comm_conflict: 'Conflict Resolution',
+      interact_peers: 'Peer Interaction',
+      interact_adults: 'Adult Interaction',
+      reg_emotions: 'Emotional Regulation',
+      reg_transitions: 'Handling Transitions',
+      coop_sharing: 'Sharing / Sharing Awareness',
+      coop_rules: 'Following Rules',
+      coop_turnTaking: 'Turn-Taking',
+      coop_teamwork: 'Teamwork',
+      coop_helping: 'Helping Others',
+      coop_completes: 'Completing Tasks',
+      coop_collaborative: 'Collaboration',
+      coop_leadership: 'Shared Leadership',
+      coop_compromise: 'Compromise',
+      emp_feelings: 'Recognizing Feelings',
+      emp_comfort: 'Showing Concern',
+      emp_perspective: 'Perspective-Taking',
+      emp_diverse: 'Respecting Differences',
+      emp_supportive: 'Being Supportive',
+      emp_bullying: 'Standing Against Bullying',
+      control_impulse: 'Impulse Control',
+      control_frustration: 'Frustration Tolerance',
+      control_temper: 'Temper Control',
+      control_waiting: 'Patience',
+      control_emotions: 'Emotional Regulation',
+      control_stress: 'Stress Management',
+      engage_group: 'Group Participation',
+      engage_activities: 'Social Engagement',
+      engage_friendships: 'Maintaining Friendships',
+      engage_community: 'Community Involvement',
+      assert_opinions: 'Expressing Opinions',
+      assert_situations: 'Handling Situations',
+      assert_boundaries: 'Setting Boundaries',
+      assert_pressure: 'Peer Pressure Resistance',
+      assert_speaking: 'Speaking Up',
+      resp_materials: 'Caring for Materials',
+      resp_mistakes: 'Accepting Responsibility',
+      resp_commitments: 'Meeting Commitments',
+      resp_accountability: 'Accountability'
+    };
+
+    function sisaSkillLabelFromId(id) {
+      if (SISA_SKILL_LABELS[id]) return SISA_SKILL_LABELS[id];
+      return String(id).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
     // Display cognitive development chart
     function displayCognitiveChart(consultations, childData) {
       const cognitiveCard = document.getElementById('cognitiveCard');
@@ -3477,6 +3780,31 @@
       if (!hasCognitiveData) {
         return; // No cognitive data at all, don't show the card
       }
+
+      const cognitiveHasData = (c) => {
+        const cog = c && c.cognitiveHealth;
+        return cog && (cog.overallScore || cog.attentionAvg || cog.memoryAvg || cog.problemSolvingAvg || cog.languageAvg || cog.learningAvg);
+      };
+
+      const computeCdiOverallScore = (cog) => {
+        if (!cog) return null;
+        let os = cog.overallScore;
+        if (!os && (cog.attentionAvg || cog.memoryAvg || cog.problemSolvingAvg || cog.languageAvg || cog.learningAvg)) {
+          const assessedScores = [
+            cog.attentionAvg,
+            cog.memoryAvg,
+            cog.problemSolvingAvg,
+            cog.languageAvg,
+            cog.learningAvg
+          ].filter(score => score && score > 0);
+
+          if (assessedScores.length > 0) {
+            const rawScore = assessedScores.reduce((a, b) => a + b, 0) / assessedScores.length;
+            os = Math.round(rawScore * 13);
+          }
+        }
+        return typeof os === 'number' ? os : Number(os);
+      };
 
       // Get the latest consultation with actual cognitive data
       const latestConsultWithData = [...consultations].reverse().find(c => {
@@ -3507,6 +3835,13 @@
           overallScore = Math.round(rawScore * 13); // Convert 0-10 scale to 0-130 Bayley-4 scale
         }
       }
+
+      const cognitiveConsultsWithData = consultations.filter(c => cognitiveHasData(c));
+      const prevCdiOverallScore = (() => {
+        if (cognitiveConsultsWithData.length < 2) return null;
+        const prev = cognitiveConsultsWithData[cognitiveConsultsWithData.length - 2];
+        return computeCdiOverallScore(prev.cognitiveHealth);
+      })();
 
       // Calculate color and status based on overall score (Bayley-4 scale: 0-130)
       const getScoreColor = (score) => {
@@ -3558,14 +3893,41 @@
           `;
         }
 
+        const cdiDomainHtml = [
+          { objKey: 'attention', avgKey: 'attentionAvg', title: 'Attention & Focus', emoji: '👁️' },
+          { objKey: 'memory', avgKey: 'memoryAvg', title: 'Memory', emoji: '🧠' },
+          { objKey: 'problemSolving', avgKey: 'problemSolvingAvg', title: 'Problem-Solving', emoji: '🧩' },
+          { objKey: 'language', avgKey: 'languageAvg', title: 'Language & Communication', emoji: '💬' },
+          { objKey: 'learning', avgKey: 'learningAvg', title: 'Learning Readiness', emoji: '📚' }
+        ].map(({ objKey, avgKey, title, emoji }) => {
+          const avg = cognitive[avgKey];
+          if (!avg || Number(avg) <= 0) return '';
+          const avgNum = Number(avg);
+          const score130 = Math.round(avgNum * 13);
+          const cols = pillarColorSchemeFromTen(avgNum);
+          const sub = cognitive[objKey];
+          return `<div style="background: ${cols.bg}; padding: 12px 12px; border-radius: 12px; box-shadow: 0 3px 10px ${cols.shadow}; transition: transform 0.2s;">
+                    <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                      <span style="font-size: 20px; margin-right: 6px;">${emoji}</span>
+                      <div style="color: ${cols.text}; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.25;">${pillarDomainTitleInnerHtml(title)}</div>
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 3px; margin-bottom: 2px;">
+                      <div style="color: ${cols.text}; font-size: 34px; font-weight: 800; line-height: 1;">${avgNum.toFixed(1)}</div>
+                      <div style="color: ${cols.textLight}; font-size: 15px; font-weight: 600;">/10</div>
+                    </div>
+                    <div style="color: ${cols.textLight}; font-size: 9px; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.25px;">CDI domain ${score130} / 130</div>
+                    ${assessedItemsHtml(sub, cols.text, CDI_SKILL_LABELS, cdiSkillLabelFromId, 'item', 'items')}
+                  </div>`;
+        }).join('');
+
         cognitiveScoreSection.innerHTML = `
           ${alertBanner}
 
           <!-- Main Score Layout - Side by Side -->
-          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 20px;">
 
             <!-- Left: Overall Score Card -->
-            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 26px 20px 66px 20px; border-radius: 16px; box-shadow: 0 8px 22px rgba(0,0,0,0.12); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
 
               <button onmouseenter="showCognitiveLegend()" onmouseleave="hideCognitiveLegend()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #9b59b6; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="CDI Score Guide">
                 i
@@ -3598,74 +3960,45 @@
                 </div>
               </div>
 
-              <div style="color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; text-align: center;">Overall CDI Score</div>
-              <div style="display: flex; align-items: baseline; gap: 5px;">
-                <div style="color: white; font-size: 56px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore}</div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 24px; font-weight: 600;">/130</div>
+              <div style="color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.2px; text-align: center;">Overall CDI Score</div>
+              <div style="display: flex; align-items: baseline; gap: 4px;">
+                <div style="color: white; font-size: 48px; font-weight: 800; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">${overallScore}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 20px; font-weight: 600;">/130</div>
               </div>
-              <div style="color: white; font-size: 15px; font-weight: 600; margin-top: 8px; text-align: center;">${scoreCategory}</div>
-              <div style="color: rgba(255,255,255,0.85); font-size: 11px; margin-top: 12px; text-align: center; line-height: 1.4;">Bayley-4 Scale<br>(Mean=100, SD=15)</div>
+              <div style="color: white; font-size: 14px; font-weight: 600; margin-top: 4px; text-align: center;">${scoreCategory}</div>
+              <div style="color: rgba(255,255,255,0.85); font-size: 10px; margin-top: 6px; text-align: center; line-height: 1.35;">Bayley-4 Scale<br>(Mean=100, SD=15)</div>
+
+              <!-- Progress Indicator -->
+              ${(() => {
+                if (typeof prevCdiOverallScore === 'number' && Number.isFinite(prevCdiOverallScore)) {
+                  const scoreDiff = overallScore - prevCdiOverallScore;
+                  const arrow = scoreDiff > 0 ? '↑' : scoreDiff < 0 ? '↓' : '→';
+                  const arrowColor = scoreDiff > 0 ? '#4caf50' : scoreDiff < 0 ? '#f44336' : '#95a5a6';
+                  const textColor = scoreDiff > 0 ? '#2e7d32' : scoreDiff < 0 ? '#c62828' : '#546e7a';
+                  const borderColor = scoreDiff > 0 ? '#4caf50' : scoreDiff < 0 ? '#f44336' : '#95a5a6';
+                  const status = scoreDiff > 0 ? 'Improved' : scoreDiff < 0 ? 'Declined' : 'Stable';
+                  return `
+                    <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); padding: 10px 12px; background: white; border: 2px solid ${borderColor}; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="color: #7f8c8d; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">vs Last</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="color: ${arrowColor}; font-size: 22px; font-weight: 900; line-height: 1;">${arrow}</div>
+                          <div style="color: ${textColor}; font-size: 16px; font-weight: 800; line-height: 1;">${Math.abs(scoreDiff).toFixed(0)}</div>
+                          <div style="color: ${textColor}; font-size: 9px; font-weight: 700; text-transform: uppercase;">${status}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }
+                return '';
+              })()}
             </div>
 
-            <!-- Right: Domain Breakdown -->
-            <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-              <h4 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 16px;">Domain Scores</h4>
-
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                ${cognitive.attentionAvg ? (() => {
-                  const score = Math.round(cognitive.attentionAvg * 13);
-                  const color = getCognitiveScoreColor(score);
-                  return `
-                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
-                    <span style="font-size: 13px; color: #555; font-weight: 500;">👁️ Attention & Focus</span>
-                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
-                  </div>
-                  `;
-                })() : ''}
-
-                ${cognitive.memoryAvg ? (() => {
-                  const score = Math.round(cognitive.memoryAvg * 13);
-                  const color = getCognitiveScoreColor(score);
-                  return `
-                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
-                    <span style="font-size: 13px; color: #555; font-weight: 500;">🧠 Memory</span>
-                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
-                  </div>
-                  `;
-                })() : ''}
-
-                ${cognitive.problemSolvingAvg ? (() => {
-                  const score = Math.round(cognitive.problemSolvingAvg * 13);
-                  const color = getCognitiveScoreColor(score);
-                  return `
-                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
-                    <span style="font-size: 13px; color: #555; font-weight: 500;">🧩 Problem-Solving</span>
-                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
-                  </div>
-                  `;
-                })() : ''}
-
-                ${cognitive.languageAvg ? (() => {
-                  const score = Math.round(cognitive.languageAvg * 13);
-                  const color = getCognitiveScoreColor(score);
-                  return `
-                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
-                    <span style="font-size: 13px; color: #555; font-weight: 500;">💬 Language & Communication</span>
-                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
-                  </div>
-                  `;
-                })() : ''}
-
-                ${cognitive.learningAvg ? (() => {
-                  const score = Math.round(cognitive.learningAvg * 13);
-                  const color = getCognitiveScoreColor(score);
-                  return `
-                  <div style="background: linear-gradient(135deg, ${color}15 0%, ${color}25 100%); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid ${color};">
-                    <span style="font-size: 13px; color: #555; font-weight: 500;">📚 Learning Readiness</span>
-                    <span style="font-weight: 700; font-size: 15px; color: ${color};">${score}/130</span>
-                  </div>
-                  `;
-                })() : ''}
+            <!-- Right: Domain pillars (same card pattern as motor) -->
+            <div>
+              <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 15px;">Domain Scores</h4>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                ${cdiDomainHtml}
               </div>
             </div>
           </div>
@@ -4066,21 +4399,22 @@
 
       if (!consultations || consultations.length === 0) return;
 
+      const socialHasAnyAvg = (s) => s && (
+        s.overallScore ||
+        (s.communicationAvg > 0) || (s.cooperationAvg > 0) || (s.empathyAvg > 0) ||
+        (s.selfControlAvg > 0) || (s.engagementAvg > 0) || (s.interactionAvg > 0) ||
+        (s.selfRegulationAvg > 0) || (s.assertionAvg > 0) || (s.responsibilityAvg > 0)
+      );
+
       // Check if ANY consultation has social skills data
-      const hasSocialData = consultations.some(c => {
-        const social = c.socialSkills;
-        return social && (social.overallScore || social.communicationAvg || social.cooperationAvg);
-      });
+      const hasSocialData = consultations.some(c => socialHasAnyAvg(c.socialSkills));
 
       if (!hasSocialData) {
         return; // No social skills data at all, don't show the card
       }
 
       // Get the latest consultation with actual social skills data
-      const latestConsultWithData = [...consultations].reverse().find(c => {
-        const social = c.socialSkills;
-        return social && (social.overallScore || social.communicationAvg || social.cooperationAvg);
-      });
+      const latestConsultWithData = [...consultations].reverse().find(c => socialHasAnyAvg(c.socialSkills));
 
       if (!latestConsultWithData) return;
 
@@ -4100,6 +4434,31 @@
           overallScore = parseFloat((rawScore * 10).toFixed(2));
         }
       }
+
+      const computeSisaOverallScore = (s) => {
+        if (!s) return null;
+        let os = s.overallScore;
+        if (!os) {
+          const assessedScores = [
+            s.communicationAvg, s.cooperationAvg, s.empathyAvg,
+            s.selfControlAvg, s.engagementAvg, s.interactionAvg,
+            s.selfRegulationAvg, s.assertionAvg, s.responsibilityAvg
+          ].filter(score => score && score > 0);
+
+          if (assessedScores.length > 0) {
+            const rawScore = assessedScores.reduce((a, b) => a + b, 0) / assessedScores.length;
+            os = parseFloat((rawScore * 10).toFixed(2));
+          }
+        }
+        return typeof os === 'number' ? os : Number(os);
+      };
+
+      const socialConsultsWithData = consultations.filter(c => socialHasAnyAvg(c.socialSkills));
+      const prevSisaOverallScore = (() => {
+        if (socialConsultsWithData.length < 2) return null;
+        const prev = socialConsultsWithData[socialConsultsWithData.length - 2];
+        return computeSisaOverallScore(prev.socialSkills);
+      })();
 
       const getScoreColor = (score) => getSocialScoreColor(score);
 
@@ -4144,14 +4503,43 @@
           `;
         }
 
+        const sisaDomainHtml = [
+          { objKey: 'communication', avgKey: 'communicationAvg', title: 'Communication', emoji: '💬' },
+          { objKey: 'cooperation', avgKey: 'cooperationAvg', title: 'Cooperation', emoji: '🤝' },
+          { objKey: 'empathy', avgKey: 'empathyAvg', title: 'Empathy', emoji: '❤️' },
+          { objKey: 'selfControl', avgKey: 'selfControlAvg', title: 'Self-Control', emoji: '🎯' },
+          { objKey: 'engagement', avgKey: 'engagementAvg', title: 'Engagement', emoji: '🎭' },
+          { objKey: 'interaction', avgKey: 'interactionAvg', title: 'Peer / Adult Interaction', emoji: '👥' },
+          { objKey: 'selfRegulation', avgKey: 'selfRegulationAvg', title: 'Self-Regulation', emoji: '🧘' },
+          { objKey: 'assertion', avgKey: 'assertionAvg', title: 'Assertion', emoji: '💪' },
+          { objKey: 'responsibility', avgKey: 'responsibilityAvg', title: 'Responsibility', emoji: '📌' }
+        ].map(({ objKey, avgKey, title, emoji }) => {
+          const avg = social[avgKey];
+          if (!avg || Number(avg) <= 0) return '';
+          const avgNum = Number(avg);
+          const cols = pillarColorSchemeFromTen(avgNum);
+          const sub = social[objKey];
+          return `<div style="background: ${cols.bg}; padding: 12px 12px; border-radius: 12px; box-shadow: 0 3px 10px ${cols.shadow}; transition: transform 0.2s;">
+                    <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                      <span style="font-size: 20px; margin-right: 6px;">${emoji}</span>
+                      <div style="color: ${cols.text}; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.25;">${pillarDomainTitleInnerHtml(title)}</div>
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 3px; margin-bottom: 2px;">
+                      <div style="color: ${cols.text}; font-size: 34px; font-weight: 800; line-height: 1;">${avgNum.toFixed(1)}</div>
+                      <div style="color: ${cols.textLight}; font-size: 15px; font-weight: 600;">/10</div>
+                    </div>
+                    ${assessedItemsHtml(sub, cols.text, SISA_SKILL_LABELS, sisaSkillLabelFromId, 'item', 'items')}
+                  </div>`;
+        }).join('');
+
         socialScoreSection.innerHTML = `
           ${alertBanner}
 
           <!-- Main Score Layout -->
-          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 30px;">
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 20px;">
 
             <!-- Left: Overall Score Card -->
-            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
+            <div style="background: linear-gradient(135deg, ${scoreColor}, ${scoreColor}dd); padding: 26px 20px 66px 20px; border-radius: 16px; box-shadow: 0 8px 22px rgba(0,0,0,0.12); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;">
 
               <button onmouseenter="showSocialLegend()" onmouseleave="hideSocialLegend()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #2196f3; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; font-weight: bold; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="SISA Score Guide">
                 i
@@ -4184,48 +4572,44 @@
                 </div>
               </div>
 
-              <div style="color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px;">Overall SISA Score</div>
-              <div style="color: white; font-size: 72px; font-weight: 800; line-height: 1;">${overallScore.toFixed(0)}</div>
-              <div style="color: rgba(255,255,255,0.9); font-size: 13px; margin-top: 10px; font-weight: 600; text-align: center;">Percentile</div>
-              <div style="background: rgba(255,255,255,0.25); padding: 8px 20px; border-radius: 20px; margin-top: 15px;">
-                <div style="color: white; font-size: 14px; font-weight: 700; text-transform: uppercase;">${scoreCategory}</div>
+              <div style="color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1.2px;">Overall SISA Score</div>
+              <div style="color: white; font-size: 56px; font-weight: 800; line-height: 1;">${overallScore.toFixed(0)}</div>
+              <div style="color: rgba(255,255,255,0.9); font-size: 12px; margin-top: 4px; font-weight: 600; text-align: center;">Percentile</div>
+              <div style="background: rgba(255,255,255,0.25); padding: 6px 16px; border-radius: 16px; margin-top: 8px;">
+                <div style="color: white; font-size: 13px; font-weight: 700; text-transform: uppercase;">${scoreCategory}</div>
               </div>
+
+              <!-- Progress Indicator -->
+              ${(() => {
+                if (typeof prevSisaOverallScore === 'number' && Number.isFinite(prevSisaOverallScore)) {
+                  const scoreDiff = overallScore - prevSisaOverallScore;
+                  const arrow = scoreDiff > 0 ? '↑' : scoreDiff < 0 ? '↓' : '→';
+                  const arrowColor = scoreDiff > 0 ? '#4caf50' : scoreDiff < 0 ? '#f44336' : '#95a5a6';
+                  const textColor = scoreDiff > 0 ? '#2e7d32' : scoreDiff < 0 ? '#c62828' : '#546e7a';
+                  const borderColor = scoreDiff > 0 ? '#4caf50' : scoreDiff < 0 ? '#f44336' : '#95a5a6';
+                  const status = scoreDiff > 0 ? 'Improved' : scoreDiff < 0 ? 'Declined' : 'Stable';
+                  return `
+                    <div style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); padding: 10px 12px; background: white; border: 2px solid ${borderColor}; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                      <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="color: #7f8c8d; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">vs Last</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="color: ${arrowColor}; font-size: 22px; font-weight: 900; line-height: 1;">${arrow}</div>
+                          <div style="color: ${textColor}; font-size: 16px; font-weight: 800; line-height: 1;">${Math.abs(scoreDiff).toFixed(0)}</div>
+                          <div style="color: ${textColor}; font-size: 9px; font-weight: 700; text-transform: uppercase;">${status}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }
+                return '';
+              })()}
             </div>
 
-            <!-- Right: Domain Breakdown -->
+            <!-- Right: Domain pillars (same card pattern as motor) -->
             <div>
-              <div style="font-size: 16px; font-weight: 700; color: #2c3e50; margin-bottom: 20px;">Domain Scores</div>
-              <div style="display: grid; gap: 12px;">
-                ${social.communicationAvg > 0 ? `
-                  <div style="background: ${scoreColor}15; padding: 15px 20px; border-radius: 10px; border-left: 5px solid ${scoreColor}; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #2c3e50; font-weight: 600; font-size: 14px;">💬 Communication</span>
-                    <span style="color: #2c3e50; font-weight: 700; font-size: 18px;">${social.communicationAvg.toFixed(1)}/10</span>
-                  </div>
-                ` : ''}
-                ${social.cooperationAvg > 0 ? `
-                  <div style="background: ${scoreColor}15; padding: 15px 20px; border-radius: 10px; border-left: 5px solid ${scoreColor}; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #2c3e50; font-weight: 600; font-size: 14px;">🤝 Cooperation</span>
-                    <span style="color: #2c3e50; font-weight: 700; font-size: 18px;">${social.cooperationAvg.toFixed(1)}/10</span>
-                  </div>
-                ` : ''}
-                ${social.empathyAvg > 0 ? `
-                  <div style="background: ${scoreColor}15; padding: 15px 20px; border-radius: 10px; border-left: 5px solid ${scoreColor}; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #2c3e50; font-weight: 600; font-size: 14px;">❤️ Empathy</span>
-                    <span style="color: #2c3e50; font-weight: 700; font-size: 18px;">${social.empathyAvg.toFixed(1)}/10</span>
-                  </div>
-                ` : ''}
-                ${social.selfControlAvg > 0 ? `
-                  <div style="background: ${scoreColor}15; padding: 15px 20px; border-radius: 10px; border-left: 5px solid ${scoreColor}; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #2c3e50; font-weight: 600; font-size: 14px;">🎯 Self-Control</span>
-                    <span style="color: #2c3e50; font-weight: 700; font-size: 18px;">${social.selfControlAvg.toFixed(1)}/10</span>
-                  </div>
-                ` : ''}
-                ${social.engagementAvg > 0 ? `
-                  <div style="background: ${scoreColor}15; padding: 15px 20px; border-radius: 10px; border-left: 5px solid ${scoreColor}; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #2c3e50; font-weight: 600; font-size: 14px;">🎭 Engagement</span>
-                    <span style="color: #2c3e50; font-weight: 700; font-size: 18px;">${social.engagementAvg.toFixed(1)}/10</span>
-                  </div>
-                ` : ''}
+              <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 15px;">Domain Scores</h4>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                ${sisaDomainHtml}
               </div>
             </div>
           </div>
@@ -4300,7 +4684,8 @@
           if (!overallScore) {
             const assessedScores = [
               social.communicationAvg, social.cooperationAvg, social.empathyAvg,
-              social.selfControlAvg, social.engagementAvg
+              social.selfControlAvg, social.engagementAvg, social.interactionAvg,
+              social.selfRegulationAvg, social.assertionAvg, social.responsibilityAvg
             ].filter(s => s && s > 0);
             if (assessedScores.length > 0) {
               const rawScore = assessedScores.reduce((a, b) => a + b, 0) / assessedScores.length;
@@ -4308,7 +4693,12 @@
             }
           }
 
-          if (!overallScore && !social.communicationAvg) return null;
+          const hasDomain = [
+            social.communicationAvg, social.cooperationAvg, social.empathyAvg,
+            social.selfControlAvg, social.engagementAvg, social.interactionAvg,
+            social.selfRegulationAvg, social.assertionAvg, social.responsibilityAvg
+          ].some((x) => x != null && Number(x) > 0);
+          if (!overallScore && !hasDomain) return null;
 
           return {
             visitNumber: index + 1,
@@ -4318,7 +4708,11 @@
             cooperation: social.cooperationAvg ? social.cooperationAvg * 10 : null,
             empathy: social.empathyAvg ? social.empathyAvg * 10 : null,
             selfControl: social.selfControlAvg ? social.selfControlAvg * 10 : null,
-            engagement: social.engagementAvg ? social.engagementAvg * 10 : null
+            engagement: social.engagementAvg ? social.engagementAvg * 10 : null,
+            interaction: social.interactionAvg ? social.interactionAvg * 10 : null,
+            selfRegulation: social.selfRegulationAvg ? social.selfRegulationAvg * 10 : null,
+            assertion: social.assertionAvg ? social.assertionAvg * 10 : null,
+            responsibility: social.responsibilityAvg ? social.responsibilityAvg * 10 : null
           };
         })
         .filter(d => d !== null);

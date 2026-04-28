@@ -857,6 +857,24 @@
 
           <div class="form-row">
             <div class="form-group">
+              <label>Duration (Days) <span class="required">*</span></label>
+              <input type="number" id="packageDurationDays" min="1" placeholder="90" required>
+              <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                Enter total duration in days (example: 90).
+              </small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Package Contents (one bullet per line)</label>
+            <textarea id="packageFeatures" placeholder="Customized personal counselling&#10;1st session with Senior Clinical Psychologist" style="min-height: 120px;"></textarea>
+            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+              Each line becomes a bullet point on the website.
+            </small>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
               <label>Active on Website <span class="required">*</span></label>
               <select id="packageActive" required>
                 <option value="true">Yes</option>

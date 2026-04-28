@@ -552,7 +552,7 @@ function renderPackagesTable(packages) {
         <tr>
           <th>Package Name</th>
           <th>Price</th>
-          <th>Sessions / Validity</th>
+          <th>Sessions / Duration</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -570,7 +570,7 @@ function renderPackagesTable(packages) {
             </td>
             <td>
               <strong>${pkg.sessions} Sessions</strong><br>
-              <span style="color: #666; font-size: 13px;">${pkg.validityMonths} Months</span>
+              <span style="color: #666; font-size: 13px;">${Number.isFinite(Number(pkg.durationDays)) ? Number(pkg.durationDays) : (Number(pkg.validityMonths) ? Number(pkg.validityMonths) * 30 : '')} Days</span>
             </td>
             <td>
               <span class="badge ${pkg.active ? 'badge-active' : 'badge-inactive'}">
@@ -600,6 +600,15 @@ function editPackage(packageId) {
   document.getElementById('packageName').value = pkg.name + ' Package';
   document.getElementById('packagePrice').value = pkg.price;
   document.getElementById('packageDiscountedPrice').value = pkg.discountedPrice || pkg.price;
+  const durationDays = Number.isFinite(Number(pkg.durationDays)) ? Number(pkg.durationDays) : (Number(pkg.validityMonths) ? Number(pkg.validityMonths) * 30 : '');
+  const durationInput = document.getElementById('packageDurationDays');
+  if (durationInput) durationInput.value = durationDays;
+
+  const featuresInput = document.getElementById('packageFeatures');
+  if (featuresInput) {
+    const features = Array.isArray(pkg.features) ? pkg.features : [];
+    featuresInput.value = features.join('\n');
+  }
   document.getElementById('packageActive').value = pkg.active.toString();
   document.getElementById('packageBestSeller').checked = pkg.isBestSeller || false;
 
@@ -623,6 +632,13 @@ async function handlePackageSubmit(event) {
     const packageId = document.getElementById('packageId').value;
     const price = parseInt(document.getElementById('packagePrice').value);
     const discountedPrice = parseInt(document.getElementById('packageDiscountedPrice').value);
+    const durationDays = parseInt(document.getElementById('packageDurationDays')?.value);
+
+    const rawFeatures = document.getElementById('packageFeatures')?.value || '';
+    const features = rawFeatures
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean);
     
     // Get original package to calculate per-session price dynamically
     const pkg = allPackages.find(p => p.id === packageId);
@@ -633,6 +649,8 @@ async function handlePackageSubmit(event) {
       discountedPrice: discountedPrice,
       originalPricePerSession: Math.round(price / sessions),
       discountedPricePerSession: Math.round(discountedPrice / sessions),
+      durationDays: durationDays,
+      features: features,
       active: document.getElementById('packageActive').value === 'true',
       isBestSeller: document.getElementById('packageBestSeller').checked,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()

@@ -325,8 +325,8 @@
             <span class="detail-value">${booking.sessionsRemaining} Sessions</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Validity:</span>
-            <span class="detail-value">${booking.validity}</span>
+            <span class="detail-label">Duration:</span>
+            <span class="detail-value">${booking.duration || booking.validity || ''}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Valid Until:</span>

@@ -36,13 +36,17 @@ async function initiateRazorpayPayment(packageType) {
     }
 
     const pkgData = pkgDoc.data();
+    const durationDays = Number.isFinite(Number(pkgData.durationDays))
+      ? Number(pkgData.durationDays)
+      : (Number(pkgData.validityMonths) ? Number(pkgData.validityMonths) * 30 : null);
+
     const packageDetails = {
       name: pkgData.name + ' Package' + (pkgData.isBestSeller ? ' (Best Seller)' : ''),
       price: pkgData.discountedPrice || pkgData.price,
       originalPrice: pkgData.price,
       sessions: pkgData.sessions,
-      validity: pkgData.validityMonths + ' Months',
-      description: `${pkgData.sessions} Sessions • ${pkgData.validityMonths} Months Validity • Customized counselling`
+      duration: (typeof durationDays === 'number' ? `${durationDays} Days` : ''),
+      description: `${pkgData.sessions} Sessions • ${typeof durationDays === 'number' ? `${durationDays} Days Duration` : ''} • Customized counselling`
     };
 
     // Get current user (if logged in)
@@ -51,7 +55,7 @@ async function initiateRazorpayPayment(packageType) {
     const userName = user ? user.displayName || '' : '';
 
     // Create detailed description for payment (single line for better visibility)
-    const detailedDescription = `${packageDetails.name} - ${packageDetails.sessions} Sessions, ${packageDetails.validity} Validity`;
+    const detailedDescription = `${packageDetails.name} - ${packageDetails.sessions} Sessions, ${packageDetails.duration} Duration`;
 
     // Razorpay options
     const options = {
@@ -70,7 +74,7 @@ async function initiateRazorpayPayment(packageType) {
         package_name: packageDetails.name,
         package_type: packageType,
         total_sessions: packageDetails.sessions,
-        validity_period: packageDetails.validity,
+        duration_period: packageDetails.duration,
         original_price: `₹${packageDetails.originalPrice}`,
         discounted_price: `₹${packageDetails.price}`,
         price_per_session: `₹${Math.round(packageDetails.price / packageDetails.sessions)}`
@@ -118,7 +122,7 @@ function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
     packageName: packageDetails.name,
     amount: packageDetails.price,
     sessions: packageDetails.sessions,
-    validity: packageDetails.validity,
+    duration: packageDetails.duration,
     status: 'confirmed',
     paymentStatus: 'success',
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -126,7 +130,7 @@ function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
     userEmail: user ? user.email : '',
     userName: user ? user.displayName || '' : '',
     sessionsRemaining: packageDetails.sessions,
-    expiryDate: calculateExpiryDate(packageDetails.validity)
+    expiryDate: calculateExpiryDate(packageDetails.duration)
   };
 
   // Save to Firestore
@@ -140,7 +144,7 @@ function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
           name: bookingData.userName || 'User',
           email: bookingData.userEmail || 'N/A',
           phone: 'N/A',
-          message: `NEW PACKAGE BOOKING ALERT\n\nPackage: ${packageDetails.name}\nSessions: ${packageDetails.sessions}\nValidity: ${packageDetails.validity}\nAmount: ₹${packageDetails.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
+          message: `NEW PACKAGE BOOKING ALERT\n\nPackage: ${packageDetails.name}\nSessions: ${packageDetails.sessions}\nDuration: ${packageDetails.duration}\nAmount: ₹${packageDetails.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
         }).catch(err => console.error('Admin email notification failed:', err));
       }
 
@@ -179,11 +183,24 @@ function handlePaymentFailure(response) {
   alert('Payment failed: ' + errorDescription + '\nPlease try again or contact support.');
 }
 
-// Calculate expiry date based on validity period
-function calculateExpiryDate(validity) {
-  const months = parseInt(validity);
+// Calculate expiry date based on duration string (supports days or legacy months)
+function calculateExpiryDate(duration) {
+  const raw = String(duration || '').toLowerCase();
+  const n = parseInt(raw);
   const expiryDate = new Date();
-  expiryDate.setMonth(expiryDate.getMonth() + months);
+
+  if (!Number.isFinite(n) || n <= 0) {
+    return expiryDate;
+  }
+
+  // Legacy: "6 Months"
+  if (raw.includes('month')) {
+    expiryDate.setMonth(expiryDate.getMonth() + n);
+    return expiryDate;
+  }
+
+  // Default: days
+  expiryDate.setDate(expiryDate.getDate() + n);
   return expiryDate;
 }
 

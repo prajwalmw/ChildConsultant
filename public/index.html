@@ -1451,7 +1451,7 @@
                 <h3 style="font-size: 32px; font-weight: 800; color: ${s.newPriceColor}; margin: 0; line-height: 1;">₹${pkg.discountedPrice.toLocaleString('en-IN')}</h3>
               </div>
               <div style="background: ${s.tagBg}; color: ${s.tagColor}; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">
-                Validity: ${pkg.validityMonths} Months
+                Duration: ${Number.isFinite(Number(pkg.durationDays)) ? Number(pkg.durationDays) : (Number(pkg.validityMonths) ? Number(pkg.validityMonths) * 30 : '')} Days
               </div>
               <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
                 ${featuresHtml}
