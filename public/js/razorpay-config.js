@@ -5,6 +5,40 @@ const RAZORPAY_KEY_ID = 'rzp_live_S6y99PjkyiSG8O';
 
 // Packages are now fetched dynamically from Firestore.
 
+/** @returns {{ amount: number, useMonths: boolean }} */
+function getPackageDurationParts(pkg) {
+  if (!pkg || typeof pkg !== 'object') return { amount: 0, useMonths: false };
+  if (Number.isFinite(Number(pkg.durationAmount)) && Number(pkg.durationAmount) > 0) {
+    return { amount: Number(pkg.durationAmount), useMonths: pkg.durationDisplayMonths === true };
+  }
+  if (Number.isFinite(Number(pkg.durationDays)) && Number(pkg.durationDays) > 0) {
+    return { amount: Number(pkg.durationDays), useMonths: false };
+  }
+  if (Number.isFinite(Number(pkg.validityMonths)) && Number(pkg.validityMonths) > 0) {
+    return { amount: Number(pkg.validityMonths), useMonths: true };
+  }
+  return { amount: 0, useMonths: false };
+}
+
+function formatPackageDurationLabel(pkg) {
+  const { amount, useMonths } = getPackageDurationParts(pkg);
+  if (!amount) return '';
+  if (useMonths) return `${amount} month${amount === 1 ? '' : 's'}`;
+  return `${amount} day${amount === 1 ? '' : 's'}`;
+}
+
+function calculateExpiryDateFromPackage(pkg) {
+  const { amount, useMonths } = getPackageDurationParts(pkg);
+  const expiryDate = new Date();
+  if (!Number.isFinite(amount) || amount <= 0) return expiryDate;
+  if (useMonths) {
+    expiryDate.setMonth(expiryDate.getMonth() + amount);
+    return expiryDate;
+  }
+  expiryDate.setDate(expiryDate.getDate() + amount);
+  return expiryDate;
+}
+
 // Initialize Firebase (if not already initialized)
 function initializeFirebaseForPayment() {
   if (typeof firebase === 'undefined') {
@@ -36,17 +70,24 @@ async function initiateRazorpayPayment(packageType) {
     }
 
     const pkgData = pkgDoc.data();
-    const durationDays = Number.isFinite(Number(pkgData.durationDays))
-      ? Number(pkgData.durationDays)
-      : (Number(pkgData.validityMonths) ? Number(pkgData.validityMonths) * 30 : null);
+    const sessions = Math.max(1, parseInt(pkgData.sessions, 10) || 1);
+    const durationLabel = formatPackageDurationLabel(pkgData);
+    const displayName = (pkgData.name || '').trim() || pkgDoc.id;
+    const origPs = Number.isFinite(Number(pkgData.originalPricePerSession))
+      ? Number(pkgData.originalPricePerSession)
+      : Math.round(Number(pkgData.price) / sessions);
+    const discPs = Number.isFinite(Number(pkgData.discountedPricePerSession))
+      ? Number(pkgData.discountedPricePerSession)
+      : Math.round(Number(pkgData.discountedPrice || pkgData.price) / sessions);
 
     const packageDetails = {
-      name: pkgData.name + ' Package' + (pkgData.isBestSeller ? ' (Best Seller)' : ''),
+      name: displayName + (pkgData.isBestSeller ? ' (Best Seller)' : ''),
       price: pkgData.discountedPrice || pkgData.price,
       originalPrice: pkgData.price,
-      sessions: pkgData.sessions,
-      duration: (typeof durationDays === 'number' ? `${durationDays} Days` : ''),
-      description: `${pkgData.sessions} Sessions • ${typeof durationDays === 'number' ? `${durationDays} Days Duration` : ''} • Customized counselling`
+      sessions,
+      duration: durationLabel,
+      description: [sessions ? `${sessions} Sessions` : '', durationLabel, 'Customized counselling'].filter(Boolean).join(' • '),
+      expiryDate: calculateExpiryDateFromPackage(pkgData)
     };
 
     // Get current user (if logged in)
@@ -55,7 +96,7 @@ async function initiateRazorpayPayment(packageType) {
     const userName = user ? user.displayName || '' : '';
 
     // Create detailed description for payment (single line for better visibility)
-    const detailedDescription = `${packageDetails.name} - ${packageDetails.sessions} Sessions, ${packageDetails.duration} Duration`;
+    const detailedDescription = `${packageDetails.name} - ${packageDetails.sessions} Sessions, ${packageDetails.duration || 'Duration n/a'}`;
 
     // Razorpay options
     const options = {
@@ -77,7 +118,7 @@ async function initiateRazorpayPayment(packageType) {
         duration_period: packageDetails.duration,
         original_price: `₹${packageDetails.originalPrice}`,
         discounted_price: `₹${packageDetails.price}`,
-        price_per_session: `₹${Math.round(packageDetails.price / packageDetails.sessions)}`
+        price_per_session: `₹${discPs}`
       },
       theme: {
         color: '#f41192'
@@ -130,7 +171,7 @@ function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
     userEmail: user ? user.email : '',
     userName: user ? user.displayName || '' : '',
     sessionsRemaining: packageDetails.sessions,
-    expiryDate: calculateExpiryDate(packageDetails.duration)
+    expiryDate: packageDetails.expiryDate
   };
 
   // Save to Firestore
@@ -223,3 +264,6 @@ function showPaymentSuccessMessage(packageDetails, paymentId) {
 
 // Export functions for global use
 window.initiateRazorpayPayment = initiateRazorpayPayment;
+window.formatPackageDurationLabel = formatPackageDurationLabel;
+window.calculateExpiryDateFromPackage = calculateExpiryDateFromPackage;
+window.getPackageDurationParts = getPackageDurationParts;

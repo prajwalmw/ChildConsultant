@@ -532,6 +532,22 @@ async function loadPackages() {
   }
 }
 
+function adminPackageDurationLabel(pkg) {
+  if (Number.isFinite(Number(pkg.durationAmount)) && Number(pkg.durationAmount) > 0) {
+    const n = Number(pkg.durationAmount);
+    return pkg.durationDisplayMonths ? `${n} month${n === 1 ? '' : 's'}` : `${n} day${n === 1 ? '' : 's'}`;
+  }
+  if (Number.isFinite(Number(pkg.durationDays)) && Number(pkg.durationDays) > 0) {
+    const d = Number(pkg.durationDays);
+    return `${d} day${d === 1 ? '' : 's'}`;
+  }
+  if (Number.isFinite(Number(pkg.validityMonths)) && Number(pkg.validityMonths) > 0) {
+    const m = Number(pkg.validityMonths);
+    return `${m} month${m === 1 ? '' : 's'}`;
+  }
+  return '—';
+}
+
 // Render packages table
 function renderPackagesTable(packages) {
   const container = document.getElementById('packagesTableContainer');
@@ -558,19 +574,28 @@ function renderPackagesTable(packages) {
         </tr>
       </thead>
       <tbody>
-        ${packages.map(pkg => `
+        ${packages.map(pkg => {
+          const sess = Math.max(1, parseInt(pkg.sessions, 10) || 1);
+          const ops = pkg.originalPricePerSession != null ? Number(pkg.originalPricePerSession) : Math.round(Number(pkg.price) / sess);
+          const dps = pkg.discountedPricePerSession != null ? Number(pkg.discountedPricePerSession) : Math.round(Number(pkg.discountedPrice || pkg.price) / sess);
+          const rawName = String(pkg.name || '').trim();
+          const displayName = pkg.id === 'standard' && (!rawName || rawName.toLowerCase() === 'standard')
+            ? 'Pro'
+            : (rawName || pkg.id);
+          return `
           <tr>
             <td>
-              <strong>${pkg.name}</strong>
+              <strong>${displayName}</strong>
               ${pkg.isBestSeller ? '<span class="badge badge-top" style="margin-left: 8px;">Best Seller ⭐</span>' : ''}
             </td>
             <td>
               <span style="text-decoration: line-through; color: #999; font-size: 12px;">₹${pkg.price.toLocaleString('en-IN')}</span><br>
               <span style="color: #f41192; font-weight: bold; font-size: 16px;">₹${(pkg.discountedPrice || pkg.price).toLocaleString('en-IN')}</span>
+              <div style="font-size: 11px; color: #888; margin-top: 4px;">₹${ops.toLocaleString('en-IN')} list / ₹${dps.toLocaleString('en-IN')} pay per session</div>
             </td>
             <td>
-              <strong>${pkg.sessions} Sessions</strong><br>
-              <span style="color: #666; font-size: 13px;">${Number.isFinite(Number(pkg.durationDays)) ? Number(pkg.durationDays) : (Number(pkg.validityMonths) ? Number(pkg.validityMonths) * 30 : '')} Days</span>
+              <strong>${sess} sessions</strong><br>
+              <span style="color: #666; font-size: 13px;">${adminPackageDurationLabel(pkg)}</span>
             </td>
             <td>
               <span class="badge ${pkg.active ? 'badge-active' : 'badge-inactive'}">
@@ -583,7 +608,8 @@ function renderPackagesTable(packages) {
               </button>
             </td>
           </tr>
-        `).join('')}
+        `;
+        }).join('')}
       </tbody>
     </table>
   `;
@@ -597,12 +623,44 @@ function editPackage(packageId) {
   if (!pkg) return;
 
   document.getElementById('packageId').value = pkg.id;
-  document.getElementById('packageName').value = pkg.name + ' Package';
-  document.getElementById('packagePrice').value = pkg.price;
-  document.getElementById('packageDiscountedPrice').value = pkg.discountedPrice || pkg.price;
-  const durationDays = Number.isFinite(Number(pkg.durationDays)) ? Number(pkg.durationDays) : (Number(pkg.validityMonths) ? Number(pkg.validityMonths) * 30 : '');
-  const durationInput = document.getElementById('packageDurationDays');
-  if (durationInput) durationInput.value = durationDays;
+  let dispName = (pkg.name || '').trim();
+  if (pkg.id === 'standard' && (!dispName || dispName.toLowerCase() === 'standard')) {
+    dispName = 'Pro';
+  }
+  document.getElementById('packageName').value = dispName;
+
+  const sessions = Math.max(1, parseInt(pkg.sessions, 10) || 1);
+  document.getElementById('packageSessions').value = sessions;
+
+  document.getElementById('packagePrice').value = Number(pkg.price) || 0;
+  document.getElementById('packageDiscountedPrice').value = Number(pkg.discountedPrice != null ? pkg.discountedPrice : pkg.price) || 0;
+
+  const origPs = pkg.originalPricePerSession != null && pkg.originalPricePerSession !== ''
+    ? Number(pkg.originalPricePerSession)
+    : Math.round(Number(pkg.price) / sessions);
+  const discPs = pkg.discountedPricePerSession != null && pkg.discountedPricePerSession !== ''
+    ? Number(pkg.discountedPricePerSession)
+    : Math.round(Number(pkg.discountedPrice || pkg.price) / sessions);
+  document.getElementById('packageOriginalPerSession').value = origPs;
+  document.getElementById('packageDiscountedPerSession').value = discPs;
+
+  let durAmt;
+  let durMo = false;
+  if (Number.isFinite(Number(pkg.durationAmount)) && Number(pkg.durationAmount) > 0) {
+    durAmt = Number(pkg.durationAmount);
+    durMo = pkg.durationDisplayMonths === true;
+  } else if (Number.isFinite(Number(pkg.durationDays)) && Number(pkg.durationDays) > 0) {
+    durAmt = Number(pkg.durationDays);
+    durMo = false;
+  } else if (Number.isFinite(Number(pkg.validityMonths)) && Number(pkg.validityMonths) > 0) {
+    durAmt = Number(pkg.validityMonths);
+    durMo = true;
+  } else {
+    durAmt = 90;
+    durMo = false;
+  }
+  document.getElementById('packageDurationAmount').value = durAmt;
+  document.getElementById('packageDurationMonthsToggle').checked = durMo;
 
   const featuresInput = document.getElementById('packageFeatures');
   if (featuresInput) {
@@ -630,26 +688,32 @@ async function handlePackageSubmit(event) {
 
   try {
     const packageId = document.getElementById('packageId').value;
-    const price = parseInt(document.getElementById('packagePrice').value);
-    const discountedPrice = parseInt(document.getElementById('packageDiscountedPrice').value);
-    const durationDays = parseInt(document.getElementById('packageDurationDays')?.value);
+    const name = document.getElementById('packageName').value.trim();
+    const sessions = Math.max(1, parseInt(document.getElementById('packageSessions').value, 10) || 1);
+    const price = parseInt(document.getElementById('packagePrice').value, 10);
+    const discountedPrice = parseInt(document.getElementById('packageDiscountedPrice').value, 10);
+    const origPs = parseInt(document.getElementById('packageOriginalPerSession').value, 10);
+    const discPs = parseInt(document.getElementById('packageDiscountedPerSession').value, 10);
+    const durationAmount = parseInt(document.getElementById('packageDurationAmount').value, 10);
+    const durationDisplayMonths = document.getElementById('packageDurationMonthsToggle').checked;
+    const durationDays = durationDisplayMonths ? durationAmount * 30 : durationAmount;
 
     const rawFeatures = document.getElementById('packageFeatures')?.value || '';
     const features = rawFeatures
       .split('\n')
       .map(l => l.trim())
       .filter(Boolean);
-    
-    // Get original package to calculate per-session price dynamically
-    const pkg = allPackages.find(p => p.id === packageId);
-    const sessions = pkg ? pkg.sessions : 1;
 
     await db.collection('packages').doc(packageId).update({
-      price: price,
-      discountedPrice: discountedPrice,
-      originalPricePerSession: Math.round(price / sessions),
-      discountedPricePerSession: Math.round(discountedPrice / sessions),
-      durationDays: durationDays,
+      name,
+      sessions,
+      price,
+      discountedPrice,
+      originalPricePerSession: origPs,
+      discountedPricePerSession: discPs,
+      durationAmount,
+      durationDisplayMonths,
+      durationDays,
       features: features,
       active: document.getElementById('packageActive').value === 'true',
       isBestSeller: document.getElementById('packageBestSeller').checked,
@@ -667,5 +731,3 @@ async function handlePackageSubmit(event) {
     submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Package';
   }
 }
-
-// Close m

@@ -430,6 +430,38 @@
       gap: 20px;
     }
 
+    /* Full-width duration unit toggle — avoids broken text in 2-col grid */
+    label.package-duration-toggle {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin: 0;
+      padding: 14px 16px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 2px solid #e9ecef;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 1.45;
+      color: #333;
+    }
+    label.package-duration-toggle input[type="checkbox"] {
+      width: 18px !important;
+      min-width: 18px;
+      height: 18px;
+      margin: 3px 0 0 0 !important;
+      padding: 0 !important;
+      flex-shrink: 0;
+      cursor: pointer;
+      transform: none;
+    }
+    label.package-duration-toggle .package-duration-toggle__text {
+      flex: 1;
+      min-width: 0;
+      font-weight: 600;
+    }
+
     .chip-input {
       display: flex;
       flex-wrap: wrap;
@@ -683,11 +715,11 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label>Standard Package Price (₹)</label>
+              <label>Pro Package Price (₹)</label>
               <input type="number" id="doctorStandardPrice" min="0" placeholder="19200">
             </div>
             <div class="form-group">
-              <label>Standard Discounted Price (₹)</label>
+              <label>Pro Discounted Price (₹)</label>
               <input type="number" id="doctorStandardDiscountedPrice" min="0" placeholder="16320">
             </div>
           </div>
@@ -723,7 +755,6 @@
               <label>Total Ratings <span class="required">*</span></label>
               <input type="number" id="doctorTotalRatings" min="0" placeholder="250" required>
             </div>
-          </div>
             <div class="form-group">
               <label>Display Order <span class="required">*</span></label>
               <input type="number" id="doctorDisplayOrder" min="1" placeholder="1" required>
@@ -840,29 +871,55 @@
           <input type="hidden" id="packageId">
 
           <div class="form-group">
-            <label>Package Name</label>
-            <input type="text" id="packageName" disabled style="background: #f5f5f5; color: #666; font-weight: bold;">
+            <label>Package display name <span class="required">*</span></label>
+            <input type="text" id="packageName" required placeholder="e.g. Basic, Pro, Premium">
+            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+              Shown on the website card. The Standard tier is renamed to <strong>Pro</strong> on the homepage until you save a different name here.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Number of sessions <span class="required">*</span></label>
+            <input type="number" id="packageSessions" min="1" step="1" required>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Standard Price (₹) <span class="required">*</span></label>
+              <label>Total package price — actual (₹) <span class="required">*</span></label>
               <input type="number" id="packagePrice" min="0" required>
+              <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">Full package list price (saved as <code>price</code>).</small>
             </div>
             <div class="form-group">
-              <label>Discounted Price (₹) <span class="required">*</span></label>
+              <label>Total package price — discounted (₹) <span class="required">*</span></label>
               <input type="number" id="packageDiscountedPrice" min="0" required>
+              <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">Amount charged for the package (saved as <code>discountedPrice</code>).</small>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Duration (Days) <span class="required">*</span></label>
-              <input type="number" id="packageDurationDays" min="1" placeholder="90" required>
-              <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
-                Enter total duration in days (example: 90).
-              </small>
+              <label>Per session — actual (₹) <span class="required">*</span></label>
+              <input type="number" id="packageOriginalPerSession" min="0" required>
             </div>
+            <div class="form-group">
+              <label>Per session — discounted (₹) <span class="required">*</span></label>
+              <input type="number" id="packageDiscountedPerSession" min="0" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Duration number <span class="required">*</span></label>
+            <input type="number" id="packageDurationAmount" min="1" step="1" required>
+            <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+              Same numeric value is saved for this package; use the option below only to choose whether the site shows it as <strong>days</strong> or <strong>months</strong>.
+            </small>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="package-duration-toggle" for="packageDurationMonthsToggle">
+              <input type="checkbox" id="packageDurationMonthsToggle">
+              <span class="package-duration-toggle__text">Checked = months. Unchecked = days.</span>
+            </label>
           </div>
 
           <div class="form-group">

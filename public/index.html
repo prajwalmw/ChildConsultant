@@ -1434,25 +1434,33 @@
             `<div style="position: absolute; top: -12px; right: -12px; background: #FF9800; color: #D32F2F; padding: 6px 12px; border-radius: 18px; font-weight: 700; font-size: 11px; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4); z-index: 10; white-space: nowrap;">Best Seller ⭐</div>` 
             : '';
 
+          const sessionCount = Math.max(1, parseInt(pkg.sessions, 10) || 1);
+          const sessionsBullet = `<p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: ${s.checkColor}; margin-right: 6px;"></i>${sessionCount} session${sessionCount === 1 ? '' : 's'} included</p>`;
           let featuresHtml = (pkg.features || []).map(f => 
             `<p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: ${s.checkColor}; margin-right: 6px;"></i>${f}</p>`
           ).join('');
-          featuresHtml = `<p style="margin-bottom: 8px; color: #333; font-size: 14px;"><i class="fa fa-check-circle" style="color: ${s.checkColor}; margin-right: 6px;"></i>${pkg.sessions} Sessions</p>` + featuresHtml;
+          featuresHtml = sessionsBullet + featuresHtml;
+
+          const durationLabel = typeof formatPackageDurationLabel === 'function'
+            ? formatPackageDurationLabel(pkg)
+            : (Number.isFinite(Number(pkg.durationDays)) ? `${Number(pkg.durationDays)} Days` : '');
+          const _pkgName = String(pkg.name || '').trim();
+          const cardTitle = pkg.id === 'standard' && (!_pkgName || _pkgName.toLowerCase() === 'standard')
+            ? 'Pro'
+            : (_pkgName || pkg.id);
 
           html += `
           <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
             <div class="package-card" style="background: ${s.cardBg}; border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0, 0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid ${s.border}; position: relative; overflow: visible;">
               ${bestSellerHtml}
               <div style="background: ${s.headerBg}; color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
-                <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">${pkg.name}</h2>
+                <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">${cardTitle}</h2>
               </div>
               <div style="margin-bottom: 12px;">
                 <p style="text-decoration: line-through; color: ${s.oldPriceColor}; font-size: 16px; margin-bottom: 3px;">₹${pkg.price.toLocaleString('en-IN')}</p>
                 <h3 style="font-size: 32px; font-weight: 800; color: ${s.newPriceColor}; margin: 0; line-height: 1;">₹${pkg.discountedPrice.toLocaleString('en-IN')}</h3>
               </div>
-              <div style="background: ${s.tagBg}; color: ${s.tagColor}; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">
-                Duration: ${Number.isFinite(Number(pkg.durationDays)) ? Number(pkg.durationDays) : (Number(pkg.validityMonths) ? Number(pkg.validityMonths) * 30 : '')} Days
-              </div>
+              ${durationLabel ? `<div style="background: ${s.tagBg}; color: ${s.tagColor}; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">Duration: ${durationLabel}</div>` : ''}
               <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
                 ${featuresHtml}
               </div>
@@ -1460,8 +1468,8 @@
                 <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
                   <div style="text-align: center;">
                     <div style="display: flex; justify-content: center; align-items: baseline; gap: 6px; margin-bottom: 2px;">
-                      <span style="font-size: 13px; color: #666; text-decoration: line-through;">₹${(pkg.originalPricePerSession || Math.round(pkg.price / pkg.sessions)).toLocaleString('en-IN')}</span>
-                      <span style="font-size: 28px; font-weight: 800; color: ${s.newPriceColor}; line-height: 1;">₹${(pkg.discountedPricePerSession || Math.round(pkg.discountedPrice / pkg.sessions)).toLocaleString('en-IN')}</span>
+                      <span style="font-size: 13px; color: #666; text-decoration: line-through;">₹${(pkg.originalPricePerSession != null ? pkg.originalPricePerSession : Math.round(pkg.price / Math.max(1, pkg.sessions || 1))).toLocaleString('en-IN')}</span>
+                      <span style="font-size: 28px; font-weight: 800; color: ${s.newPriceColor}; line-height: 1;">₹${(pkg.discountedPricePerSession != null ? pkg.discountedPricePerSession : Math.round((pkg.discountedPrice || pkg.price) / Math.max(1, pkg.sessions || 1))).toLocaleString('en-IN')}</span>
                     </div>
                     <p style="font-size: 12px; color: #666; margin: 0;">per session</p>
                   </div>
