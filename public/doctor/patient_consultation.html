@@ -163,6 +163,223 @@
         .save-visit-modal__btn--primary:hover {
             box-shadow: 0 6px 18px rgba(0, 195, 201, 0.45);
         }
+
+        /* ==================== Micro-activity (CDI Play) UI ==================== */
+        .micro-activity-shell {
+            background: linear-gradient(180deg, #ffffff, #fbfcff);
+            border: 1px solid rgba(102, 126, 234, 0.18);
+            border-radius: 18px;
+            padding: 16px;
+            text-align: left;
+            box-shadow: 0 14px 36px rgba(102, 126, 234, 0.10);
+        }
+        .micro-activity-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .micro-activity-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+            color: #3949ab;
+            text-transform: uppercase;
+        }
+        .micro-activity-sub {
+            color: #5f6b7a;
+            font-size: 12px;
+            line-height: 1.45;
+            margin-top: 4px;
+        }
+        .micro-activity-disclaimer {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(155, 89, 182, 0.08);
+            border: 1px solid rgba(155, 89, 182, 0.18);
+            border-radius: 12px;
+            color: #6a1b9a;
+            font-size: 11px;
+            line-height: 1.35;
+            font-weight: 700;
+        }
+        .micro-activity-hud {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 12px 0 10px;
+        }
+        .micro-activity-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(0, 195, 201, 0.10);
+            border: 1px solid rgba(0, 195, 201, 0.18);
+            font-size: 12px;
+            font-weight: 900;
+            color: #006c70;
+            white-space: nowrap;
+        }
+        .micro-activity-pill--secondary {
+            background: rgba(102, 126, 234, 0.10);
+            border-color: rgba(102, 126, 234, 0.18);
+            color: #2f3ea9;
+        }
+        .micro-activity-progress {
+            flex: 1;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(31, 45, 61, 0.08);
+            overflow: hidden;
+        }
+        .micro-activity-progress > div {
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #667eea, #00c3c9);
+            transition: width 180ms ease;
+        }
+        .micro-activity-tap {
+            width: 100%;
+            height: 170px;
+            border-radius: 18px;
+            border: 2px solid rgba(102, 126, 234, 0.20);
+            background: radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.14), transparent 60%),
+                        radial-gradient(circle at 80% 70%, rgba(0, 195, 201, 0.16), transparent 55%),
+                        linear-gradient(135deg, #ffffff, #f7f8ff);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .micro-activity-shape {
+            font-size: 76px;
+            font-weight: 900;
+            line-height: 1;
+            color: #2c3e50;
+            opacity: 0.22;
+            transform: translateY(0);
+            transition: opacity 120ms ease, transform 120ms ease;
+        }
+        .micro-activity-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .micro-activity-btn {
+            border: none;
+            border-radius: 14px;
+            padding: 10px 14px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+        }
+        .micro-activity-btn:active {
+            transform: scale(0.985);
+        }
+        .micro-activity-btn--ghost {
+            background: rgba(31, 45, 61, 0.06);
+            color: #37474f;
+        }
+        .micro-activity-btn--primary {
+            background: linear-gradient(135deg, #667eea, #00c3c9);
+            color: white;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.20);
+        }
+        .micro-activity-btn--primary:hover {
+            box-shadow: 0 14px 26px rgba(102, 126, 234, 0.26);
+            transform: translateY(-1px);
+        }
+        .micro-activity-result {
+            display: none;
+            margin-top: 12px;
+            background: rgba(46, 125, 50, 0.08);
+            border: 1px solid rgba(46, 125, 50, 0.18);
+            border-radius: 14px;
+            padding: 12px;
+        }
+        .micro-activity-result__title {
+            font-weight: 900;
+            color: #1b5e20;
+            margin-bottom: 4px;
+        }
+        .micro-activity-result__text {
+            color: #2e7d32;
+            font-size: 12px;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+        /* Micro-activity modal header: do NOT use .save-visit-modal__btn here (flex:1 stretches Close full-width). */
+        #microActivityModal .micro-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            text-align: left;
+        }
+        #microActivityModal .micro-modal-close {
+            flex: 0 0 auto;
+            width: auto;
+            min-width: auto;
+            margin: 0;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(31, 45, 61, 0.08);
+            color: #37474f;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            line-height: 1.2;
+            transition: background 0.15s ease;
+        }
+        #microActivityModal .micro-modal-close:hover {
+            background: rgba(31, 45, 61, 0.12);
+        }
+        .micro-activity-instructions {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 10px 0;
+            counter-reset: step;
+        }
+        .micro-activity-instructions li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 8px;
+            color: #5f6b7a;
+            font-size: 13px;
+            line-height: 1.45;
+            font-weight: 600;
+        }
+        .micro-activity-instructions li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #00c3c9);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -922,6 +1139,28 @@
                 return;
             }
 
+            // Micro-activities (in-house) state for this consultation session
+            window.microActivitiesState = window.microActivitiesState || { results: [], context: {} };
+            window.microActivitiesState.context = {
+                ageMonths: ageInMonths,
+                // gender is optional and should not be used unless clinically meaningful.
+                gender: window.currentPatientGender || null
+            };
+
+            const cdiPlayBtnHtml = (skillId) => {
+                return `
+                  <button type="button"
+                    class="cdi-play-btn"
+                    data-skill-id="${skillId}"
+                    onclick="try{event.preventDefault();event.stopPropagation();}catch(e){}; openCdiMicroActivity('${skillId}')"
+                    title="Play a short screening activity (saved with this consultation)"
+                    style="border: none; background: rgba(102, 126, 234, 0.12); color: #3f51b5; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; opacity: 1;">
+                    <span style="font-size: 12px; line-height: 1;">▶</span>
+                    <span>Play</span>
+                  </button>
+                `;
+            };
+
             const ageGroup = getAgeGroup(ageInMonths);
             const questions = cognitiveQuestions[ageGroup];
 
@@ -946,7 +1185,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;">
+                              ${skill.label}
+                              ${cdiPlayBtnHtml(skill.id)}
+                            </span>
                             <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
@@ -969,7 +1211,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;">
+                              ${skill.label}
+                              ${cdiPlayBtnHtml(skill.id)}
+                            </span>
                             <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
@@ -992,7 +1237,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;">
+                              ${skill.label}
+                              ${cdiPlayBtnHtml(skill.id)}
+                            </span>
                             <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
@@ -1015,7 +1263,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;">
+                              ${skill.label}
+                              ${cdiPlayBtnHtml(skill.id)}
+                            </span>
                             <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
@@ -1038,7 +1289,10 @@
                 html += `
                     <div class="col-md-6 form-group">
                         <label for="cdi-${skill.id}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px;">${skill.label}</span>
+                            <span style="font-weight: 600; color: #2c3e50; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;">
+                              ${skill.label}
+                              ${cdiPlayBtnHtml(skill.id)}
+                            </span>
                             <span id="cdi-${skill.id}-value" style="background: linear-gradient(135deg, #a8b3ff 0%, #d4bbff 100%); color: #2c3e50; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; box-shadow: 0 2px 4px rgba(168, 179, 255, 0.4);">-</span>
                         </label>
                         <small style="display: block; color: #666; margin-bottom: 8px; font-size: 11px;">${skill.description}</small>
@@ -1690,6 +1944,9 @@
                 // Social Interaction Skills Assessment (Grouped)
                 socialSkills: collectSocialSkillsData(form),
 
+                // Micro-activities played during this consultation (pilot: CDI)
+                activityResults: (window.microActivitiesState && Array.isArray(window.microActivitiesState.results)) ? window.microActivitiesState.results : [],
+
                 // S.O.A.P. Notes (Grouped)
                 soapNotes: {
                     subjective: subjective,
@@ -1754,6 +2011,1458 @@
                     window.location.href = backLink.href;
                 });
             }
+        }
+
+        // ==================== MICRO-ACTIVITIES (CDI: per-skill games) ====================
+        function stripCdiSkillGameResults(skillId, gameKey) {
+            window.microActivitiesState = window.microActivitiesState || { results: [], context: {} };
+            const list = window.microActivitiesState.results || [];
+            window.microActivitiesState.results = list.filter((r) => {
+                if (!r || r.type !== 'microActivity') return true;
+                if (r.skillType !== 'cdi' || r.skillId !== skillId) return true;
+                if (gameKey && r.gameKey !== gameKey) return true;
+                return false;
+            });
+        }
+
+        function findCdiSkillMeta(skillId, ageInMonths) {
+            const ag = ageInMonths ? getAgeGroup(ageInMonths) : '4-5';
+            const q = cognitiveQuestions[ag];
+            if (!q) return { label: skillId, description: '' };
+            for (const key of Object.keys(q)) {
+                if (key === 'ageLabel') continue;
+                const arr = q[key];
+                if (!Array.isArray(arr)) continue;
+                const sk = arr.find((s) => s.id === skillId);
+                if (sk) return { label: sk.label, description: sk.description || '' };
+            }
+            return { label: skillId, description: '' };
+        }
+
+        function getCdiMicroActivityForSkill(skillId, ageInMonths) {
+            const meta = findCdiSkillMeta(skillId, ageInMonths);
+            let gameKey = 'go_no_go';
+            let variant = 'classic';
+            let gameSuffix = 'Go / No-Go';
+
+            if (skillId.startsWith('memory_')) {
+                gameKey = 'memory_in_set';
+                gameSuffix = 'Memory set';
+            } else if (skillId.startsWith('problem_')) {
+                gameKey = 'odd_one_out';
+                gameSuffix = 'Odd one out';
+            } else if (skillId.startsWith('language_')) {
+                gameKey = 'word_match';
+                gameSuffix = 'Word match';
+            } else if (skillId.startsWith('learning_')) {
+                gameKey = 'pattern_next';
+                gameSuffix = 'Complete the pattern';
+            } else if (skillId.startsWith('attention_')) {
+                gameKey = 'go_no_go';
+                if (skillId === 'attention_instructions' || skillId === 'attention_multistep' || skillId === 'attention_distractions') {
+                    variant = 'arrow';
+                    gameSuffix = 'Arrow task (tap → only)';
+                } else if (skillId === 'attention_planning') {
+                    variant = 'digit';
+                    gameSuffix = 'Digit task (tap 2 only)';
+                } else {
+                    variant = 'classic';
+                }
+            }
+
+            return {
+                gameKey,
+                variant,
+                title: `${meta.label} — ${gameSuffix}`,
+                skillLabel: meta.label,
+                description: meta.description
+            };
+        }
+
+        window.openCdiMicroActivity = function(skillId) {
+            const modal = document.getElementById('microActivityModal');
+            const titleEl = document.getElementById('microActivityTitle');
+            const bodyEl = document.getElementById('microActivityBody');
+            const metaEl = document.getElementById('microActivityMeta');
+            if (!modal || !titleEl || !bodyEl) return;
+
+            const ctx = (window.microActivitiesState && window.microActivitiesState.context) ? window.microActivitiesState.context : {};
+            const ageMonths = Number(ctx.ageMonths) || null;
+            const ageYears = ageMonths ? Math.floor(ageMonths / 12) : null;
+
+            const mapped = getCdiMicroActivityForSkill(skillId, ageMonths);
+
+            titleEl.textContent = mapped.title;
+            const agePart = ageYears ? `Age: ${ageYears}y (${ageMonths} mo)` : '';
+            const descPart = mapped.description ? mapped.description : '';
+            metaEl.textContent = [agePart, descPart].filter(Boolean).join(' · ');
+
+            if (mapped.gameKey === 'go_no_go') {
+                renderGoNoGoGame(bodyEl, { skillId, ageMonths, gameKey: 'go_no_go', variant: mapped.variant });
+            } else if (mapped.gameKey === 'memory_in_set') {
+                renderMemorySetGame(bodyEl, { skillId, ageMonths });
+            } else if (mapped.gameKey === 'odd_one_out') {
+                renderOddOneOutGame(bodyEl, { skillId, ageMonths });
+            } else if (mapped.gameKey === 'word_match') {
+                renderWordMatchGame(bodyEl, { skillId, ageMonths });
+            } else if (mapped.gameKey === 'pattern_next') {
+                renderPatternNextGame(bodyEl, { skillId, ageMonths });
+            } else {
+                bodyEl.innerHTML = `<div style="padding:12px;">Game not available for this item.</div>`;
+            }
+
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+        };
+
+        window.closeMicroActivityModal = function() {
+            const modal = document.getElementById('microActivityModal');
+            if (!modal) return;
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+        };
+
+        function recordMicroActivityResult(result) {
+            window.microActivitiesState = window.microActivitiesState || { results: [], context: {} };
+            window.microActivitiesState.results = window.microActivitiesState.results || [];
+            window.microActivitiesState.results.push(result);
+        }
+
+        function renderGoNoGoGame(container, { skillId, ageMonths, gameKey = 'go_no_go', variant = 'classic' }) {
+            const sessionStartTs = Date.now();
+            const cfg = (() => {
+                if (!ageMonths) return { trials: 10, isiMs: 1200, targetProb: 0.4, timeLimitMs: 1200 };
+                if (ageMonths < 48) return { trials: 8, isiMs: 1400, targetProb: 0.45, timeLimitMs: 1400 };
+                if (ageMonths < 84) return { trials: 12, isiMs: 1100, targetProb: 0.4, timeLimitMs: 1100 };
+                return { trials: 16, isiMs: 900, targetProb: 0.35, timeLimitMs: 900 };
+            })();
+
+            const ruleLine = (() => {
+                if (variant === 'arrow') {
+                    return `<li><strong>Tap the box</strong> only when you see a green <strong>→</strong> (Go). <strong>Do not tap</strong> for a red <strong>←</strong> (No-Go).</li>`;
+                }
+                if (variant === 'digit') {
+                    return `<li><strong>Tap the box</strong> only when you see a green <strong>2</strong> (Go). <strong>Do not tap</strong> when you see a red <strong>1</strong> (No-Go).</li>`;
+                }
+                return `<li><strong>Tap the box</strong> only when you see the <strong>green circle ●</strong> (Go). <strong>Do not tap</strong> when you see the <strong>red square ■</strong> (No-Go).</li>`;
+            })();
+
+            const tapAria = variant === 'arrow'
+                ? 'Tap when you see the right arrow'
+                : variant === 'digit'
+                    ? 'Tap when you see the number 2'
+                    : 'Tap when you see the green circle';
+
+            let trialIndex = 0;
+            let awaiting = false;
+            let currentIsTarget = false;
+            let shownAt = 0;
+            let hits = 0;
+            let misses = 0;
+            let falseAlarms = 0;
+            let correctRejections = 0;
+            const rts = [];
+            let reactionTimer = null;
+            let isiTimer = null;
+            /** @type {'idle'|'running'|'paused'} */
+            let gameState = 'idle';
+            let roundStartTs = sessionStartTs;
+
+            const clearGameTimers = () => {
+                if (reactionTimer) {
+                    clearTimeout(reactionTimer);
+                    reactionTimer = null;
+                }
+                if (isiTimer) {
+                    clearTimeout(isiTimer);
+                    isiTimer = null;
+                }
+            };
+
+            container.innerHTML = `
+              <div class="micro-activity-shell">
+                <div class="micro-activity-top" style="margin-bottom: 0;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div class="micro-activity-kicker" style="margin-bottom: 6px;">How to play</div>
+                    <ol class="micro-activity-instructions">
+                      <li>Press <strong>Start</strong>. Use <strong>Pause</strong> / <strong>Resume</strong> if you need to interrupt. <strong>Retry</strong> clears any saved result for this skill and resets the round.</li>
+                      ${ruleLine}
+                      <li>Wait quietly between trials; only respond to the current signal.</li>
+                    </ol>
+                    <div class="micro-activity-disclaimer">
+                      Short screening activity for clinical context only — not a stand-alone diagnosis.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="micro-activity-hud">
+                  <div id="gngProgress" class="micro-activity-pill micro-activity-pill--secondary">Trial 0 / ${cfg.trials}</div>
+                  <div class="micro-activity-progress" aria-hidden="true"><div id="gngProgressBar"></div></div>
+                  <div id="gngScore" class="micro-activity-pill">Hits 0 • False 0</div>
+                </div>
+
+                <button type="button" id="gngTapArea" class="micro-activity-tap" aria-label="${tapAria.replace(/"/g, '&quot;')}">
+                  <div id="gngShape" class="micro-activity-shape">Ready</div>
+                </button>
+
+                <div class="micro-activity-actions">
+                  <button type="button" id="gngRetryBtn" class="micro-activity-btn micro-activity-btn--ghost">Retry</button>
+                  <button type="button" id="gngPauseBtn" class="micro-activity-btn micro-activity-btn--ghost" disabled>Pause</button>
+                  <button type="button" id="gngStartBtn" class="micro-activity-btn micro-activity-btn--primary">Start</button>
+                </div>
+
+                <div id="gngDone" class="micro-activity-result">
+                  <div id="gngDoneTitle" class="micro-activity-result__title">Result saved to this consultation</div>
+                  <div id="gngDoneText" class="micro-activity-result__text"></div>
+                </div>
+              </div>
+            `;
+
+            const tapArea = container.querySelector('#gngTapArea');
+            const shapeEl = container.querySelector('#gngShape');
+            const progressEl = container.querySelector('#gngProgress');
+            const progressBarEl = container.querySelector('#gngProgressBar');
+            const scoreEl = container.querySelector('#gngScore');
+            const startBtn = container.querySelector('#gngStartBtn');
+            const pauseBtn = container.querySelector('#gngPauseBtn');
+            const retryBtn = container.querySelector('#gngRetryBtn');
+            const doneEl = container.querySelector('#gngDone');
+            const doneTitleEl = container.querySelector('#gngDoneTitle');
+            const doneTextEl = container.querySelector('#gngDoneText');
+
+            const stripSavedResultsForThisSkill = () => stripCdiSkillGameResults(skillId, gameKey);
+
+            const resetRoundUi = () => {
+                clearGameTimers();
+                gameState = 'idle';
+                awaiting = false;
+                trialIndex = 0;
+                hits = 0;
+                misses = 0;
+                falseAlarms = 0;
+                correctRejections = 0;
+                rts.length = 0;
+                doneEl.style.display = 'none';
+                if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                doneTextEl.textContent = '';
+                shapeEl.textContent = 'Ready';
+                shapeEl.style.fontSize = '';
+                shapeEl.style.opacity = '0.22';
+                shapeEl.style.transform = 'translateY(0)';
+                shapeEl.style.color = '#2c3e50';
+                updateHud();
+            };
+
+            const setControlsIdle = () => {
+                startBtn.disabled = false;
+                startBtn.textContent = 'Start';
+                startBtn.style.opacity = '1';
+                startBtn.style.cursor = 'pointer';
+                pauseBtn.disabled = true;
+                pauseBtn.textContent = 'Pause';
+                if (retryBtn) {
+                    retryBtn.disabled = false;
+                    retryBtn.style.opacity = '1';
+                    retryBtn.style.cursor = 'pointer';
+                }
+            };
+
+            const setControlsRunning = () => {
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.65';
+                startBtn.style.cursor = 'not-allowed';
+                pauseBtn.disabled = false;
+                pauseBtn.textContent = 'Pause';
+                if (retryBtn) {
+                    retryBtn.disabled = false;
+                    retryBtn.style.opacity = '1';
+                    retryBtn.style.cursor = 'pointer';
+                }
+            };
+
+            const setControlsPaused = () => {
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.65';
+                startBtn.style.cursor = 'not-allowed';
+                pauseBtn.disabled = false;
+                pauseBtn.textContent = 'Resume';
+                if (retryBtn) {
+                    retryBtn.disabled = false;
+                    retryBtn.style.opacity = '1';
+                    retryBtn.style.cursor = 'pointer';
+                }
+            };
+
+            const updateHud = () => {
+                progressEl.textContent = `Trial ${Math.min(trialIndex, cfg.trials)} / ${cfg.trials}`;
+                scoreEl.textContent = `Hits ${hits} • False ${falseAlarms}`;
+                if (progressBarEl) {
+                    const pct = cfg.trials ? Math.min(100, Math.max(0, (trialIndex / cfg.trials) * 100)) : 0;
+                    progressBarEl.style.width = `${pct}%`;
+                }
+            };
+
+            const scheduleNextTrial = () => {
+                if (gameState !== 'running') return;
+                isiTimer = setTimeout(() => {
+                    isiTimer = null;
+                    showShape();
+                }, cfg.isiMs);
+            };
+
+            const showShape = () => {
+                if (gameState !== 'running') return;
+                if (trialIndex >= cfg.trials) {
+                    finishComplete();
+                    return;
+                }
+                clearGameTimers();
+                awaiting = true;
+                currentIsTarget = Math.random() < cfg.targetProb;
+                shownAt = Date.now();
+                if (variant === 'arrow') {
+                    shapeEl.textContent = currentIsTarget ? '→' : '←';
+                    shapeEl.style.fontSize = 'clamp(2.5rem, 8vw, 4rem)';
+                } else if (variant === 'digit') {
+                    shapeEl.textContent = currentIsTarget ? '2' : '1';
+                    shapeEl.style.fontSize = 'clamp(2.5rem, 8vw, 4rem)';
+                } else {
+                    shapeEl.textContent = currentIsTarget ? '●' : '■';
+                    shapeEl.style.fontSize = '';
+                }
+                shapeEl.style.opacity = '1';
+                shapeEl.style.transform = 'translateY(-2px)';
+                shapeEl.style.color = currentIsTarget ? '#2e7d32' : '#c62828';
+                updateHud();
+
+                reactionTimer = setTimeout(() => {
+                    reactionTimer = null;
+                    if (!awaiting || gameState !== 'running') return;
+                    awaiting = false;
+                    if (currentIsTarget) misses += 1;
+                    else correctRejections += 1;
+                    trialIndex += 1;
+                    shapeEl.style.opacity = '0.22';
+                    shapeEl.style.transform = 'translateY(0)';
+                    shapeEl.textContent = '';
+                    updateHud();
+                    if (trialIndex >= cfg.trials) finishComplete();
+                    else scheduleNextTrial();
+                }, cfg.timeLimitMs);
+            };
+
+            const finishComplete = () => {
+                clearGameTimers();
+                gameState = 'idle';
+                awaiting = false;
+                const endTs = Date.now();
+                const attempts = cfg.trials;
+                const accuracy = attempts ? (hits + correctRejections) / attempts : 0;
+                const avgRt = rts.length ? Math.round(rts.reduce((a, b) => a + b, 0) / rts.length) : null;
+
+                recordMicroActivityResult({
+                    type: 'microActivity',
+                    skillType: 'cdi',
+                    skillId,
+                    gameKey,
+                    outcome: 'completed',
+                    startedAt: new Date(roundStartTs).toISOString(),
+                    endedAt: new Date(endTs).toISOString(),
+                    config: Object.assign({}, cfg, { variant }),
+                    metrics: {
+                        hits,
+                        misses,
+                        falseAlarms,
+                        correctRejections,
+                        accuracy: Number(accuracy.toFixed(3)),
+                        avgReactionTimeMs: avgRt
+                    }
+                });
+
+                doneEl.style.display = 'block';
+                if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                doneTextEl.textContent = `Completed all ${cfg.trials} trials. Accuracy: ${(accuracy * 100).toFixed(0)}% • Avg reaction time: ${avgRt != null ? `${avgRt}ms` : '—'} • Hits: ${hits}, Misses: ${misses}, False taps: ${falseAlarms}`;
+                shapeEl.textContent = 'Done';
+                shapeEl.style.opacity = '0.26';
+                shapeEl.style.transform = 'translateY(0)';
+                shapeEl.style.color = '#2c3e50';
+                setControlsIdle();
+            };
+
+            tapArea.addEventListener('click', () => {
+                if (gameState !== 'running' || !awaiting) return;
+                if (reactionTimer) {
+                    clearTimeout(reactionTimer);
+                    reactionTimer = null;
+                }
+                awaiting = false;
+                const rt = Date.now() - shownAt;
+                if (currentIsTarget) {
+                    hits += 1;
+                    rts.push(rt);
+                } else {
+                    falseAlarms += 1;
+                }
+                trialIndex += 1;
+                shapeEl.style.opacity = '0.22';
+                shapeEl.style.transform = 'translateY(0)';
+                shapeEl.textContent = '';
+                updateHud();
+                if (trialIndex >= cfg.trials) finishComplete();
+                else scheduleNextTrial();
+            });
+
+            startBtn.addEventListener('click', () => {
+                if (gameState === 'paused') return;
+                stripSavedResultsForThisSkill();
+                clearGameTimers();
+                gameState = 'running';
+                roundStartTs = Date.now();
+                trialIndex = 0;
+                hits = 0;
+                misses = 0;
+                falseAlarms = 0;
+                correctRejections = 0;
+                rts.length = 0;
+                doneEl.style.display = 'none';
+                shapeEl.textContent = '';
+                shapeEl.style.opacity = '0.22';
+                shapeEl.style.transform = 'translateY(0)';
+                updateHud();
+                setControlsRunning();
+                showShape();
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                if (gameState === 'running') {
+                    clearGameTimers();
+                    gameState = 'paused';
+                    awaiting = false;
+                    shapeEl.textContent = 'Paused';
+                    shapeEl.style.opacity = '0.55';
+                    shapeEl.style.color = '#5f6b7a';
+                    shapeEl.style.transform = 'translateY(0)';
+                    setControlsPaused();
+                } else if (gameState === 'paused') {
+                    gameState = 'running';
+                    pauseBtn.textContent = 'Pause';
+                    setControlsRunning();
+                    showShape();
+                }
+            });
+
+            retryBtn.addEventListener('click', () => {
+                stripSavedResultsForThisSkill();
+                resetRoundUi();
+                setControlsIdle();
+            });
+
+            setControlsIdle();
+            updateHud();
+        }
+
+        const MICRO_WORD_MATCH_BANK = [
+            { prompt: 'Dog', left: 'Animal', right: 'Rock', correctLeft: true },
+            { prompt: 'Apple', left: 'Fruit', right: 'Tool', correctLeft: true },
+            { prompt: 'Chair', left: 'Furniture', right: 'Weather', correctLeft: true },
+            { prompt: 'Happy', left: 'Feeling', right: 'Vehicle', correctLeft: true },
+            { prompt: 'Doctor', left: 'Job / helper', right: 'Furniture', correctLeft: true },
+            { prompt: 'Rain', left: 'Weather', right: 'Food', correctLeft: true },
+            { prompt: 'Book', left: 'Read', right: 'Eat', correctLeft: true },
+            { prompt: 'Cat', left: 'Pet', right: 'Planet', correctLeft: true },
+            { prompt: 'Red', left: 'Color', right: 'Animal', correctLeft: true },
+            { prompt: 'School', left: 'Place', right: 'Fruit', correctLeft: true },
+            { prompt: 'Run', left: 'Action', right: 'Shape', correctLeft: true },
+            { prompt: 'Circle', left: 'Shape', right: 'Sound', correctLeft: true },
+            { prompt: 'Loud', left: 'Sound / volume', right: 'Taste', correctLeft: true },
+            { prompt: 'Brother', left: 'Family', right: 'Tool', correctLeft: true },
+            { prompt: 'Winter', left: 'Season', right: 'Toy', correctLeft: true }
+        ];
+
+        const MICRO_PATTERN_BANK = [
+            { symbols: ['★', '△', '★', '△'], correct: '★', foil: '△' },
+            { symbols: ['○', '□', '○', '□'], correct: '○', foil: '□' },
+            { symbols: ['1', '2', '3', '1', '2', '3'], correct: '1', foil: '2' },
+            { symbols: ['A', 'B', 'A', 'B'], correct: 'A', foil: 'B' },
+            { symbols: ['▲', '▼', '▲', '▼'], correct: '▲', foil: '▼' }
+        ];
+
+        function microShuffleForSkill(arr, skillId) {
+            const out = arr.slice();
+            let h = 2166136261;
+            for (let i = 0; i < skillId.length; i++) h = Math.imul(h ^ skillId.charCodeAt(i), 16777619);
+            for (let i = out.length - 1; i > 0; i--) {
+                const j = (h >>> 0) % (i + 1);
+                h = Math.imul(h + i, 1103515245) >>> 0;
+                const t = out[i];
+                out[i] = out[j];
+                out[j] = t;
+            }
+            return out;
+        }
+
+        function renderMemorySetGame(container, { skillId, ageMonths }) {
+            const gameKey = 'memory_in_set';
+            const cfg = (() => {
+                if (!ageMonths) return { trials: 10, setSize: 3, pool: ['A', 'B', 'C', 'D', 'E'], memorizeMs: 2500, isiMs: 1100, targetProb: 0.45, timeLimitMs: 1400 };
+                if (ageMonths < 48) return { trials: 8, setSize: 3, pool: ['A', 'B', 'C', 'D'], memorizeMs: 2800, isiMs: 1200, targetProb: 0.5, timeLimitMs: 1600 };
+                if (ageMonths < 84) return { trials: 12, setSize: 3, pool: ['A', 'B', 'C', 'D', 'E', 'F'], memorizeMs: 2200, isiMs: 1000, targetProb: 0.42, timeLimitMs: 1200 };
+                return { trials: 14, setSize: 4, pool: ['A', 'B', 'C', 'D', 'E', 'F'], memorizeMs: 2000, isiMs: 900, targetProb: 0.4, timeLimitMs: 1100 };
+            })();
+
+            let memorizedSet = [];
+            let trialIndex = 0;
+            let awaiting = false;
+            let currentInSet = false;
+            let currentLetter = '';
+            let shownAt = 0;
+            let hits = 0;
+            let misses = 0;
+            let falseAlarms = 0;
+            let correctRejections = 0;
+            const rts = [];
+            let reactionTimer = null;
+            let isiTimer = null;
+            let memorizeTimer = null;
+            let gameState = 'idle';
+            let roundStartTs = Date.now();
+            /** @type {'idle'|'memorizing'|'running'|'paused'} */
+            let phase = 'idle';
+            let pausedDuringMemorize = false;
+
+            const clearGameTimers = () => {
+                if (reactionTimer) {
+                    clearTimeout(reactionTimer);
+                    reactionTimer = null;
+                }
+                if (isiTimer) {
+                    clearTimeout(isiTimer);
+                    isiTimer = null;
+                }
+                if (memorizeTimer) {
+                    clearTimeout(memorizeTimer);
+                    memorizeTimer = null;
+                }
+            };
+
+            container.innerHTML = `
+              <div class="micro-activity-shell">
+                <div class="micro-activity-top" style="margin-bottom: 0;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div class="micro-activity-kicker" style="margin-bottom: 6px;">How to play</div>
+                    <ol class="micro-activity-instructions">
+                      <li>Press <strong>Start</strong>. You will briefly see <strong>${cfg.setSize} letters</strong> to remember.</li>
+                      <li>Then <strong>tap the box</strong> when the letter shown was <strong>in that set</strong>. <strong>Do not tap</strong> for letters that were not in the set.</li>
+                      <li>Use <strong>Pause</strong> / <strong>Resume</strong> as needed. <strong>Retry</strong> clears the saved result for this skill.</li>
+                    </ol>
+                    <div class="micro-activity-disclaimer">Screening context only — not diagnostic.</div>
+                  </div>
+                </div>
+                <div class="micro-activity-hud">
+                  <div id="memProgress" class="micro-activity-pill micro-activity-pill--secondary">Trial 0 / ${cfg.trials}</div>
+                  <div class="micro-activity-progress" aria-hidden="true"><div id="memProgressBar"></div></div>
+                  <div id="memScore" class="micro-activity-pill">Hits 0 • False 0</div>
+                </div>
+                <button type="button" id="memTapArea" class="micro-activity-tap" aria-label="Tap when the letter was in the memorized set">
+                  <div id="memShape" class="micro-activity-shape">Ready</div>
+                </button>
+                <div class="micro-activity-actions">
+                  <button type="button" id="memRetryBtn" class="micro-activity-btn micro-activity-btn--ghost">Retry</button>
+                  <button type="button" id="memPauseBtn" class="micro-activity-btn micro-activity-btn--ghost" disabled>Pause</button>
+                  <button type="button" id="memStartBtn" class="micro-activity-btn micro-activity-btn--primary">Start</button>
+                </div>
+                <div id="memDone" class="micro-activity-result" style="display:none;">
+                  <div id="memDoneTitle" class="micro-activity-result__title">Result saved to this consultation</div>
+                  <div id="memDoneText" class="micro-activity-result__text"></div>
+                </div>
+              </div>`;
+
+            const tapArea = container.querySelector('#memTapArea');
+            const shapeEl = container.querySelector('#memShape');
+            const progressEl = container.querySelector('#memProgress');
+            const progressBarEl = container.querySelector('#memProgressBar');
+            const scoreEl = container.querySelector('#memScore');
+            const startBtn = container.querySelector('#memStartBtn');
+            const pauseBtn = container.querySelector('#memPauseBtn');
+            const retryBtn = container.querySelector('#memRetryBtn');
+            const doneEl = container.querySelector('#memDone');
+            const doneTitleEl = container.querySelector('#memDoneTitle');
+            const doneTextEl = container.querySelector('#memDoneText');
+
+            const stripSaved = () => stripCdiSkillGameResults(skillId, gameKey);
+
+            const updateHud = () => {
+                progressEl.textContent = `Trial ${Math.min(trialIndex, cfg.trials)} / ${cfg.trials}`;
+                scoreEl.textContent = `Hits ${hits} • False ${falseAlarms}`;
+                if (progressBarEl) {
+                    const pct = cfg.trials ? Math.min(100, Math.max(0, (trialIndex / cfg.trials) * 100)) : 0;
+                    progressBarEl.style.width = `${pct}%`;
+                }
+            };
+
+            const resetRoundUi = () => {
+                clearGameTimers();
+                gameState = 'idle';
+                phase = 'idle';
+                pausedDuringMemorize = false;
+                awaiting = false;
+                memorizedSet = [];
+                trialIndex = 0;
+                hits = 0;
+                misses = 0;
+                falseAlarms = 0;
+                correctRejections = 0;
+                rts.length = 0;
+                doneEl.style.display = 'none';
+                if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                doneTextEl.textContent = '';
+                shapeEl.textContent = 'Ready';
+                shapeEl.style.fontSize = '';
+                shapeEl.style.opacity = '0.22';
+                shapeEl.style.color = '#2c3e50';
+                updateHud();
+            };
+
+            const setControlsIdle = () => {
+                startBtn.disabled = false;
+                startBtn.textContent = 'Start';
+                startBtn.style.opacity = '1';
+                startBtn.style.cursor = 'pointer';
+                pauseBtn.disabled = true;
+                pauseBtn.textContent = 'Pause';
+            };
+
+            const setControlsRunning = () => {
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.65';
+                startBtn.style.cursor = 'not-allowed';
+                pauseBtn.disabled = false;
+                pauseBtn.textContent = 'Pause';
+            };
+
+            const setControlsPaused = () => {
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.65';
+                startBtn.style.cursor = 'not-allowed';
+                pauseBtn.disabled = false;
+                pauseBtn.textContent = 'Resume';
+            };
+
+            const finishComplete = () => {
+                clearGameTimers();
+                gameState = 'idle';
+                phase = 'idle';
+                awaiting = false;
+                const endTs = Date.now();
+                const attempts = cfg.trials;
+                const accuracy = attempts ? (hits + correctRejections) / attempts : 0;
+                const avgRt = rts.length ? Math.round(rts.reduce((a, b) => a + b, 0) / rts.length) : null;
+
+                recordMicroActivityResult({
+                    type: 'microActivity',
+                    skillType: 'cdi',
+                    skillId,
+                    gameKey,
+                    outcome: 'completed',
+                    startedAt: new Date(roundStartTs).toISOString(),
+                    endedAt: new Date(endTs).toISOString(),
+                    config: Object.assign({}, cfg, { memorizedSetSnapshot: memorizedSet.slice().sort().join('') }),
+                    metrics: {
+                        hits,
+                        misses,
+                        falseAlarms,
+                        correctRejections,
+                        accuracy: Number(accuracy.toFixed(3)),
+                        avgReactionTimeMs: avgRt
+                    }
+                });
+
+                doneEl.style.display = 'block';
+                if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                doneTextEl.textContent = `Set remembered: [${memorizedSet.join(', ')}]. Accuracy: ${(accuracy * 100).toFixed(0)}% • Avg RT: ${avgRt != null ? `${avgRt}ms` : '—'} • Hits: ${hits}, Misses: ${misses}, False taps: ${falseAlarms}`;
+                shapeEl.textContent = 'Done';
+                shapeEl.style.opacity = '0.26';
+                shapeEl.style.color = '#2c3e50';
+                setControlsIdle();
+            };
+
+            const scheduleNextTrial = () => {
+                if (gameState !== 'running' || phase !== 'running') return;
+                isiTimer = setTimeout(() => {
+                    isiTimer = null;
+                    showLetterTrial();
+                }, cfg.isiMs);
+            };
+
+            const showLetterTrial = () => {
+                if (gameState !== 'running' || phase !== 'running') return;
+                if (trialIndex >= cfg.trials) {
+                    finishComplete();
+                    return;
+                }
+                clearGameTimers();
+                awaiting = true;
+                const fromSet = Math.random() < cfg.targetProb;
+                const pool = cfg.pool.slice();
+                if (fromSet) {
+                    currentLetter = memorizedSet[Math.floor(Math.random() * memorizedSet.length)];
+                    currentInSet = true;
+                } else {
+                    const outside = pool.filter((l) => memorizedSet.indexOf(l) === -1);
+                    currentLetter = outside[Math.floor(Math.random() * outside.length)];
+                    currentInSet = false;
+                }
+                shownAt = Date.now();
+                shapeEl.textContent = currentLetter;
+                shapeEl.style.fontSize = 'clamp(2.2rem, 7vw, 3.5rem)';
+                shapeEl.style.opacity = '1';
+                shapeEl.style.color = '#2c3e50';
+                updateHud();
+
+                reactionTimer = setTimeout(() => {
+                    reactionTimer = null;
+                    if (!awaiting || gameState !== 'running' || phase !== 'running') return;
+                    awaiting = false;
+                    if (currentInSet) misses += 1;
+                    else correctRejections += 1;
+                    trialIndex += 1;
+                    shapeEl.style.opacity = '0.22';
+                    shapeEl.textContent = '';
+                    updateHud();
+                    if (trialIndex >= cfg.trials) finishComplete();
+                    else scheduleNextTrial();
+                }, cfg.timeLimitMs);
+            };
+
+            const beginMemorizePhase = () => {
+                const pool = cfg.pool.slice();
+                const picked = [];
+                const copy = pool.slice();
+                for (let i = 0; i < cfg.setSize; i++) {
+                    const idx = Math.floor(Math.random() * copy.length);
+                    picked.push(copy[idx]);
+                    copy.splice(idx, 1);
+                }
+                memorizedSet = picked;
+                phase = 'memorizing';
+                gameState = 'running';
+                shapeEl.textContent = memorizedSet.join(' · ');
+                shapeEl.style.fontSize = 'clamp(1.2rem, 4vw, 1.6rem)';
+                shapeEl.style.opacity = '1';
+                shapeEl.style.color = '#1565c0';
+                pauseBtn.disabled = false;
+                memorizeTimer = setTimeout(() => {
+                    memorizeTimer = null;
+                    if (gameState !== 'running' || phase !== 'memorizing') return;
+                    phase = 'running';
+                    trialIndex = 0;
+                    shapeEl.style.opacity = '0.22';
+                    shapeEl.textContent = '';
+                    showLetterTrial();
+                }, cfg.memorizeMs);
+            };
+
+            tapArea.addEventListener('click', () => {
+                if (gameState !== 'running' || phase !== 'running' || !awaiting) return;
+                if (reactionTimer) {
+                    clearTimeout(reactionTimer);
+                    reactionTimer = null;
+                }
+                awaiting = false;
+                const rt = Date.now() - shownAt;
+                if (currentInSet) {
+                    hits += 1;
+                    rts.push(rt);
+                } else {
+                    falseAlarms += 1;
+                }
+                trialIndex += 1;
+                shapeEl.style.opacity = '0.22';
+                shapeEl.textContent = '';
+                updateHud();
+                if (trialIndex >= cfg.trials) finishComplete();
+                else scheduleNextTrial();
+            });
+
+            startBtn.addEventListener('click', () => {
+                if (gameState === 'paused') return;
+                stripSaved();
+                clearGameTimers();
+                pausedDuringMemorize = false;
+                roundStartTs = Date.now();
+                doneEl.style.display = 'none';
+                hits = 0;
+                misses = 0;
+                falseAlarms = 0;
+                correctRejections = 0;
+                rts.length = 0;
+                trialIndex = 0;
+                updateHud();
+                setControlsRunning();
+                beginMemorizePhase();
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                if (phase === 'memorizing' && gameState === 'running') {
+                    clearGameTimers();
+                    gameState = 'paused';
+                    phase = 'paused';
+                    pausedDuringMemorize = true;
+                    shapeEl.textContent = 'Paused';
+                    shapeEl.style.opacity = '0.55';
+                    shapeEl.style.color = '#5f6b7a';
+                    setControlsPaused();
+                    return;
+                }
+                if (gameState === 'running' && phase === 'running') {
+                    clearGameTimers();
+                    gameState = 'paused';
+                    phase = 'paused';
+                    pausedDuringMemorize = false;
+                    awaiting = false;
+                    shapeEl.textContent = 'Paused';
+                    shapeEl.style.opacity = '0.55';
+                    shapeEl.style.color = '#5f6b7a';
+                    setControlsPaused();
+                } else if (gameState === 'paused') {
+                    pauseBtn.textContent = 'Pause';
+                    if (pausedDuringMemorize) {
+                        pausedDuringMemorize = false;
+                        gameState = 'running';
+                        setControlsRunning();
+                        beginMemorizePhase();
+                    } else {
+                        gameState = 'running';
+                        phase = 'running';
+                        setControlsRunning();
+                        if (trialIndex >= cfg.trials) setControlsIdle();
+                        else showLetterTrial();
+                    }
+                }
+            });
+
+            retryBtn.addEventListener('click', () => {
+                stripSaved();
+                resetRoundUi();
+                setControlsIdle();
+            });
+
+            setControlsIdle();
+            updateHud();
+        }
+
+        function renderOddOneOutGame(container, { skillId, ageMonths }) {
+            const gameKey = 'odd_one_out';
+            const shapes = ['●', '■', '▲', '◆'];
+            const cfg = (() => {
+                if (!ageMonths) return { trials: 10, timeLimitMs: 0 };
+                if (ageMonths < 48) return { trials: 8, timeLimitMs: 0 };
+                if (ageMonths < 84) return { trials: 12, timeLimitMs: 0 };
+                return { trials: 14, timeLimitMs: 0 };
+            })();
+
+            let trialIndex = 0;
+            let correctCount = 0;
+            let errors = 0;
+            const rts = [];
+            let gameState = 'idle';
+            let roundStartTs = Date.now();
+            let shownAt = 0;
+            let correctIdx = 0;
+            let lock = false;
+
+            container.innerHTML = `
+              <div class="micro-activity-shell">
+                <div class="micro-activity-top" style="margin-bottom: 0;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div class="micro-activity-kicker">How to play</div>
+                    <ol class="micro-activity-instructions">
+                      <li>Press <strong>Start</strong>. Four shapes appear — <strong>three match</strong> and <strong>one is different</strong>.</li>
+                      <li><strong>Tap the odd one out</strong> as quickly as you can.</li>
+                      <li><strong>Pause</strong> / <strong>Resume</strong> and <strong>Retry</strong> (clears saved result) as needed.</li>
+                    </ol>
+                    <div class="micro-activity-disclaimer">Screening context only — not diagnostic.</div>
+                  </div>
+                </div>
+                <div class="micro-activity-hud">
+                  <div id="oooProgress" class="micro-activity-pill micro-activity-pill--secondary">0 / ${cfg.trials}</div>
+                  <div class="micro-activity-progress" aria-hidden="true"><div id="oooProgressBar"></div></div>
+                  <div id="oooScore" class="micro-activity-pill">Correct 0</div>
+                </div>
+                <div id="oooGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                  ${[0, 1, 2, 3].map((i) => `<button type="button" class="micro-activity-tap ooo-cell" data-idx="${i}" style="min-height: 76px; font-size: 2rem; padding: 8px;">—</button>`).join('')}
+                </div>
+                <div class="micro-activity-actions" style="margin-top: 12px;">
+                  <button type="button" id="oooRetryBtn" class="micro-activity-btn micro-activity-btn--ghost">Retry</button>
+                  <button type="button" id="oooPauseBtn" class="micro-activity-btn micro-activity-btn--ghost" disabled>Pause</button>
+                  <button type="button" id="oooStartBtn" class="micro-activity-btn micro-activity-btn--primary">Start</button>
+                </div>
+                <div id="oooDone" class="micro-activity-result" style="display:none;">
+                  <div class="micro-activity-result__title" id="oooDoneTitle">Result saved to this consultation</div>
+                  <div class="micro-activity-result__text" id="oooDoneText"></div>
+                </div>
+              </div>`;
+
+            const cells = container.querySelectorAll('.ooo-cell');
+            const progressEl = container.querySelector('#oooProgress');
+            const progressBarEl = container.querySelector('#oooProgressBar');
+            const scoreEl = container.querySelector('#oooScore');
+            const startBtn = container.querySelector('#oooStartBtn');
+            const pauseBtn = container.querySelector('#oooPauseBtn');
+            const retryBtn = container.querySelector('#oooRetryBtn');
+            const doneEl = container.querySelector('#oooDone');
+            const doneTitleEl = container.querySelector('#oooDoneTitle');
+            const doneTextEl = container.querySelector('#oooDoneText');
+
+            const stripSaved = () => stripCdiSkillGameResults(skillId, gameKey);
+
+            const updateHud = () => {
+                progressEl.textContent = `${Math.min(trialIndex, cfg.trials)} / ${cfg.trials}`;
+                scoreEl.textContent = `Correct ${correctCount} • Errors ${errors}`;
+                if (progressBarEl) {
+                    const pct = cfg.trials ? Math.min(100, Math.max(0, (trialIndex / cfg.trials) * 100)) : 0;
+                    progressBarEl.style.width = `${pct}%`;
+                }
+            };
+
+            const setCellsEnabled = (on) => {
+                cells.forEach((c) => {
+                    c.disabled = !on;
+                    c.style.opacity = on ? '1' : '0.45';
+                    c.style.cursor = on ? 'pointer' : 'not-allowed';
+                });
+            };
+
+            const layoutTrial = () => {
+                lock = false;
+                const common = shapes[Math.floor(Math.random() * shapes.length)];
+                let odd = shapes[Math.floor(Math.random() * shapes.length)];
+                if (odd === common) odd = shapes[(shapes.indexOf(common) + 1) % shapes.length];
+                correctIdx = Math.floor(Math.random() * 4);
+                shownAt = Date.now();
+                cells.forEach((cell, i) => {
+                    const v = i === correctIdx ? odd : common;
+                    cell.textContent = v;
+                    cell.dataset.shape = v;
+                });
+                setCellsEnabled(true);
+            };
+
+            const nextOrFinish = () => {
+                trialIndex += 1;
+                updateHud();
+                if (trialIndex >= cfg.trials) {
+                    const endTs = Date.now();
+                    const avgRt = rts.length ? Math.round(rts.reduce((a, b) => a + b, 0) / rts.length) : null;
+                    recordMicroActivityResult({
+                        type: 'microActivity',
+                        skillType: 'cdi',
+                        skillId,
+                        gameKey,
+                        outcome: 'completed',
+                        startedAt: new Date(roundStartTs).toISOString(),
+                        endedAt: new Date(endTs).toISOString(),
+                        config: cfg,
+                        metrics: {
+                            trials: cfg.trials,
+                            correct: correctCount,
+                            errors,
+                            accuracy: cfg.trials ? Number((correctCount / cfg.trials).toFixed(3)) : 0,
+                            avgReactionTimeMs: avgRt
+                        }
+                    });
+                    doneEl.style.display = 'block';
+                    if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                    doneTextEl.textContent = `Correct ${correctCount} / ${cfg.trials} • Errors: ${errors}${avgRt != null ? ` • Avg RT: ${avgRt}ms` : ''}`;
+                    setCellsEnabled(false);
+                    cells.forEach((c) => { c.textContent = '—'; });
+                    gameState = 'idle';
+                    startBtn.disabled = false;
+                    startBtn.style.opacity = '1';
+                    startBtn.style.cursor = 'pointer';
+                    pauseBtn.disabled = true;
+                    pauseBtn.textContent = 'Pause';
+                } else {
+                    layoutTrial();
+                }
+            };
+
+            cells.forEach((cell) => {
+                cell.addEventListener('click', () => {
+                    if (gameState !== 'running' || lock) return;
+                    const idx = parseInt(cell.dataset.idx, 10);
+                    lock = true;
+                    setCellsEnabled(false);
+                    const rt = Date.now() - shownAt;
+                    if (idx === correctIdx) {
+                        correctCount += 1;
+                        rts.push(rt);
+                    } else {
+                        errors += 1;
+                    }
+                    setTimeout(nextOrFinish, 280);
+                });
+            });
+
+            startBtn.addEventListener('click', () => {
+                if (gameState === 'paused') return;
+                stripSaved();
+                roundStartTs = Date.now();
+                trialIndex = 0;
+                correctCount = 0;
+                errors = 0;
+                rts.length = 0;
+                doneEl.style.display = 'none';
+                gameState = 'running';
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.65';
+                startBtn.style.cursor = 'not-allowed';
+                pauseBtn.disabled = false;
+                updateHud();
+                layoutTrial();
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                if (gameState === 'running') {
+                    gameState = 'paused';
+                    lock = true;
+                    setCellsEnabled(false);
+                    pauseBtn.textContent = 'Resume';
+                } else if (gameState === 'paused') {
+                    gameState = 'running';
+                    pauseBtn.textContent = 'Pause';
+                    if (trialIndex < cfg.trials) {
+                        layoutTrial();
+                    }
+                }
+            });
+
+            retryBtn.addEventListener('click', () => {
+                stripSaved();
+                gameState = 'idle';
+                trialIndex = 0;
+                correctCount = 0;
+                errors = 0;
+                rts.length = 0;
+                lock = false;
+                doneEl.style.display = 'none';
+                if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                doneTextEl.textContent = '';
+                cells.forEach((c) => { c.textContent = '—'; });
+                setCellsEnabled(false);
+                startBtn.disabled = false;
+                startBtn.style.opacity = '1';
+                startBtn.style.cursor = 'pointer';
+                pauseBtn.disabled = true;
+                pauseBtn.textContent = 'Pause';
+                updateHud();
+            });
+
+            setCellsEnabled(false);
+            updateHud();
+        }
+
+        function renderWordMatchGame(container, { skillId, ageMonths }) {
+            const gameKey = 'word_match';
+            const trialCount = !ageMonths || ageMonths < 48 ? 8 : ageMonths < 84 ? 10 : 12;
+            let trialIndex = 0;
+            let correctCount = 0;
+            let errors = 0;
+            const rts = [];
+            let gameState = 'idle';
+            let roundStartTs = Date.now();
+            let shownAt = 0;
+            let current = null;
+            let leftIsCorrect = true;
+
+            const trials = microShuffleForSkill(MICRO_WORD_MATCH_BANK, skillId).slice(0, trialCount);
+
+            container.innerHTML = `
+              <div class="micro-activity-shell">
+                <div class="micro-activity-top" style="margin-bottom: 0;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div class="micro-activity-kicker">How to play</div>
+                    <ol class="micro-activity-instructions">
+                      <li>Press <strong>Start</strong>. You will see a <strong>prompt word</strong> and two choices.</li>
+                      <li>Tap the choice that <strong>best matches</strong> the prompt (category / meaning).</li>
+                      <li><strong>Retry</strong> clears the saved result for this skill.</li>
+                    </ol>
+                    <div class="micro-activity-disclaimer">Screening context only — not diagnostic.</div>
+                  </div>
+                </div>
+                <div class="micro-activity-hud">
+                  <div id="wmProgress" class="micro-activity-pill micro-activity-pill--secondary">0 / ${trialCount}</div>
+                  <div class="micro-activity-progress" aria-hidden="true"><div id="wmProgressBar"></div></div>
+                  <div id="wmScore" class="micro-activity-pill">Correct 0</div>
+                </div>
+                <div id="wmPrompt" style="text-align:center;font-size:1.35rem;font-weight:800;color:#2c3e50;margin:14px 0;min-height:1.5em;"> </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+                  <button type="button" id="wmLeft" class="micro-activity-tap" style="flex:1;min-width:120px;min-height:72px;font-size:1rem;font-weight:700;"> </button>
+                  <button type="button" id="wmRight" class="micro-activity-tap" style="flex:1;min-width:120px;min-height:72px;font-size:1rem;font-weight:700;"> </button>
+                </div>
+                <div class="micro-activity-actions" style="margin-top: 12px;">
+                  <button type="button" id="wmRetryBtn" class="micro-activity-btn micro-activity-btn--ghost">Retry</button>
+                  <button type="button" id="wmPauseBtn" class="micro-activity-btn micro-activity-btn--ghost" disabled>Pause</button>
+                  <button type="button" id="wmStartBtn" class="micro-activity-btn micro-activity-btn--primary">Start</button>
+                </div>
+                <div id="wmDone" class="micro-activity-result" style="display:none;">
+                  <div class="micro-activity-result__title" id="wmDoneTitle">Result saved to this consultation</div>
+                  <div class="micro-activity-result__text" id="wmDoneText"></div>
+                </div>
+              </div>`;
+
+            const promptEl = container.querySelector('#wmPrompt');
+            const leftBtn = container.querySelector('#wmLeft');
+            const rightBtn = container.querySelector('#wmRight');
+            const progressEl = container.querySelector('#wmProgress');
+            const progressBarEl = container.querySelector('#wmProgressBar');
+            const scoreEl = container.querySelector('#wmScore');
+            const startBtn = container.querySelector('#wmStartBtn');
+            const pauseBtn = container.querySelector('#wmPauseBtn');
+            const retryBtn = container.querySelector('#wmRetryBtn');
+            const doneEl = container.querySelector('#wmDone');
+            const doneTitleEl = container.querySelector('#wmDoneTitle');
+            const doneTextEl = container.querySelector('#wmDoneText');
+
+            const stripSaved = () => stripCdiSkillGameResults(skillId, gameKey);
+
+            const updateHud = () => {
+                progressEl.textContent = `${trialIndex} / ${trialCount}`;
+                scoreEl.textContent = `Correct ${correctCount} • Errors ${errors}`;
+                if (progressBarEl) {
+                    const pct = trialCount ? Math.min(100, Math.max(0, (trialIndex / trialCount) * 100)) : 0;
+                    progressBarEl.style.width = `${pct}%`;
+                }
+            };
+
+            const setChoiceEnabled = (on) => {
+                leftBtn.disabled = !on;
+                rightBtn.disabled = !on;
+                leftBtn.style.opacity = on ? '1' : '0.5';
+                rightBtn.style.opacity = on ? '1' : '0.5';
+            };
+
+            const showTrial = () => {
+                if (trialIndex >= trialCount) return;
+                current = trials[trialIndex];
+                leftIsCorrect = Math.random() < 0.5;
+                shownAt = Date.now();
+                promptEl.textContent = current.prompt;
+                if (leftIsCorrect) {
+                    leftBtn.textContent = current.left;
+                    rightBtn.textContent = current.right;
+                } else {
+                    leftBtn.textContent = current.right;
+                    rightBtn.textContent = current.left;
+                }
+                setChoiceEnabled(true);
+            };
+
+            const onPick = (pickedLeft) => {
+                if (gameState !== 'running') return;
+                setChoiceEnabled(false);
+                const rt = Date.now() - shownAt;
+                const correct = (pickedLeft && leftIsCorrect) || (!pickedLeft && !leftIsCorrect);
+                if (correct) {
+                    correctCount += 1;
+                    rts.push(rt);
+                } else {
+                    errors += 1;
+                }
+                trialIndex += 1;
+                updateHud();
+                if (trialIndex >= trialCount) {
+                    const endTs = Date.now();
+                    const avgRt = rts.length ? Math.round(rts.reduce((a, b) => a + b, 0) / rts.length) : null;
+                    recordMicroActivityResult({
+                        type: 'microActivity',
+                        skillType: 'cdi',
+                        skillId,
+                        gameKey,
+                        outcome: 'completed',
+                        startedAt: new Date(roundStartTs).toISOString(),
+                        endedAt: new Date(endTs).toISOString(),
+                        config: { trialCount },
+                        metrics: {
+                            correct: correctCount,
+                            errors,
+                            accuracy: Number((correctCount / trialCount).toFixed(3)),
+                            avgReactionTimeMs: avgRt
+                        }
+                    });
+                    doneEl.style.display = 'block';
+                    if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                    doneTextEl.textContent = `Score: ${correctCount} / ${trialCount}${avgRt != null ? ` • Avg RT: ${avgRt}ms` : ''}`;
+                    promptEl.textContent = 'Done';
+                    gameState = 'idle';
+                    startBtn.disabled = false;
+                    startBtn.style.opacity = '1';
+                    startBtn.style.cursor = 'pointer';
+                    pauseBtn.disabled = true;
+                    pauseBtn.textContent = 'Pause';
+                } else {
+                    showTrial();
+                }
+            };
+
+            leftBtn.addEventListener('click', () => onPick(true));
+            rightBtn.addEventListener('click', () => onPick(false));
+
+            startBtn.addEventListener('click', () => {
+                if (gameState === 'paused') return;
+                stripSaved();
+                roundStartTs = Date.now();
+                trialIndex = 0;
+                correctCount = 0;
+                errors = 0;
+                rts.length = 0;
+                doneEl.style.display = 'none';
+                gameState = 'running';
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.65';
+                startBtn.style.cursor = 'not-allowed';
+                pauseBtn.disabled = false;
+                updateHud();
+                showTrial();
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                if (gameState === 'running') {
+                    gameState = 'paused';
+                    setChoiceEnabled(false);
+                    pauseBtn.textContent = 'Resume';
+                } else if (gameState === 'paused') {
+                    gameState = 'running';
+                    pauseBtn.textContent = 'Pause';
+                    setChoiceEnabled(true);
+                }
+            });
+
+            retryBtn.addEventListener('click', () => {
+                stripSaved();
+                gameState = 'idle';
+                trialIndex = 0;
+                correctCount = 0;
+                errors = 0;
+                rts.length = 0;
+                doneEl.style.display = 'none';
+                if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                doneTextEl.textContent = '';
+                promptEl.textContent = ' ';
+                leftBtn.textContent = ' ';
+                rightBtn.textContent = ' ';
+                setChoiceEnabled(false);
+                startBtn.disabled = false;
+                startBtn.style.opacity = '1';
+                startBtn.style.cursor = 'pointer';
+                pauseBtn.disabled = true;
+                pauseBtn.textContent = 'Pause';
+                updateHud();
+            });
+
+            setChoiceEnabled(false);
+            updateHud();
+        }
+
+        function renderPatternNextGame(container, { skillId, ageMonths }) {
+            const gameKey = 'pattern_next';
+            const patterns = microShuffleForSkill(MICRO_PATTERN_BANK, skillId);
+            const trialCount = !ageMonths || ageMonths < 48 ? 6 : ageMonths < 84 ? 8 : 10;
+            let trialIndex = 0;
+            let correctCount = 0;
+            let errors = 0;
+            const rts = [];
+            let gameState = 'idle';
+            let roundStartTs = Date.now();
+            let shownAt = 0;
+            let curPattern = null;
+            let leftIsCorrect = true;
+
+            container.innerHTML = `
+              <div class="micro-activity-shell">
+                <div class="micro-activity-top" style="margin-bottom: 0;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div class="micro-activity-kicker">How to play</div>
+                    <ol class="micro-activity-instructions">
+                      <li>Press <strong>Start</strong>. A repeating pattern is shown with <strong>?</strong> at the end.</li>
+                      <li>Tap the symbol that <strong>comes next</strong> in the pattern.</li>
+                      <li><strong>Retry</strong> clears the saved result for this skill.</li>
+                    </ol>
+                    <div class="micro-activity-disclaimer">Screening context only — not diagnostic.</div>
+                  </div>
+                </div>
+                <div class="micro-activity-hud">
+                  <div id="pnProgress" class="micro-activity-pill micro-activity-pill--secondary">0 / ${trialCount}</div>
+                  <div class="micro-activity-progress" aria-hidden="true"><div id="pnProgressBar"></div></div>
+                  <div id="pnScore" class="micro-activity-pill">Correct 0</div>
+                </div>
+                <div id="pnSeq" style="text-align:center;font-size:1.5rem;font-weight:800;color:#1565c0;margin:16px 0;letter-spacing:0.08em;min-height:1.6em;font-family:system-ui,sans-serif;"> </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+                  <button type="button" id="pnLeft" class="micro-activity-tap" style="flex:1;min-width:100px;min-height:72px;font-size:1.6rem;"> </button>
+                  <button type="button" id="pnRight" class="micro-activity-tap" style="flex:1;min-width:100px;min-height:72px;font-size:1.6rem;"> </button>
+                </div>
+                <div class="micro-activity-actions" style="margin-top: 12px;">
+                  <button type="button" id="pnRetryBtn" class="micro-activity-btn micro-activity-btn--ghost">Retry</button>
+                  <button type="button" id="pnPauseBtn" class="micro-activity-btn micro-activity-btn--ghost" disabled>Pause</button>
+                  <button type="button" id="pnStartBtn" class="micro-activity-btn micro-activity-btn--primary">Start</button>
+                </div>
+                <div id="pnDone" class="micro-activity-result" style="display:none;">
+                  <div class="micro-activity-result__title" id="pnDoneTitle">Result saved to this consultation</div>
+                  <div class="micro-activity-result__text" id="pnDoneText"></div>
+                </div>
+              </div>`;
+
+            const seqEl = container.querySelector('#pnSeq');
+            const leftBtn = container.querySelector('#pnLeft');
+            const rightBtn = container.querySelector('#pnRight');
+            const progressEl = container.querySelector('#pnProgress');
+            const progressBarEl = container.querySelector('#pnProgressBar');
+            const scoreEl = container.querySelector('#pnScore');
+            const startBtn = container.querySelector('#pnStartBtn');
+            const pauseBtn = container.querySelector('#pnPauseBtn');
+            const retryBtn = container.querySelector('#pnRetryBtn');
+            const doneEl = container.querySelector('#pnDone');
+            const doneTitleEl = container.querySelector('#pnDoneTitle');
+            const doneTextEl = container.querySelector('#pnDoneText');
+
+            const stripSaved = () => stripCdiSkillGameResults(skillId, gameKey);
+
+            const updateHud = () => {
+                progressEl.textContent = `${trialIndex} / ${trialCount}`;
+                scoreEl.textContent = `Correct ${correctCount} • Errors ${errors}`;
+                if (progressBarEl) {
+                    const pct = trialCount ? Math.min(100, Math.max(0, (trialIndex / trialCount) * 100)) : 0;
+                    progressBarEl.style.width = `${pct}%`;
+                }
+            };
+
+            const setChoiceEnabled = (on) => {
+                leftBtn.disabled = !on;
+                rightBtn.disabled = !on;
+                leftBtn.style.opacity = on ? '1' : '0.5';
+                rightBtn.style.opacity = on ? '1' : '0.5';
+            };
+
+            const showTrial = () => {
+                if (trialIndex >= trialCount) return;
+                curPattern = patterns[trialIndex % patterns.length];
+                leftIsCorrect = Math.random() < 0.5;
+                shownAt = Date.now();
+                seqEl.textContent = `${curPattern.symbols.join(' ')} ?`;
+                if (leftIsCorrect) {
+                    leftBtn.textContent = curPattern.correct;
+                    rightBtn.textContent = curPattern.foil;
+                } else {
+                    leftBtn.textContent = curPattern.foil;
+                    rightBtn.textContent = curPattern.correct;
+                }
+                setChoiceEnabled(true);
+            };
+
+            const onPick = (pickedLeft) => {
+                if (gameState !== 'running') return;
+                setChoiceEnabled(false);
+                const rt = Date.now() - shownAt;
+                const correct = (pickedLeft && leftIsCorrect) || (!pickedLeft && !leftIsCorrect);
+                if (correct) {
+                    correctCount += 1;
+                    rts.push(rt);
+                } else {
+                    errors += 1;
+                }
+                trialIndex += 1;
+                updateHud();
+                if (trialIndex >= trialCount) {
+                    const endTs = Date.now();
+                    const avgRt = rts.length ? Math.round(rts.reduce((a, b) => a + b, 0) / rts.length) : null;
+                    recordMicroActivityResult({
+                        type: 'microActivity',
+                        skillType: 'cdi',
+                        skillId,
+                        gameKey,
+                        outcome: 'completed',
+                        startedAt: new Date(roundStartTs).toISOString(),
+                        endedAt: new Date(endTs).toISOString(),
+                        config: { trialCount },
+                        metrics: {
+                            correct: correctCount,
+                            errors,
+                            accuracy: Number((correctCount / trialCount).toFixed(3)),
+                            avgReactionTimeMs: avgRt
+                        }
+                    });
+                    doneEl.style.display = 'block';
+                    if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                    doneTextEl.textContent = `Score: ${correctCount} / ${trialCount}${avgRt != null ? ` • Avg RT: ${avgRt}ms` : ''}`;
+                    seqEl.textContent = 'Done';
+                    gameState = 'idle';
+                    startBtn.disabled = false;
+                    startBtn.style.opacity = '1';
+                    startBtn.style.cursor = 'pointer';
+                    pauseBtn.disabled = true;
+                    pauseBtn.textContent = 'Pause';
+                } else {
+                    showTrial();
+                }
+            };
+
+            leftBtn.addEventListener('click', () => onPick(true));
+            rightBtn.addEventListener('click', () => onPick(false));
+
+            startBtn.addEventListener('click', () => {
+                if (gameState === 'paused') return;
+                stripSaved();
+                roundStartTs = Date.now();
+                trialIndex = 0;
+                correctCount = 0;
+                errors = 0;
+                rts.length = 0;
+                doneEl.style.display = 'none';
+                gameState = 'running';
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.65';
+                startBtn.style.cursor = 'not-allowed';
+                pauseBtn.disabled = false;
+                updateHud();
+                showTrial();
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                if (gameState === 'running') {
+                    gameState = 'paused';
+                    setChoiceEnabled(false);
+                    pauseBtn.textContent = 'Resume';
+                } else if (gameState === 'paused') {
+                    gameState = 'running';
+                    pauseBtn.textContent = 'Pause';
+                    setChoiceEnabled(true);
+                }
+            });
+
+            retryBtn.addEventListener('click', () => {
+                stripSaved();
+                gameState = 'idle';
+                trialIndex = 0;
+                correctCount = 0;
+                errors = 0;
+                rts.length = 0;
+                doneEl.style.display = 'none';
+                if (doneTitleEl) doneTitleEl.textContent = 'Result saved to this consultation';
+                doneTextEl.textContent = '';
+                seqEl.textContent = ' ';
+                leftBtn.textContent = ' ';
+                rightBtn.textContent = ' ';
+                setChoiceEnabled(false);
+                startBtn.disabled = false;
+                startBtn.style.opacity = '1';
+                startBtn.style.cursor = 'pointer';
+                pauseBtn.disabled = true;
+                pauseBtn.textContent = 'Pause';
+                updateHud();
+            });
+
+            setChoiceEnabled(false);
+            updateHud();
         }
     </script>
 
@@ -2274,6 +3983,21 @@
                 <button type="button" class="save-visit-modal__btn save-visit-modal__btn--secondary" id="saveVisitModalCancel">Not yet</button>
                 <button type="button" class="save-visit-modal__btn save-visit-modal__btn--primary" id="saveVisitModalConfirm">Save visit</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Micro-Activity Modal (CDI Pilot) — must be a sibling of #saveVisitConfirmModal, not nested inside it (parent display:none would hide this overlay). -->
+    <div id="microActivityModal" class="save-visit-modal" aria-hidden="true" role="dialog" aria-labelledby="microActivityTitle" aria-modal="true">
+        <div class="save-visit-modal__backdrop" onclick="closeMicroActivityModal()" tabindex="-1"></div>
+        <div class="save-visit-modal__dialog" style="max-width: 720px;">
+            <div class="micro-modal-header">
+                <div>
+                    <h2 id="microActivityTitle" class="save-visit-modal__title" style="margin-bottom: 4px;">Micro-Activity</h2>
+                    <div id="microActivityMeta" style="color:#6c757d;font-size:12px;font-weight:700;"></div>
+                </div>
+                <button type="button" class="micro-modal-close" onclick="closeMicroActivityModal()" aria-label="Close activity">✕</button>
+            </div>
+            <div id="microActivityBody" style="margin-top: 12px;"></div>
         </div>
     </div>
 
