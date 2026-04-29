@@ -27,7 +27,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
 
 <body class="animsition">
@@ -620,8 +619,20 @@
           padding: 50px 0 !important;
         }
       }
+
+      .pro-verified {
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        line-height: 0;
+      }
+
+      .ig-verified-badge {
+        display: block;
+      }
     </style>
 
+    <script src="js/verified-badge.js?v=6"></script>
     <script>
       // Render doctor cards function
       function renderDoctorCards(doctors) {
@@ -657,9 +668,9 @@
                 <div class="pro-doc-info">
                   <div class="pro-doc-name-row">
                     <h3 class="pro-doc-name">${doctor.name}</h3>
-                    <span class="pro-verified" title="Verified Medical Expert">
-                      <svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="10" fill="#0EA5E9"/><path d="M9 12l2 2 4-4" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
+                    ${typeof isDoctorVerified === 'function' && isDoctorVerified(doctor)
+                      ? `<span class="pro-verified" title="Verified medical expert">${verifiedBadgeSVG(20, doctor.id + '_' + index)}</span>`
+                      : ''}
                   </div>
                   <p class="pro-doc-title">${doctor.title}</p>
                   <p class="pro-doc-exp"><i class="fa fa-clock-o"></i> ${doctor.experience} Overall</p>
@@ -699,15 +710,19 @@
 
       // Filter doctors function
       function filterDoctors() {
+        if (!window.DOCTORS || !Array.isArray(window.DOCTORS)) return;
+
         const specialization = document.getElementById('filter-specialization').value;
         const experience = document.getElementById('filter-experience').value;
         const priceRange = document.getElementById('filter-price').value;
         const rating = document.getElementById('filter-rating').value;
 
         let filtered = window.DOCTORS.filter(doctor => {
-          // Filter by specialization
-          if (specialization && doctor.title !== specialization) return false;
-          if (specialization && (!doctor.title || doctor.title.trim().toLowerCase() !== specialization.toLowerCase())) return false;
+          if (specialization) {
+            const t = (doctor.title || '').trim().toLowerCase();
+            const s = specialization.trim().toLowerCase();
+            if (t !== s) return false;
+          }
 
           // Filter by experience
           if (experience) {
@@ -1390,15 +1405,15 @@
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
-  <!-- Razorpay Checkout Script -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- Razorpay: deferred so first paint / doctors load are not blocked -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 
   <!-- Razorpay Payment Configuration -->
   <script src="js/razorpay-config.js"></script>
 
-  <!-- Doctor Booking System -->
-  <script src="js/doctor-booking.js?v=13"></script>
-  <script src="js/doctor-assistant.js?v=1"></script>
+  <!-- Doctor Booking System (after verified-badge.js, loaded above) -->
+  <script src="js/doctor-booking.js?v=20"></script>
+  <script src="js/doctor-assistant.js?v=3"></script>
 
   <!-- Dynamic Packages Loading -->
   <script>
@@ -1425,7 +1440,7 @@
         };
 
         snapshot.forEach(doc => {
-          const pkg = doc.data();
+          const pkg = { ...doc.data(), id: doc.id };
           if (!pkg.active) return;
 
           const s = styles[pkg.id] || styles['basic'];
@@ -1458,8 +1473,8 @@
                 <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">${cardTitle}</h2>
               </div>
               <div style="margin-bottom: 12px;">
-                <p style="text-decoration: line-through; color: ${s.oldPriceColor}; font-size: 16px; margin-bottom: 3px;">₹${pkg.price.toLocaleString('en-IN')}</p>
-                <h3 style="font-size: 32px; font-weight: 800; color: ${s.newPriceColor}; margin: 0; line-height: 1;">₹${pkg.discountedPrice.toLocaleString('en-IN')}</h3>
+                <p style="text-decoration: line-through; color: ${s.oldPriceColor}; font-size: 16px; margin-bottom: 3px;">₹${(Number(pkg.price) || 0).toLocaleString('en-IN')}</p>
+                <h3 style="font-size: 32px; font-weight: 800; color: ${s.newPriceColor}; margin: 0; line-height: 1;">₹${(Number(pkg.discountedPrice != null ? pkg.discountedPrice : pkg.price) || 0).toLocaleString('en-IN')}</h3>
               </div>
               ${durationLabel ? `<div style="background: ${s.tagBg}; color: ${s.tagColor}; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">Duration: ${durationLabel}</div>` : ''}
               <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
@@ -1481,9 +1496,12 @@
       }
     }
     
-    // Ensure Firebase is initialized before running
     document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(loadPackages, 500); // Small delay to let Firebase initialize
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(() => loadPackages(), { timeout: 2500 });
+      } else {
+        setTimeout(loadPackages, 150);
+      }
     });
   </script>
 

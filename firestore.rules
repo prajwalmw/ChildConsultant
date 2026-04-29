@@ -98,6 +98,14 @@ service cloud.firestore {
     }
 
     // ============================================
+    // PACKAGES COLLECTION (pricing tiers on the website)
+    // ============================================
+    match /packages/{packageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ============================================
     // BOOKINGS COLLECTION (Package Bookings)
     // ============================================
     match /bookings/{bookingId} {
@@ -123,6 +131,15 @@ service cloud.firestore {
 
       // Only admins can update/delete bookings
       allow update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // SITE CONFIG (public read for assistant only — no secrets in git)
+    // Document: siteConfig/assistant — fields: geminiApiKey (string), model (optional string)
+    // ============================================
+    match /siteConfig/{docId} {
+      allow read: if docId == 'assistant';
+      allow write: if isAdmin();
     }
 
     // ============================================

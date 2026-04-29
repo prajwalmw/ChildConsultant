@@ -101,6 +101,7 @@ function renderDoctorsTable(doctors) {
           <th>Experience</th>
           <th>Price</th>
           <th>Rating</th>
+          <th>Verified</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -131,6 +132,15 @@ function renderDoctorsTable(doctors) {
               <div style="display: flex; align-items: center; gap: 5px;">
                 <i class="fas fa-star" style="color: #FFD700;"></i>
                 ${doctor.rating} (${doctor.totalRatings})
+              </div>
+            </td>
+            <td class="verified-cell">
+              <div class="switch-wrap">
+                <label class="switch" title="Blue verified badge on homepage & profile">
+                  <input type="checkbox" ${doctor.verified !== false ? 'checked' : ''} onchange="setDoctorVerifiedField('${doctor.id}', this.checked)">
+                  <span class="slider"></span>
+                </label>
+                <span class="ig-verified-preview" aria-hidden="true">${typeof verifiedBadgeSVG === 'function' ? verifiedBadgeSVG(20, 'row_' + doctor.id) : ''}</span>
               </div>
             </td>
             <td>
@@ -168,6 +178,21 @@ function updateStats() {
   document.getElementById('stat-top').textContent = topRated;
 }
 
+async function setDoctorVerifiedField(doctorId, verified) {
+  try {
+    await db.collection('doctors').doc(doctorId).update({
+      verified,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    const d = allDoctors.find((x) => x.id === doctorId);
+    if (d) d.verified = verified;
+  } catch (error) {
+    console.error('Error updating verified:', error);
+    alert('Could not update verified badge: ' + error.message);
+    loadDoctors();
+  }
+}
+
 // Search doctors
 function searchDoctors() {
   const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -191,6 +216,8 @@ function openAddModal() {
   document.getElementById('expertiseChips').innerHTML = '';
   document.getElementById('languageChips').innerHTML = '';
   document.getElementById('imagePreview').style.display = 'none';
+  const dv = document.getElementById('doctorVerified');
+  if (dv) dv.checked = true;
   document.getElementById('doctorModal').classList.add('active');
 }
 
@@ -224,19 +251,6 @@ async function editDoctor(doctorId) {
     document.getElementById('doctorDisplayOrder').value = doctor.displayOrder || 999;
     document.getElementById('doctorImageUrl').value = doctor.image;
 
-    // Populate Package Prices
-    if (document.getElementById('doctorBasicPrice')) document.getElementById('doctorBasicPrice').value = doctor.basicPrice || '';
-    if (document.getElementById('doctorBasicDiscountedPrice')) document.getElementById('doctorBasicDiscountedPrice').value = doctor.basicDiscountedPrice || '';
-    
-    if (document.getElementById('doctorStandardPrice')) document.getElementById('doctorStandardPrice').value = doctor.standardPrice || '';
-    if (document.getElementById('doctorStandardDiscountedPrice')) document.getElementById('doctorStandardDiscountedPrice').value = doctor.standardDiscountedPrice || '';
-    
-    if (document.getElementById('doctorPremiumPrice')) document.getElementById('doctorPremiumPrice').value = doctor.premiumPrice || '';
-    if (document.getElementById('doctorPremiumDiscountedPrice')) document.getElementById('doctorPremiumDiscountedPrice').value = doctor.premiumDiscountedPrice || '';
-    
-    if (document.getElementById('doctorElitePrice')) document.getElementById('doctorElitePrice').value = doctor.elitePrice || '';
-    if (document.getElementById('doctorEliteDiscountedPrice')) document.getElementById('doctorEliteDiscountedPrice').value = doctor.eliteDiscountedPrice || '';
-
     // Show existing image preview
     if (doctor.image) {
       document.getElementById('imagePreview').style.display = 'block';
@@ -250,6 +264,8 @@ async function editDoctor(doctorId) {
     document.getElementById('doctorStatus').value = doctor.status;
     document.getElementById('doctorActive').value = doctor.active.toString();
     document.getElementById('doctorTopRated').checked = doctor.isTopRated || false;
+    const dv = document.getElementById('doctorVerified');
+    if (dv) dv.checked = doctor.verified !== false;
 
     // Populate expertise
     expertiseArray = doctor.expertise || [];
@@ -454,14 +470,6 @@ async function handleSubmit(event) {
       qualification: document.getElementById('doctorQualification').value.trim(),
       sessionPrice: parseInt(document.getElementById('doctorPrice').value),
       discountedPrice: document.getElementById('doctorDiscountedPrice') ? parseInt(document.getElementById('doctorDiscountedPrice').value) : parseInt(document.getElementById('doctorPrice').value),
-      basicPrice: document.getElementById('doctorBasicPrice') && document.getElementById('doctorBasicPrice').value !== '' ? parseInt(document.getElementById('doctorBasicPrice').value) : 9600,
-      basicDiscountedPrice: document.getElementById('doctorBasicDiscountedPrice') && document.getElementById('doctorBasicDiscountedPrice').value !== '' ? parseInt(document.getElementById('doctorBasicDiscountedPrice').value) : 8448,
-      standardPrice: document.getElementById('doctorStandardPrice') && document.getElementById('doctorStandardPrice').value !== '' ? parseInt(document.getElementById('doctorStandardPrice').value) : 19200,
-      standardDiscountedPrice: document.getElementById('doctorStandardDiscountedPrice') && document.getElementById('doctorStandardDiscountedPrice').value !== '' ? parseInt(document.getElementById('doctorStandardDiscountedPrice').value) : 16320,
-      premiumPrice: document.getElementById('doctorPremiumPrice') && document.getElementById('doctorPremiumPrice').value !== '' ? parseInt(document.getElementById('doctorPremiumPrice').value) : 28800,
-      premiumDiscountedPrice: document.getElementById('doctorPremiumDiscountedPrice') && document.getElementById('doctorPremiumDiscountedPrice').value !== '' ? parseInt(document.getElementById('doctorPremiumDiscountedPrice').value) : 23616,
-      elitePrice: document.getElementById('doctorElitePrice') && document.getElementById('doctorElitePrice').value !== '' ? parseInt(document.getElementById('doctorElitePrice').value) : 38400,
-      eliteDiscountedPrice: document.getElementById('doctorEliteDiscountedPrice') && document.getElementById('doctorEliteDiscountedPrice').value !== '' ? parseInt(document.getElementById('doctorEliteDiscountedPrice').value) : 30336,
       rating: parseFloat(document.getElementById('doctorRating').value),
       totalRatings: parseInt(document.getElementById('doctorTotalRatings').value),
       displayOrder: parseInt(document.getElementById('doctorDisplayOrder').value),
@@ -471,6 +479,9 @@ async function handleSubmit(event) {
       status: document.getElementById('doctorStatus').value,
       active: document.getElementById('doctorActive').value === 'true',
       isTopRated: document.getElementById('doctorTopRated').checked,
+      verified: document.getElementById('doctorVerified')
+        ? document.getElementById('doctorVerified').checked
+        : true,
       expertise: expertiseArray,
       languages: languageArray,
       ratingBreakdown: {

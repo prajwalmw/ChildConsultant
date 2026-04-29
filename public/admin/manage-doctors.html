@@ -541,6 +541,21 @@
     input:checked + .slider:before { transform: translateX(22px); }
     /* End Toggle Styles */
 
+    .verified-cell .switch-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .verified-cell .ig-verified-preview {
+      display: inline-flex;
+      line-height: 0;
+      opacity: 0.35;
+      transition: opacity 0.2s;
+    }
+    .verified-cell:has(input[type="checkbox"]:checked) .ig-verified-preview {
+      opacity: 1;
+    }
+
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
@@ -704,50 +719,6 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label>Basic Package Price (₹)</label>
-              <input type="number" id="doctorBasicPrice" min="0" placeholder="9600">
-            </div>
-            <div class="form-group">
-              <label>Basic Discounted Price (₹)</label>
-              <input type="number" id="doctorBasicDiscountedPrice" min="0" placeholder="8448">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Pro Package Price (₹)</label>
-              <input type="number" id="doctorStandardPrice" min="0" placeholder="19200">
-            </div>
-            <div class="form-group">
-              <label>Pro Discounted Price (₹)</label>
-              <input type="number" id="doctorStandardDiscountedPrice" min="0" placeholder="16320">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Premium Package Price (₹)</label>
-              <input type="number" id="doctorPremiumPrice" min="0" placeholder="28800">
-            </div>
-            <div class="form-group">
-              <label>Premium Discounted Price (₹)</label>
-              <input type="number" id="doctorPremiumDiscountedPrice" min="0" placeholder="23616">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Elite Package Price (₹)</label>
-              <input type="number" id="doctorElitePrice" min="0" placeholder="38400">
-            </div>
-            <div class="form-group">
-              <label>Elite Discounted Price (₹)</label>
-              <input type="number" id="doctorEliteDiscountedPrice" min="0" placeholder="30336">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
               <label>Rating <span class="required">*</span></label>
               <input type="number" id="doctorRating" min="0" max="5" step="0.1" placeholder="4.8" required>
             </div>
@@ -823,6 +794,15 @@
             <label>
               <input type="checkbox" id="doctorTopRated"> Mark as Top Rated
             </label>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="doctorVerified" checked> Show verified badge on website
+            </label>
+            <small style="color: #666; font-size: 12px; display: block; margin-top: 6px;">
+              Instagram-style blue check beside the doctor name on the homepage and in the profile popup. Turn off for doctors who should not show as verified.
+            </small>
           </div>
 
           <button type="submit" class="btn-submit" id="submitBtn">
@@ -959,6 +939,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
+  <script src="../js/verified-badge.js?v=6"></script>
   <script src="../js/manage-doctors.js"></script>
   <script>
     const dbAccess = firebase.firestore();

@@ -1,12 +1,37 @@
 // Aqiraa Doctor Selection AI Assistant
-// Uses Gemini 1.5 Flash to recommend the right doctor based on parent's concern
+// Uses Google Gemini from the browser. API keys must NOT live in this file (they get leaked via GitHub).
+//
+// Setup: In Firebase Console → Firestore → create collection `siteConfig`, document id `assistant`, field:
+//   geminiApiKey: "<your key from https://aistudio.google.com/apikey>"
+// Optional field: model (default "gemini-2.0-flash") e.g. "gemini-1.5-flash"
+//
+// Then deploy firestore rules so `siteConfig/assistant` is readable on the web.
 
-const GEMINI_API_KEY = 'AIzaSyAGzS-0n2kfXixrao6ifCFF2LbFdQoJ4bE';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
+const GEMINI_GENERATE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 // Loaded dynamically from Firestore — always up to date
 let DOCTORS_PANEL = [];
 let SYSTEM_PROMPT = '';
+let assistantGeminiApiKey = '';
+let assistantGeminiModel = 'gemini-2.0-flash';
+
+async function loadAssistantConfig() {
+  assistantGeminiApiKey = '';
+  try {
+    if (typeof firebase === 'undefined' || !firebase.firestore) return;
+    const snap = await firebase.firestore().collection('siteConfig').doc('assistant').get();
+    if (!snap.exists) {
+      console.warn('Aqiraa Assistant: no siteConfig/assistant document. Add geminiApiKey in Firestore.');
+      return;
+    }
+    const d = snap.data() || {};
+    const key = (d.geminiApiKey || d.apiKey || '').trim();
+    if (key) assistantGeminiApiKey = key;
+    if (d.model && String(d.model).trim()) assistantGeminiModel = String(d.model).trim();
+  } catch (e) {
+    console.error('Aqiraa Assistant: could not load siteConfig/assistant', e);
+  }
+}
 
 async function loadDoctorsAndBuildPrompt() {
   try {
@@ -232,10 +257,12 @@ async function startConversation() {
   const container = document.getElementById('ai-chat-messages');
   if (container) container.innerHTML = '';
 
-  // If prefetch hasn't completed yet, wait — otherwise instant
-  if (DOCTORS_PANEL.length === 0) {
-    addBotMessage("One moment... ⏳");
-    await loadDoctorsAndBuildPrompt();
+  // Load only when user opens assistant (avoids duplicate Firestore work on every page load)
+  const needsDoctors = DOCTORS_PANEL.length === 0;
+  const needsKey = !assistantGeminiApiKey;
+  if (needsDoctors || needsKey) {
+    addBotMessage('One moment... ⏳');
+    await Promise.all([loadAssistantConfig(), loadDoctorsAndBuildPrompt()]);
     if (container) container.innerHTML = '';
   }
 
@@ -325,6 +352,14 @@ window.sendAssistantMessage = async function () {
   addTypingIndicator();
 
   try {
+    if (!assistantGeminiApiKey) {
+      await loadAssistantConfig();
+    }
+    if (!assistantGeminiApiKey) {
+      removeTypingIndicator();
+      addBotMessage('The doctor finder assistant is not configured yet. You can still scroll down to see all our doctors and book a consultation.');
+      return;
+    }
     const response = await callGemini();
     removeTypingIndicator();
 
@@ -342,7 +377,12 @@ window.sendAssistantMessage = async function () {
     addBotMessage(response);
   } catch (err) {
     removeTypingIndicator();
-    addBotMessage("Sorry, I'm having trouble connecting. Please try again in a moment.");
+    const msg = err && err.message ? String(err.message) : '';
+    if (msg.includes('403') || msg.includes('API key') || msg.includes('leaked')) {
+      addBotMessage('The assistant cannot reach the AI service (API key issue). Please use the doctor list below, or contact us if this keeps happening.');
+    } else {
+      addBotMessage("Sorry, I'm having trouble connecting. Please try again in a moment.");
+    }
     console.error('Gemini error:', err);
   } finally {
     if (!recommendationDone) {
@@ -354,22 +394,38 @@ window.sendAssistantMessage = async function () {
 
 async function callGemini() {
   const body = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    systemInstruction: { parts: [{ text: SYSTEM_PROMPT || 'You are a helpful assistant.' }] },
     contents: chatHistory
   };
 
-  const res = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+  const url = `${GEMINI_GENERATE_URL}/${assistantGeminiModel}:generateContent?key=${encodeURIComponent(assistantGeminiApiKey)}`;
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
 
+  const raw = await res.text();
   if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`API ${res.status}: ${errText}`);
+    throw new Error(`API ${res.status}: ${raw.slice(0, 500)}`);
   }
-  const data = await res.json();
-  return data.candidates[0].content.parts[0].text;
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (e) {
+    throw new Error('Invalid JSON from Gemini API');
+  }
+  const text = data.candidates && data.candidates[0] && data.candidates[0].content
+    && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
+    ? data.candidates[0].content.parts[0].text
+    : '';
+  if (!text && data.error) {
+    throw new Error(data.error.message || JSON.stringify(data.error));
+  }
+  if (!text) {
+    throw new Error('No text in model response (safety filter or empty candidates)');
+  }
+  return text;
 }
 
 function handleRecommendation(doctorId, reason) {
@@ -459,22 +515,5 @@ function highlightRecommendedDoctor(doctorId) {
 
 document.addEventListener('DOMContentLoaded', function () {
   injectChatWindow();
-  // Prefetch doctors in background immediately — so chat opens instantly
-  loadDoctorsAndBuildPrompt();
-
-  // Auto-open when doctor-booking section comes into view
-  const doctorSection = document.getElementById('doctor-booking');
-  if (doctorSection && 'IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !assistantOpen) {
-          setTimeout(() => {
-            if (!assistantOpen) toggleAssistant();
-          }, 600);
-          observer.disconnect(); // only trigger once per page load
-        }
-      });
-    }, { threshold: 0.2 }); // trigger when 20% of section is visible
-    observer.observe(doctorSection);
-  }
+  // Doctors + Gemini config load on first FAB open only — keeps homepage fast (no duplicate Firestore vs doctor-booking.js)
 });

@@ -2,16 +2,20 @@
 
 // Global variable to store doctors data
 let DOCTORS = [];
+let doctorsFetchStarted = false;
+
+/** Public site: hide only when explicitly inactive (missing `active` still shows — legacy docs). */
+function isDoctorActiveForPublic(doc) {
+  return doc.active !== false;
+}
 
 // Fetch doctors from Firestore
 async function fetchDoctorsFromFirestore() {
   try {
-    // Fetch all doctors and filter/sort in memory
     const snapshot = await firebase.firestore()
       .collection('doctors')
       .get();
 
-    // Filter active doctors and sort by displayOrder
     DOCTORS = snapshot.docs
       .map(doc => {
         const data = doc.data();
@@ -21,14 +25,14 @@ async function fetchDoctorsFromFirestore() {
           finalPrice: (data.discountedPrice && data.discountedPrice < data.sessionPrice) ? data.discountedPrice : data.sessionPrice
         };
       })
-      .filter(doc => doc.active === true)
+      .filter(isDoctorActiveForPublic)
       .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 
     console.log(`Loaded ${DOCTORS.length} doctors from Firestore`);
     return DOCTORS;
   } catch (error) {
     console.error('Error fetching doctors:', error);
-    // Return empty array if fetch fails
+    DOCTORS = [];
     return [];
   }
 }
@@ -49,9 +53,15 @@ async function initializeDoctors() {
 
   // Render the doctor cards
   if (DOCTORS.length > 0) {
-    // Check if renderDoctorCards function exists (defined in HTML)
     if (typeof window.renderDoctorCards === 'function') {
-      window.renderDoctorCards(DOCTORS);
+      try {
+        window.renderDoctorCards(DOCTORS);
+      } catch (e) {
+        console.error('renderDoctorCards failed:', e);
+        if (container) {
+          container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #c00;"><p>Could not display doctors. Please refresh the page.</p></div>';
+        }
+      }
     } else {
       console.error('renderDoctorCards function not found');
     }
@@ -62,29 +72,27 @@ async function initializeDoctors() {
   }
 }
 
-// Initialize when DOM is ready - wait for both Firebase and DOM
 let domReady = false;
-let firebaseReady = false;
+let firebaseWaitAttempts = 0;
+const FIREBASE_WAIT_MAX = 40;
 
 document.addEventListener('DOMContentLoaded', function() {
   domReady = true;
   tryInitialize();
 });
 
-// Also try after a short delay to ensure Firebase is loaded
-setTimeout(function() {
-  firebaseReady = true;
-  tryInitialize();
-}, 500);
-
 function tryInitialize() {
-  // Check if we're on a page with the doctors container and both DOM and Firebase are ready
-  if (domReady && firebaseReady && document.getElementById('doctors-container')) {
-    // Only initialize if not already initialized
-    if (DOCTORS.length === 0) {
-      initializeDoctors();
+  if (!domReady || !document.getElementById('doctors-container')) return;
+  if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+    firebaseWaitAttempts++;
+    if (firebaseWaitAttempts < FIREBASE_WAIT_MAX) {
+      setTimeout(tryInitialize, 100);
     }
+    return;
   }
+  if (doctorsFetchStarted) return;
+  doctorsFetchStarted = true;
+  initializeDoctors();
 }
 
 // Generate star rating HTML
@@ -131,7 +139,9 @@ function showDoctorProfile(doctorId) {
             <div style="flex: 1; min-width: 300px;">
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
                 <h2 style="color: #1E293B; font-size: 28px; font-weight: 800; margin: 0; font-family: 'Fredoka', sans-serif;">${doctor.name}</h2>
-                <svg viewBox="0 0 24 24" width="24" height="24" title="Verified Medical Expert"><circle cx="12" cy="12" r="10" fill="#0EA5E9"/><path d="M9 12l2 2 4-4" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                ${typeof isDoctorVerified === 'function' && isDoctorVerified(doctor) && typeof verifiedBadgeSVG === 'function'
+                  ? `<span style="display:inline-flex;" title="Verified medical expert">${verifiedBadgeSVG(22, doctor.id + '_modal')}</span>`
+                  : ''}
               </div>
               <p style="font-size: 17px; color: #f41192; font-weight: 600; margin-bottom: 16px;">${doctor.title}</p>
 

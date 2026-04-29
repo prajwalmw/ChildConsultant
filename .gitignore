@@ -44,6 +44,9 @@ bower_components
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
+# Local venv for one-off doc generation (docs/generate_incident_docx.py)
+.venv-docx/
+
 # Dependency directories
 node_modules/
 
