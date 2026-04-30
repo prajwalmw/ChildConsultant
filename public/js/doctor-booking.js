@@ -28,7 +28,6 @@ async function fetchDoctorsFromFirestore() {
       .filter(isDoctorActiveForPublic)
       .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 
-    console.log(`Loaded ${DOCTORS.length} doctors from Firestore`);
     return DOCTORS;
   } catch (error) {
     console.error('Error fetching doctors:', error);
@@ -128,7 +127,7 @@ function showDoctorProfile(doctorId) {
         <div style="padding: 40px;">
           <div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">
             <div style="flex-shrink: 0;">
-              <img src="${doctor.image}" alt="${doctor.name}" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #FDF2F8; padding: 4px; box-shadow: 0 8px 16px rgba(244,17,146,0.08);" onerror="this.src='images/doctors/default_placeholder.jpg'">
+              <img src="${doctor.image}" alt="${doctor.name}" width="140" height="140" loading="lazy" decoding="async" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #FDF2F8; padding: 4px; box-shadow: 0 8px 16px rgba(244,17,146,0.08);" onerror="this.src='images/doctors/default_placeholder.jpg'">
               <div style="text-align: center; margin-top: 15px;">
                 <div style="font-size: 28px; font-weight: 800; color: #1E293B;">${doctor.rating}</div>
                 <div>${generateStarRating(doctor.rating)}</div>
@@ -138,7 +137,7 @@ function showDoctorProfile(doctorId) {
 
             <div style="flex: 1; min-width: 300px;">
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                <h2 style="color: #1E293B; font-size: 28px; font-weight: 800; margin: 0; font-family: 'Fredoka', sans-serif;">${doctor.name}</h2>
+                <h2 style="color: #1E293B; font-size: 28px; font-weight: 800; margin: 0; font-family: 'PT Sans', sans-serif; letter-spacing: 0.03em; line-height: 1.2;">${doctor.name}</h2>
                 ${typeof isDoctorVerified === 'function' && isDoctorVerified(doctor) && typeof verifiedBadgeSVG === 'function'
                   ? `<span style="display:inline-flex;" title="Verified medical expert">${verifiedBadgeSVG(22, doctor.id + '_modal')}</span>`
                   : ''}
@@ -170,7 +169,7 @@ function showDoctorProfile(doctorId) {
               </div>
 
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="bookDoctorSession('${doctor.id}')" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 16px rgba(244,17,146,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(244,17,146,0.2)'" style="background: linear-gradient(135deg, #f41192, #9e0ff1); color: white; padding: 15px 30px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.2); flex: 1; min-width: 180px; transition: all 0.2s ease; font-family: 'Fredoka', sans-serif;">Book an Appointment</button>
+                <button onclick="bookDoctorSession('${doctor.id}')" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 16px rgba(244,17,146,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(244,17,146,0.2)'" style="background: linear-gradient(135deg, #f41192, #9e0ff1); color: white; padding: 15px 30px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; letter-spacing: 0.04em; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.2); flex: 1; min-width: 180px; transition: all 0.2s ease; font-family: 'PT Sans', sans-serif;">Book an Appointment</button>
               </div>
             </div>
           </div>
@@ -178,12 +177,12 @@ function showDoctorProfile(doctorId) {
           <hr style="border: none; border-top: 2px dashed #F1F5F9; margin: 30px 0;">
 
           <div style="margin-bottom: 30px;">
-            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'Fredoka', sans-serif;">About</h3>
+            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'PT Sans', sans-serif; letter-spacing: 0.03em;">About</h3>
             <p style="color: #4B5563; line-height: 1.8; font-size: 15px;">${doctor.about}</p>
           </div>
 
           <div style="margin-bottom: 30px;">
-            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'Fredoka', sans-serif;">Area of Expertise</h3>
+            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'PT Sans', sans-serif; letter-spacing: 0.03em;">Area of Expertise</h3>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
               ${doctor.expertise.map(exp => `
                 <span style="background: #F0F9FF; color: #0EA5E9; padding: 8px 16px; border-radius: 12px; font-size: 14px; font-weight: 600;">${exp}</span>
@@ -192,12 +191,12 @@ function showDoctorProfile(doctorId) {
           </div>
 
           <div style="margin-bottom: 30px;">
-            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'Fredoka', sans-serif;">Languages Known</h3>
+            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'PT Sans', sans-serif; letter-spacing: 0.03em;">Languages Known</h3>
             <p style="color: #4B5563; font-size: 15px;">${doctor.languages.join(', ')}</p>
           </div>
 
           <div>
-            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'Fredoka', sans-serif;">Patient Reviews</h3>
+            <h3 style="color: #1E293B; font-size: 22px; font-weight: 700; margin-bottom: 15px; font-family: 'PT Sans', sans-serif; letter-spacing: 0.03em;">Patient Reviews</h3>
             ${Object.entries(doctor.ratingBreakdown).reverse().map(([stars, percentage]) => `
               <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
                 <span style="width: 30px; font-weight: 600; color: #374151; font-size: 13px;">${stars} <i class="fa fa-star" style="color: #F59E0B; font-size: 12px;"></i></span>

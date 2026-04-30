@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Doctor Portal | View Consultations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
 
@@ -14,11 +17,20 @@
     <link href="../css/font-awesome.min.css" rel="stylesheet">
     <style>
         .animsition-box {
-            padding-top: 100px;
             min-height: 100vh;
         }
         .portal-container {
-            padding: 40px 0;
+            padding: 24px 0 48px;
+        }
+        .records-back-toolbar {
+            margin-bottom: 16px;
+        }
+        .records-back-toolbar .btn {
+            padding: 10px 22px !important;
+            font-size: 15px !important;
+            text-transform: none !important;
+            letter-spacing: 0.02em !important;
+            border-radius: 12px !important;
         }
         .info-header {
             background-color: #f0f0f0;
@@ -135,7 +147,7 @@
             color: #263238 !important;
             border-color: #546e7a !important;
         }
-        /* Prescription modal — same type scale as doctor portal (style.css PT Sans 16px / h2 24px / h3 22px) */
+        /* Prescription modal — consistent body / clear hierarchy */
         #prescription-modal-overlay {
             display: none;
             position: fixed;
@@ -179,7 +191,7 @@
             flex-shrink: 0;
             overflow: visible;
         }
-        /* Fredoka (child-friendly h2) has tall metrics and can clip with tight line-height — use UI stack here */
+        /* Modal header: PT Sans stack to avoid clipping with tight line-height */
         .prescription-dialog-title-block {
             flex: 1 1 200px;
             min-width: 0;
@@ -226,7 +238,7 @@
             font-size: 28px !important;
             line-height: 1.2 !important;
             font-weight: 700 !important;
-            letter-spacing: -0.01em;
+            letter-spacing: 0.02em;
         }
         .prescription-dialog-header p {
             margin: 6px 0 0;
@@ -1369,12 +1381,12 @@
         });
     </script>
 
-    <div id="animsition-box" class="animsition-box">
+    <div id="animsition-box" class="animsition-box portal-app-shell">
         <div class="header">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                         <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                         <div class="logo"> <a href="../index.html" class="animsition-link"><img src="../images/logo.png" alt="Logo"></a> </div>
                     </div>
                 </div>
             </div>
@@ -1385,6 +1397,12 @@
                 <div class="col-lg-12">
                     <div class="section-title">
                         <h1>Consultation Records</h1>
+                    </div>
+
+                    <div class="records-back-toolbar">
+                        <a href="doctor_portal.html" class="btn btn-default animsition-link" id="back-to-child-selection">
+                            <i class="fa fa-arrow-left"></i> Back to Child Selection
+                        </a>
                     </div>
 
                     <div class="info-header">
@@ -1427,10 +1445,6 @@
                             </table>
                         </div>
                     </div>
-                    
-                    <a href="#" class="btn btn-default animsition-link" id="back-to-child-selection">
-                        <i class="fa fa-arrow-left"></i> Back to Child Selection
-                    </a>
                 </div>
             </div>
         </div>

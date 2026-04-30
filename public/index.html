@@ -2,10 +2,10 @@
 <html lang="en">
 
 <head>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#00c3c9">
   <meta name="description"
     content="Aqiraa - Your child's health is our priority! Expert pediatric care for children aged 3-12 years. Friendly doctors, fun environment, and comprehensive healthcare.">
   <meta name="keywords"
@@ -13,166 +13,25 @@
   <title>Aqiraa</title>
   <link rel="icon" type="image/png" href="images/logo.png">
   <link rel="shortcut icon" type="image/png" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://checkout.razorpay.com">
+  <link rel="dns-prefetch" href="https://assets.calendly.com">
+  <link rel="preload" as="image" href="images/child_group.webp" type="image/webp" fetchpriority="high">
+  <link rel="preload" as="image" href="images/logo.webp" type="image/webp">
+  <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
   <link href="css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" type="text/css" href="css/animsition.min.css">
   <link href="css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="css/fontello.css">
-  <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
-
-  <!-- Child-Friendly UI/UX Enhancements -->
   <link rel="stylesheet" href="css/child-friendly.css">
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 </head>
 
 <body class="animsition">
-
-  <script>
-    // ✅ Your Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
-      authDomain: "child-consultant.firebaseapp.com",
-      projectId: "child-consultant",
-      storageBucket: "child-consultant.appspot.com",
-      messagingSenderId: "985386588549",
-      appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    auth.onAuthStateChanged(user => {
-      var profileImg = document.getElementById('profile-img');
-      var navigation = document.getElementById('navigation');
-      var profileMenu = document.querySelector('.profile-menu');
-
-      if (!user) {
-        // Not logged in → Show Login button instead of redirecting
-        if (profileMenu) {
-          profileMenu.style.display = 'none';
-        }
-
-        // Add Login button to navigation
-        const homeMenuItem = navigation?.querySelector('ul > li:first-child');
-        if (homeMenuItem && !document.getElementById('login-menu-item')) {
-          const loginHtml = '<li id="login-menu-item"><a href="login.html" title="Login" class="animsition-link">Login</a></li>';
-          homeMenuItem.insertAdjacentHTML('afterend', loginHtml);
-        }
-      } else {
-        // Logged in: Set profile image and fetch role
-        if (profileMenu) {
-          profileMenu.style.display = 'block';
-        }
-        if (profileImg) {
-            profileImg.src = user.photoURL || 'images/default-profile.png'; // Use a fallback image
-        }
-
-        // Remove Login button if it exists
-        const loginMenuItem = document.getElementById('login-menu-item');
-        if (loginMenuItem) {
-          loginMenuItem.remove();
-        }
-
-        // --- 🔑 Fetch User Role and Update Menu ---
-        db.collection('users').doc(user.uid).get()
-          .then(doc => {
-            let menuHtml = '';
-
-            if (doc.exists) {
-              const role = doc.data().role;
-              if (navigation && role) {
-                if (role === 'admin') {
-                  // Admin sees Dashboard, Doctor Portal, and Manage Doctors
-                  menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
-                  menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
-                  menuHtml += '<li><a href="admin/manage-doctors.html" title="Manage" class="animsition-link">Manage</a></li>';
-                } else if (role === 'doctor') {
-                  // Doctors see Dashboard and Doctor Portal (if approved)
-                  const hasPortalAccess = doc.data().hasPortalAccess === true;
-                  menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
-                  if (hasPortalAccess) {
-                    menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
-                  } else {
-                    menuHtml += '<li><a href="#" onclick="alert(\'You currently have no active consultations. The Doctor Portal will become accessible once a patient books a session with you.\'); return false;" title="Doctor Portal">Doctor Portal</a></li>';
-                  }
-                } else {
-                  // For 'parent' or default role
-                  menuHtml = '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>';
-
-                  // Show onboarding popup if mobile number is missing
-                  const userData = doc.exists ? doc.data() : {};
-                  const hasMobile = userData.mobile && userData.mobile.trim().length >= 10;
-                  const dismissedKey = `onboarding_dismissed_${user.uid}`;
-                  if (!hasMobile && !localStorage.getItem(dismissedKey)) {
-                    showMobileOnboardingPopup(dismissedKey);
-                  }
-                }
-              }
-            } else {
-                // Fallback to parent profile if user document is missing
-                menuHtml = '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>';
-            }
-
-            // Find the position after "Home" (first <li>)
-            const homeMenuItem = navigation.querySelector('ul > li:first-child');
-            if (homeMenuItem) {
-                // Insert the new menu item right after Home
-                homeMenuItem.insertAdjacentHTML('afterend', menuHtml);
-            }
-          })
-          .catch(error => {
-            console.error("Error fetching user role:", error);
-            // Fallback: If network fails, still try to show a basic profile link
-            const navigation = document.getElementById('navigation');
-            const homeMenuItem = navigation?.querySelector('ul > li:first-child');
-            if (homeMenuItem) {
-              homeMenuItem.insertAdjacentHTML('afterend', '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>');
-            }
-          });
-        // --- End Logic ---
-      }
-    });
-
-    function showMobileOnboardingPopup(dismissedKey) {
-      const popup = document.createElement('div');
-      popup.id = 'onboarding-popup';
-      popup.innerHTML = `
-        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">
-          <div style="background:#fff;border-radius:20px;max-width:420px;width:100%;padding:36px 32px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.25);text-align:center;position:relative;">
-            <div style="width:64px;height:64px;background:linear-gradient(135deg,#f41192,#FF6B9D);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
-              <svg width="30" height="30" fill="none" viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" fill="white"/></svg>
-            </div>
-            <h3 style="color:#f41192;font-size:20px;font-weight:700;margin-bottom:8px;">Complete Your Profile</h3>
-            <p style="color:#555;font-size:14px;line-height:1.7;margin-bottom:6px;">Welcome to <strong>Aqiraa</strong>! To get the most out of your experience, please add your mobile number.</p>
-            <div style="background:#FFF5FB;border-radius:12px;padding:14px 16px;margin:16px 0;text-align:left;">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                <span style="width:22px;height:22px;background:#f41192;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <svg width="12" height="12" fill="white" viewBox="0 0 12 12"><path d="M1 6l3.5 3.5L11 2"/></svg>
-                </span>
-                <span style="color:#444;font-size:13px;">Stay reachable for visit follow-ups</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <span style="width:22px;height:22px;background:#f41192;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <svg width="12" height="12" fill="white" viewBox="0 0 12 12"><path d="M1 6l3.5 3.5L11 2"/></svg>
-                </span>
-                <span style="color:#444;font-size:13px;">Get booking & appointment reminders</span>
-              </div>
-            </div>
-            <button onclick="window.location.href='parent/update_profile.html?focus=mobile'" style="width:100%;background:linear-gradient(135deg,#f41192,#FF6B9D);color:#fff;border:none;padding:14px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 15px rgba(244,17,146,0.3);">Update Mobile Number →</button>
-            <button onclick="localStorage.setItem('${dismissedKey}','1');document.getElementById('onboarding-popup').remove();" style="width:100%;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;padding:4px;">Maybe later</button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(popup);
-    }
-  </script>
 
   <div id="animsition-box" class="animsition-box">
 
@@ -195,8 +54,11 @@
           <div class="row">
             <div class="col-md-3 col-sm-6 col-xs-6">
               <div class="logo-container">
-                <a href="index.html" class="logo-link">
-                  <img src="images/logo.png" alt="Aqiraa Logo" class="logo-img" style="height: 120px !important; width: auto !important; max-width: none !important; max-height: 120px !important; box-shadow: 0 10px 30px rgba(168, 218, 255, 0.7); border-radius: 10px;">
+                <a href="index.html" class="logo-link animsition-link">
+                  <picture>
+                    <source srcset="images/logo.webp" type="image/webp">
+                    <img src="images/logo.png" alt="Aqiraa Logo" class="logo-img" width="512" height="512" decoding="async" fetchpriority="high" style="height: 120px !important; width: auto !important; max-width: none !important; max-height: 120px !important; box-shadow: 0 10px 30px rgba(168, 218, 255, 0.7); border-radius: 10px;">
+                  </picture>
                 </a>
               </div>
             </div>
@@ -221,39 +83,7 @@
           </div>
         </div>
       </div>
-      <div class="container" style="position: relative;">
-        <!-- Pricing Cloud Image -->
-        <style>
-          .pricing-cloud-wrapper {
-            position: absolute;
-            top: 20px;
-            right: -120px;
-            z-index: 15;
-            animation: cloudFloat 8s ease-in-out infinite;
-          }
-          @keyframes cloudFloat {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(-30px); }
-          }
-          .pricing-cloud-wrapper img {
-            width: 340px;
-            height: auto;
-          }
-          @media (max-width: 1200px) {
-            .pricing-cloud-wrapper { transform: scale(0.7); top: 10px; right: -140px; animation: cloudFloatSmall 8s ease-in-out infinite; }
-            @keyframes cloudFloatSmall {
-              0%, 100% { transform: scale(0.7) translateX(0); }
-              50% { transform: scale(0.7) translateX(-25px); }
-            }
-          }
-          @media (max-width: 992px) {
-            .pricing-cloud-wrapper { display: none !important; }
-          }
-        </style>
-        <div class="pricing-cloud-wrapper">
-          <img src="images/special_offer_pricing.png" alt="Special Offer - 38% OFF at ₹799 only">
-        </div>
-
+      <div class="container">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12">
             <div class="hero-caption text-center" style="margin-top: -70px; position: relative; z-index: 10;">
@@ -269,8 +99,11 @@
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12">
             <div class="hero-illustration" style="position: relative; z-index: 1; pointer-events: none;">
-              <img src="images/child_group.png" alt="Happy Children" class="hero-img"
+              <picture>
+                <source srcset="images/child_group.webp" type="image/webp">
+                <img src="images/child_group.png" alt="Happy Children" class="hero-img" fetchpriority="high" decoding="async" width="1200" height="800"
                    style="width: 100%; margin: 0; margin-top: -300px; display: block; pointer-events: none; filter: drop-shadow(0 8px 20px rgba(255, 215, 0, 0.5)) contrast(1.1) brightness(1.05);">
+              </picture>
             </div>
           </div>
         </div>
@@ -292,8 +125,11 @@
           <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" style="display: flex; align-items: center; justify-content: center;">
             <div style="text-align: center; padding: 10px;">
               <!-- Baby Image without circle -->
-              <img src="images/about_us.png" alt="About Aqiraa - Child Development"
+              <picture>
+                <source srcset="images/about_us.webp" type="image/webp">
+                <img src="images/about_us.png" alt="About Aqiraa - Child Development" loading="lazy" decoding="async" width="960" height="640"
                    style="width: 120%; max-width: 600px; display: inline-block;">
+              </picture>
             </div>
           </div>
           <div class="col-lg-7 col-md-7 col-sm-12 col-xs-12" style="display: flex; align-items: center;">
@@ -325,7 +161,7 @@
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="section-title text-center" style="margin-bottom: 40px;">
-              <h1 style="font-size: 42px; color: #f41192; font-weight: 800; margin-bottom: 12px;">Book a Doctor Appointment</h1>
+              <h1 style="font-size: 42px; color: #f41192; font-weight: 800; margin-bottom: 12px; letter-spacing: 0.04em; line-height: 1.15;">Book a Doctor Appointment</h1>
               <p style="font-size: 18px; color: #666; margin-top: 8px; max-width: 700px; margin-left: auto; margin-right: auto;">Consult with our experienced panel of doctors and specialists</p>
               <div style="width: 100px; height: 5px; background: linear-gradient(90deg, #f41192, #9e0ff1); margin: 15px auto 0; border-radius: 3px;"></div>
             </div>
@@ -467,7 +303,8 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        font-family: 'Fredoka', sans-serif;
+        font-family: 'PT Sans', sans-serif;
+        letter-spacing: 0.03em;
       }
 
       .pro-doc-title {
@@ -569,7 +406,7 @@
         cursor: pointer;
         transition: all 0.2s;
         border: none;
-        font-family: 'Fredoka', sans-serif;
+        font-family: 'PT Sans', sans-serif;
       }
 
       .pro-btn-outline {
@@ -661,7 +498,7 @@
 
               <div class="pro-doc-top">
                 <div class="pro-doc-img-wrapper">
-                  <img src="${doctor.image}" alt="${doctor.name}" class="pro-doc-img" onerror="this.src='https://via.placeholder.com/100/f41192/ffffff?text=${doctor.name.charAt(0)}'">
+                  <img src="${doctor.image}" alt="${doctor.name}" class="pro-doc-img" loading="lazy" decoding="async" width="100" height="100" onerror="this.src='https://via.placeholder.com/100/f41192/ffffff?text=${doctor.name.charAt(0)}'">
                   ${doctor.isTopRated ? '<div class="pro-top-badge"><i class="fa fa-star"></i> Top Rated</div>' : ''}
                 </div>
                 
@@ -692,8 +529,8 @@
                 <div class="pro-price-block">
                   <span class="pro-price-label">Consultation Fee</span>
                   <div class="pro-price-val">
-                    ₹${activePrice}
-                    ${hasDiscount ? `<span class="pro-price-old">₹${doctor.sessionPrice}</span>` : ''}
+                    &#8377;${activePrice}
+                    ${hasDiscount ? `<span class="pro-price-old">&#8377;${doctor.sessionPrice}</span>` : ''}
                   </div>
                 </div>
                 <div class="pro-actions">
@@ -793,16 +630,16 @@
             <div class="meta-box bg-default">
               <h2 class="meta-date">07 OCT</h2>
             </div>
-            <div class="post-img"> <a href="blog-default.html" class="imghover"><img src="images/blog-1.jpg"
-                  class="img-responsive" alt="Pediatrician Website Template"></a> </div>
+            <div class="post-img"> <a href="blog-default.html" class="imghover animsition-link"><picture><source srcset="images/blog-1.webp" type="image/webp"><img src="images/blog-1.jpg" loading="lazy" decoding="async" width="360" height="200"
+                  class="img-responsive" alt="Pediatrician Website Template"></picture></a> </div>
             <div class="post-content pinside30 bg-white">
-              <h2 class="post-title"><a href="blog-default.html">3 Reasons Moms Love Kids First Pediatric Clinic</a>
+              <h2 class="post-title"><a href="blog-default.html" class="animsition-link">3 Reasons Moms Love Kids First Pediatric Clinic</a>
               </h2>
               <div class="post-meta mb20"> <span class="meta-comment"><i
                     class="icon-primary icon-1x icon-communication-4"></i> 06 <a href="#">Comments</a></span> </div>
               <p class="mb30">Morbi luctus bibendum lorem eget umsan quam dictu am tellus id congue loremsite vestibulum
                 egeavida.</p>
-              <a href="blog-default.html" class="btn btn-default">read more</a>
+              <a href="blog-default.html" class="btn btn-default animsition-link">read more</a>
             </div>
           </div>
         </div>
@@ -811,15 +648,15 @@
             <div class="meta-box bg-default">
               <h2 class="meta-date">15 OCT</h2>
             </div>
-            <div class="post-img"> <a href="blog-default.html" class="imghover"><img src="images/blog-2.jpg"
-                  class="img-responsive" alt="Pediatrician Website Template"></a> </div>
+            <div class="post-img"> <a href="blog-default.html" class="imghover animsition-link"><picture><source srcset="images/blog-2.webp" type="image/webp"><img src="images/blog-2.jpg" loading="lazy" decoding="async" width="360" height="200"
+                  class="img-responsive" alt="Pediatrician Website Template"></picture></a> </div>
             <div class="post-content pinside30 bg-white">
-              <h2 class="post-title"><a href="blog-default.html">Vaccination Reminder For Your Baby</a></h2>
+              <h2 class="post-title"><a href="blog-default.html" class="animsition-link">Vaccination Reminder For Your Baby</a></h2>
               <div class="post-meta mb20"> <span class="meta-comment"><i
                     class="icon-primary icon-1x icon-communication-4"></i> 10 <a href="#">Comments</a></span> </div>
               <p class="mb30">Nteger pretium euismod accums raesent venenatis dolor sit commod ocongue lore metus
                 consequat nunitnisia.</p>
-              <a href="blog-default.html" class="btn btn-default">read more</a>
+              <a href="blog-default.html" class="btn btn-default animsition-link">read more</a>
             </div>
           </div>
         </div>
@@ -828,16 +665,16 @@
             <div class="meta-box bg-default">
               <h2 class="meta-date">22 OCT</h2>
             </div>
-            <div class="post-img"> <a href="blog-default.html" class="imghover"><img src="images/blog-3.jpg"
-                  class="img-responsive" alt="Pediatrician Website Template"></a> </div>
+            <div class="post-img"> <a href="blog-default.html" class="imghover animsition-link"><picture><source srcset="images/blog-3.webp" type="image/webp"><img src="images/blog-3.jpg" loading="lazy" decoding="async" width="360" height="200"
+                  class="img-responsive" alt="Pediatrician Website Template"></picture></a> </div>
             <div class="post-content pinside30 bg-white">
-              <h2 class="post-title"><a href="blog-default.html">Here are a Few Things That Set Des Moines Pediatric</a>
+              <h2 class="post-title"><a href="blog-default.html" class="animsition-link">Here are a Few Things That Set Des Moines Pediatric</a>
               </h2>
               <div class="post-meta mb20"> <span class="meta-comment"><i
                     class="icon-primary icon-1x icon-communication-4"></i> 08 <a href="#">Comments</a></span> </div>
               <p class="mb30">Faucibus tortor exsed orcuis cursus lorem nuncios quam a ultricies velit dignissimid
                 mdignissimid maecenas ante dolor.</p>
-              <a href="blog-default.html" class="btn btn-default">read more</a>
+              <a href="blog-default.html" class="btn btn-default animsition-link">read more</a>
             </div>
           </div>
         </div>
@@ -1022,10 +859,10 @@
         <div class="row" style="display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 12px; margin: 0; width: 100%; align-items: stretch;">
         <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
           <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_dietician.png"
-                  class="img-responsive" alt="Nutritionist Services"></a> </div>
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover animsition-link"><picture><source srcset="images/dr_dietician.webp" type="image/webp"><img src="images/dr_dietician.png" loading="lazy" decoding="async" width="720" height="480"
+                  class="img-responsive" alt="Nutritionist Services"></picture></a> </div>
             <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Nutritionist (Dietitian)</a></h2>
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title animsition-link">Nutritionist (Dietitian)</a></h2>
               <p style="font-size: 14px; line-height: 1.4;">Expert nutrition guidance and personalized diet plans for your child's healthy growth and development.</p>
               <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
             </div>
@@ -1033,10 +870,10 @@
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
           <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_pediatrician.png"
-                  class="img-responsive pediatrician-img" alt="Pediatrician Services"></a> </div>
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover animsition-link"><picture><source srcset="images/dr_pediatrician.webp" type="image/webp"><img src="images/dr_pediatrician.png" loading="lazy" decoding="async" width="720" height="720"
+                  class="img-responsive pediatrician-img" alt="Pediatrician Services"></picture></a> </div>
             <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Pediatrician</a></h2>
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title animsition-link">Pediatrician</a></h2>
               <p style="font-size: 14px; line-height: 1.4;">Comprehensive medical care for children from infancy through adolescence with compassionate doctors.</p>
               <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
             </div>
@@ -1044,10 +881,10 @@
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
           <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_therapist.png"
-                  class="img-responsive" alt="Psychology Services"></a> </div>
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover animsition-link"><picture><source srcset="images/dr_therapist.webp" type="image/webp"><img src="images/dr_therapist.png" loading="lazy" decoding="async" width="720" height="480"
+                  class="img-responsive" alt="Psychology Services"></picture></a> </div>
             <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Psychologist / Therapist</a></h2>
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title animsition-link">Psychologist / Therapist</a></h2>
               <p style="font-size: 14px; line-height: 1.4;">Professional counseling and therapy services to support your child's mental health and emotional wellbeing.</p>
               <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
             </div>
@@ -1055,10 +892,10 @@
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
           <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_educator.png"
-                  class="img-responsive" alt="Educator Services"></a> </div>
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover animsition-link"><picture><source srcset="images/dr_educator.webp" type="image/webp"><img src="images/dr_educator.png" loading="lazy" decoding="async" width="720" height="480"
+                  class="img-responsive" alt="Educator Services"></picture></a> </div>
             <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Educator</a></h2>
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title animsition-link">Educator</a></h2>
               <p style="font-size: 14px; line-height: 1.4;">Specialized educational support and learning programs tailored to your child's unique needs and abilities.</p>
               <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
             </div>
@@ -1066,10 +903,10 @@
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
           <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
-            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover"><img src="images/dr_yoga.png"
-                  class="img-responsive" alt="Yoga Therapy Services"></a> </div>
+            <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover animsition-link"><picture><source srcset="images/dr_yoga.webp" type="image/webp"><img src="images/dr_yoga.png" loading="lazy" decoding="async" width="720" height="480"
+                  class="img-responsive" alt="Yoga Therapy Services"></picture></a> </div>
             <div class="service-content" style="margin-bottom: 10px; flex-grow: 1; display: flex; flex-direction: column;">
-              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title">Yoga Therapist</a></h2>
+              <h2 class="service-title" style="margin-bottom: 10px; font-size: 18px;"><a href="service-list.html" class="title animsition-link">Yoga Therapist</a></h2>
               <p style="font-size: 14px; line-height: 1.4;">Therapeutic yoga sessions designed for children to enhance flexibility, mindfulness, and overall wellness.</p>
               <a href="service-list.html" class="btn-link" style="display: none;">read more</a>
             </div>
@@ -1107,7 +944,10 @@
         <div class="focus-areas-container">
           <!-- Center Circle -->
           <div class="center-circle">
-            <img src="images/logo.png" alt="Aqiraa" class="center-logo">
+            <picture>
+              <source srcset="images/logo.webp" type="image/webp">
+              <img src="images/logo.png" alt="Aqiraa" class="center-logo" loading="lazy" decoding="async" width="512" height="512">
+            </picture>
           </div>
 
           <!-- Card 1 - Top -->
@@ -1336,7 +1176,10 @@
           <!-- About Section -->
           <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
             <div style="margin-bottom: 30px;">
-              <img src="images/logo.png" alt="Aqiraa" style="height: 80px; margin-bottom: 20px; border-radius: 8px;">
+              <picture>
+                <source srcset="images/logo.webp" type="image/webp">
+                <img src="images/logo.png" alt="Aqiraa" style="height: 80px; margin-bottom: 20px; border-radius: 8px;" loading="lazy" decoding="async" width="512" height="512">
+              </picture>
               <h3 style="font-size: 22px; font-weight: 600; margin-bottom: 15px; color: #FF5733 !important;">
                 Aqiraa | Child Consultancy
               </h3>
@@ -1351,11 +1194,11 @@
             <div style="margin-bottom: 30px;">
               <h3 style="color: #9B59B6 !important; font-size: 18px; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #FF6B9D;">Quick Links</h3>
               <ul style="list-style: none; padding: 0; margin: 0;">
-                <li style="margin-bottom: 12px;"><a href="index.html" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Home</a></li>
-                <li style="margin-bottom: 12px;"><a href="service-list.html" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Services</a></li>
-                <li style="margin-bottom: 12px;"><a href="blog-default.html" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Blog</a></li>
-                <li style="margin-bottom: 12px;"><a href="contact.html" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Contact Us</a></li>
-                <li style="margin-bottom: 12px;"><a href="testimonial.html" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Testimonials</a></li>
+                <li style="margin-bottom: 12px;"><a href="index.html" class="animsition-link" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Home</a></li>
+                <li style="margin-bottom: 12px;"><a href="service-list.html" class="animsition-link" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Services</a></li>
+                <li style="margin-bottom: 12px;"><a href="blog-default.html" class="animsition-link" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Blog</a></li>
+                <li style="margin-bottom: 12px;"><a href="contact.html" class="animsition-link" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Contact Us</a></li>
+                <li style="margin-bottom: 12px;"><a href="testimonial.html" class="animsition-link" style="color: #9B59B6 !important; text-decoration: none; font-size: 15px; transition: color 0.3s;" onmouseover="this.style.color='#FF6B9D'" onmouseout="this.style.color='#9B59B6'">→ Testimonials</a></li>
               </ul>
             </div>
           </div>
@@ -1396,6 +1239,129 @@
   
   </div> <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyLCI_GOl9SWDLo2zhjMthLQFZ5sA3ddM",
+      authDomain: "child-consultant.firebaseapp.com",
+      projectId: "child-consultant",
+      storageBucket: "child-consultant.appspot.com",
+      messagingSenderId: "985386588549",
+      appId: "1:985386588549:web:311ecd89cc7f6aa141ccec"
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    auth.onAuthStateChanged(user => {
+      var profileImg = document.getElementById('profile-img');
+      var navigation = document.getElementById('navigation');
+      var profileMenu = document.querySelector('.profile-menu');
+
+      if (!user) {
+        if (profileMenu) {
+          profileMenu.style.display = 'none';
+        }
+        const homeMenuItem = navigation?.querySelector('ul > li:first-child');
+        if (homeMenuItem && !document.getElementById('login-menu-item')) {
+          const loginHtml = '<li id="login-menu-item"><a href="login.html" title="Login" class="animsition-link">Login</a></li>';
+          homeMenuItem.insertAdjacentHTML('afterend', loginHtml);
+        }
+      } else {
+        if (profileMenu) {
+          profileMenu.style.display = 'block';
+        }
+        if (profileImg) {
+            profileImg.src = user.photoURL || 'images/default-profile.png';
+        }
+        const loginMenuItem = document.getElementById('login-menu-item');
+        if (loginMenuItem) {
+          loginMenuItem.remove();
+        }
+        db.collection('users').doc(user.uid).get()
+          .then(doc => {
+            let menuHtml = '';
+            if (doc.exists) {
+              const role = doc.data().role;
+              if (navigation && role) {
+                if (role === 'admin') {
+                  menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
+                  menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
+                  menuHtml += '<li><a href="admin/manage-doctors.html" title="Manage" class="animsition-link">Manage</a></li>';
+                } else if (role === 'doctor') {
+                  const hasPortalAccess = doc.data().hasPortalAccess === true;
+                  menuHtml = '<li><a href="dashboard/dashboard.html" title="Dashboard" class="animsition-link">Dashboard</a></li>';
+                  if (hasPortalAccess) {
+                    menuHtml += '<li><a href="doctor/doctor_portal.html" title="Doctor Portal" class="animsition-link">Doctor Portal</a></li>';
+                  } else {
+                    menuHtml += '<li><a href="#" onclick="alert(\'You currently have no active consultations. The Doctor Portal will become accessible once a patient books a session with you.\'); return false;" title="Doctor Portal">Doctor Portal</a></li>';
+                  }
+                } else {
+                  menuHtml = '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>';
+                  const userData = doc.exists ? doc.data() : {};
+                  const hasMobile = userData.mobile && userData.mobile.trim().length >= 10;
+                  const dismissedKey = `onboarding_dismissed_${user.uid}`;
+                  if (!hasMobile && !localStorage.getItem(dismissedKey)) {
+                    showMobileOnboardingPopup(dismissedKey);
+                  }
+                }
+              }
+            } else {
+              menuHtml = '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>';
+            }
+            const homeMenuItem = navigation.querySelector('ul > li:first-child');
+            if (homeMenuItem) {
+                homeMenuItem.insertAdjacentHTML('afterend', menuHtml);
+            }
+          })
+          .catch(error => {
+            console.error("Error fetching user role:", error);
+            const navigation = document.getElementById('navigation');
+            const homeMenuItem = navigation?.querySelector('ul > li:first-child');
+            if (homeMenuItem) {
+              homeMenuItem.insertAdjacentHTML('afterend', '<li><a href="parent/update_profile.html" title="My Profile" class="animsition-link">My Profile</a></li>');
+            }
+          });
+      }
+    });
+
+    function showMobileOnboardingPopup(dismissedKey) {
+      const popup = document.createElement('div');
+      popup.id = 'onboarding-popup';
+      popup.innerHTML = `
+        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">
+          <div style="background:#fff;border-radius:20px;max-width:420px;width:100%;padding:36px 32px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.25);text-align:center;position:relative;">
+            <div style="width:64px;height:64px;background:linear-gradient(135deg,#f41192,#FF6B9D);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+              <svg width="30" height="30" fill="none" viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" fill="white"/></svg>
+            </div>
+            <h3 style="color:#f41192;font-size:20px;font-weight:700;margin-bottom:8px;">Complete Your Profile</h3>
+            <p style="color:#555;font-size:14px;line-height:1.7;margin-bottom:6px;">Welcome to <strong>Aqiraa</strong>! To get the most out of your experience, please add your mobile number.</p>
+            <div style="background:#FFF5FB;border-radius:12px;padding:14px 16px;margin:16px 0;text-align:left;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <span style="width:22px;height:22px;background:#f41192;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="12" height="12" fill="white" viewBox="0 0 12 12"><path d="M1 6l3.5 3.5L11 2"/></svg>
+                </span>
+                <span style="color:#444;font-size:13px;">Stay reachable for visit follow-ups</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="width:22px;height:22px;background:#f41192;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="12" height="12" fill="white" viewBox="0 0 12 12"><path d="M1 6l3.5 3.5L11 2"/></svg>
+                </span>
+                <span style="color:#444;font-size:13px;">Get booking & appointment reminders</span>
+              </div>
+            </div>
+            <button onclick="window.location.href='parent/update_profile.html?focus=mobile'" style="width:100%;background:linear-gradient(135deg,#f41192,#FF6B9D);color:#fff;border:none;padding:14px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 15px rgba(244,17,146,0.3);">Update Mobile Number →</button>
+            <button onclick="localStorage.setItem('${dismissedKey}','1');document.getElementById('onboarding-popup').remove();" style="width:100%;background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;padding:4px;">Maybe later</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(popup);
+    }
+  </script>
   <script src="js/menumaker.js"></script>
   <script type="text/javascript" src="js/jquery.sticky.js"></script>
   <script type="text/javascript" src="js/sticky-header.js"></script>
@@ -1412,7 +1378,7 @@
   <script src="js/razorpay-config.js"></script>
 
   <!-- Doctor Booking System (after verified-badge.js, loaded above) -->
-  <script src="js/doctor-booking.js?v=20"></script>
+  <script src="js/doctor-booking.js?v=22"></script>
   <script src="js/doctor-assistant.js?v=3"></script>
 
   <!-- Dynamic Packages Loading -->
@@ -1611,8 +1577,8 @@
     });
   </script>
 
-  <!-- Calendly inline widget for doctor bookings -->
-  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <!-- Calendly: non-blocking CSS -->
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" media="print" onload="this.media='all'">
   <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
 
   <!-- Custom styling for gradient button -->

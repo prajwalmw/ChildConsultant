@@ -112,7 +112,7 @@ Author:             Jitu Chauhan
 
 html { scroll-behavior: smooth; }
 html, body { margin: 0 !important; padding: 0 !important; height: 100%; overflow-y: auto; }
-body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-size: 16px; background-color: #fff; color: #7a8080; font-family: 'PT Sans', sans-serif; line-height: 1.6; overflow-x: hidden; }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-size: 16px; background-color: #fff; color: #7a8080; font-family: 'PT Sans', 'Segoe UI', sans-serif; line-height: 1.6; overflow-x: hidden; }
 h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; margin-bottom: 10px; color: #4a4e4e; font-weight: 600; }
 h1 { font-size: 30px; line-height: 30px; font-weight: 700; }
 h2 { font-size: 24px; }
@@ -375,7 +375,7 @@ img { width: auto; max-width: 100%; height: auto; margin: 0; padding: 0; border:
   margin-bottom: -60px;
 }
 .is-sticky .header { background-color: #00c3c9; }
-.header { -webkit-transition: background-color .8s ease-out; -moz-transition: background-color .8s ease-out; -o-transition: background-color .8s ease-out; transition: background-color .8s ease-out; position: relative; padding-top: 15px; padding-bottom: 15px; font-family: 'PT Sans', sans-serif; z-index: 9; text-align: left; overflow: visible; }
+.header { -webkit-transition: background-color .8s ease-out; -moz-transition: background-color .8s ease-out; -o-transition: background-color .8s ease-out; transition: background-color .8s ease-out; position: relative; padding-top: 15px; padding-bottom: 15px; font-family: 'PT Sans', 'Segoe UI', sans-serif; z-index: 9; text-align: left; overflow: visible; }
 .header .container { text-align: left; }
 .mail-text, .top-nav { font-size: 12px; color: #e1feff; text-transform: capitalize; font-weight: 400; letter-spacing: 1px; }
 .top-nav a { font-size: 14px; color: #e1feff; margin-right: 10px; margin-left: 15px; }
@@ -398,11 +398,22 @@ img { width: auto; max-width: 100%; height: auto; margin: 0; padding: 0; border:
   padding: 0 !important;
 }
 #animsition-box { margin: 0 !important; padding: 0 !important; position: relative; top: 0; margin-top: -30px !important; margin-bottom: 0 !important; padding-bottom: 0 !important; }
+/* Doctor / parent portal: landing page uses negative margin for the hero; portals must not clip the logo */
+#animsition-box.portal-app-shell {
+  margin-top: 0 !important;
+  padding-top: 14px !important;
+}
+#animsition-box.portal-app-shell .logo img {
+  max-height: 76px;
+  width: auto;
+  height: auto;
+  display: block;
+}
 .hero-section .container { margin-top: 0 !important; padding-top: 0 !important; }
 .hero-section .row { margin-top: 0 !important; }
 .hero-section .header { margin-top: 0 !important; }
 .hero-caption { padding-top: 150px; padding-bottom: 0; margin-bottom: 0; }
-.hero-title { font-size: 42px; color: #fff; line-height: 50px; font-weight: 600; }
+.hero-title { font-size: 42px; color: #fff; line-height: 1.15; font-weight: 600; letter-spacing: 0.04em; }
 .hero-text { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #fff; font-weight: 700; margin-bottom: 30px; }
 .hero-illustration {
   position: relative;
@@ -1251,7 +1262,7 @@ opacity: .5; }
   #navigation.small-screen .submenu-button { height: 50px; width: 46px; }
   .widget-tags a { padding: 7px 7px; font-size: 10px; line-height: 8px; }
   .hero-caption { padding-top: 50px; padding-bottom: 50px; }
-  .hero-title { font-size: 32px; line-height: 45px; }
+  .hero-title { font-size: 32px; line-height: 1.15; }
 }
 
 /* Inquiry Form Above Footer */

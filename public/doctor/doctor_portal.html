@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Doctor Portal | Patient Selection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/child-friendly.css">
@@ -13,14 +16,13 @@
     <style>
         /* Child-Friendly Medical Dashboard Design */
         .animsition-box {
-            padding-top: 80px;
             min-height: 100vh;
             background: linear-gradient(135deg, #fef3f8 0%, #f0f9ff 50%, #faf5ff 100%);
             position: relative;
         }
 
         .portal-container {
-            padding: 30px 0 60px 0;
+            padding: 24px 0 120px;
             position: relative;
         }
 
@@ -66,7 +68,7 @@
             font-weight: 800 !important;
             font-size: 32px !important;
             margin: 0 0 8px 0;
-            letter-spacing: -0.5px;
+            letter-spacing: 0.03em;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
         .section-title p {
@@ -986,12 +988,12 @@
         });
     </script>
 
-    <div id="animsition-box" class="animsition-box">
+    <div id="animsition-box" class="animsition-box portal-app-shell">
         <div class="header">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="logo"> <a href="../index.html"><img src="../images/logo.png" alt="Logo"></a> </div>
+                        <div class="logo"> <a href="../index.html" class="animsition-link"><img src="../images/logo.png" alt="Logo"></a> </div>
                     </div>
                 </div>
             </div>

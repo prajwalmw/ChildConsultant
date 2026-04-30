@@ -9,7 +9,10 @@
   <link href="css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link href="css/font-awesome.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="css/animsition.min.css">
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -18,7 +21,7 @@
   <style>
     body {
       background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%);
-      font-family: 'PT Sans', sans-serif;
+      font-family: 'PT Sans', 'Segoe UI', sans-serif;
     }
 
     .confirmation-container {
@@ -238,7 +241,7 @@
   </style>
 </head>
 
-<body>
+<body class="animsition">
   <div class="confirmation-container" id="confirmationContent">
     <div class="loading">
       <i class="fa fa-spinner fa-spin" style="font-size: 40px; color: #f41192;"></i>
@@ -352,7 +355,7 @@
           <a href="https://calendly.com/aqiraa-care/30min" target="_blank" class="btn-primary">
             <i class="fa fa-calendar"></i> Schedule First Session
           </a>
-          <a href="index.html" class="btn-secondary">
+          <a href="index.html" class="btn-secondary animsition-link">
             <i class="fa fa-home"></i> Back to Home
           </a>
         </div>
@@ -369,11 +372,14 @@
           <p>${message}</p>
         </div>
         <div class="action-buttons" style="margin-top: 30px;">
-          <a href="index.html" class="btn-secondary">Back to Home</a>
+          <a href="index.html" class="btn-secondary animsition-link">Back to Home</a>
         </div>
       `;
       document.getElementById('confirmationContent').innerHTML = html;
     }
   </script>
+  <script src="js/jquery.min.js"></script>
+  <script type="text/javascript" src="js/animsition.js"></script>
+  <script type="text/javascript" src="js/animsition-script.js"></script>
 </body>
 </html>

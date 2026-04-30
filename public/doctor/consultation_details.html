@@ -4,13 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Consultation Details | Doctor Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i" rel="stylesheet">
   <link href="../css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/child-friendly.css">
   <link rel="stylesheet" href="../css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="../css/animsition.min.css">
   <style>
-    .animsition-box { padding-top: 100px; min-height: 100vh; }
-    .portal-container { padding: 40px 0 120px; }
+    .animsition-box { min-height: 100vh; }
+    .portal-container { padding: 24px 0 100px; }
     .detail-card { background: #fff; border-radius: 12px; padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-left: 4px solid #00c3c9; }
     .detail-card h3 { margin-top: 0; color: #00a8ae; font-size: 1.15rem; }
     .kv { margin: 6px 0; }
@@ -36,7 +40,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
-<body>
+<body class="animsition">
 
   <script>
     const firebaseConfig = {
@@ -228,12 +232,12 @@
     }
   </script>
 
-  <div id="animsition-box" class="animsition-box">
+  <div id="animsition-box" class="animsition-box portal-app-shell">
     <div class="header no-print">
       <div class="container">
         <div class="row">
           <div class="col-md-12">
-            <div class="logo"><a href="../index.html"><img src="../images/logo.png" alt="Logo"></a></div>
+            <div class="logo"><a href="../index.html" class="animsition-link"><img src="../images/logo.png" alt="Logo"></a></div>
           </div>
         </div>
       </div>
@@ -245,7 +249,7 @@
           <h1 style="color:#00c3c9;">Consultation details</h1>
           <p class="lead"><strong id="patient-title">...</strong> — ID <span id="consult-id-display">...</span><br>
             Parent: <strong id="parent-title">...</strong></p>
-          <p class="no-print"><a id="back-link" href="view_consultations.html" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back to records</a></p>
+          <p class="no-print"><a id="back-link" href="view_consultations.html" class="btn btn-default animsition-link"><i class="fa fa-arrow-left"></i> Back to records</a></p>
           <div id="detail-content"><p><i class="fa fa-spinner fa-spin"></i> Loading…</p></div>
         </div>
       </div>
@@ -257,11 +261,13 @@
   </div>
 
   <div class="action-bar no-print">
-    <a id="back-link-2" href="view_consultations.html" class="btn btn-default"><i class="fa fa-arrow-left"></i> Records</a>
+    <a id="back-link-2" href="view_consultations.html" class="btn btn-default animsition-link"><i class="fa fa-arrow-left"></i> Records</a>
     <button type="button" class="btn btn-primary" onclick="window.print()"><i class="fa fa-print"></i> Print / Save PDF</button>
   </div>
 
   <script src="../js/jquery.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../js/animsition.js"></script>
+  <script type="text/javascript" src="../js/animsition-script.js"></script>
 </body>
 </html>
