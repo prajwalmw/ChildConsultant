@@ -34,8 +34,31 @@ auth.onAuthStateChanged(async (user) => {
   }
 
   try {
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    const userRole = userDoc.data()?.role;
+    await user.getIdToken();
+
+    let userDoc = null;
+    let lastErr = null;
+    for (let i = 0; i < 3; i++) {
+      try {
+        userDoc = await db
+          .collection('users')
+          .doc(user.uid)
+          .get(i === 0 ? undefined : { source: 'server' });
+        break;
+      } catch (err) {
+        lastErr = err;
+        await user.getIdToken(true);
+        await new Promise(function (resolve) {
+          setTimeout(resolve, 300 + i * 250);
+        });
+      }
+    }
+
+    if (!userDoc) {
+      throw lastErr || new Error('Could not load user profile');
+    }
+
+    const userRole = userDoc.exists ? userDoc.data().role : undefined;
 
     if (userRole !== 'admin') {
       alert('Access Denied: Admin privileges required');
@@ -43,12 +66,16 @@ auth.onAuthStateChanged(async (user) => {
       return;
     }
 
-    // Load doctors
     loadDoctors();
     loadPackages();
   } catch (error) {
     console.error('Error checking user role:', error);
-    alert('Error verifying permissions');
+    var code = error && error.code ? error.code : '';
+    alert(
+      'Could not verify admin access' +
+        (code ? ' (' + code + ')' : '') +
+        '. Try signing out and signing in again. If this continues, Firestore rules may need updating.'
+    );
     window.location.href = '../index.html';
   }
 });

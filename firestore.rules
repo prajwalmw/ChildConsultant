@@ -17,9 +17,10 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Get user role from Firestore
+    // User role (never call get() on a missing doc — that can break rule evaluation)
     function getUserRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      let p = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(p) ? get(p).data.role : '';
     }
 
     // Check if user is admin
@@ -36,7 +37,6 @@ service cloud.firestore {
     // USERS COLLECTION
     // ============================================
     match /users/{userId} {
-      // All authenticated users can read user profiles
       allow read: if isSignedIn();
 
       // Users can update their own profile, admins can update any

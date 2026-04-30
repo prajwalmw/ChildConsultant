@@ -1,0 +1,16 @@
+---
+description: Staff portrait images — local Downloads only; never publish without explicit ask
+alwaysApply: true
+---
+
+# Generated staff / doctor portraits — local only
+
+When generating images (staff portraits, educator photos, etc.):
+
+1. **Save only to the user’s machine:** Copy the file to **`/Users/prajwalwaingankar/Downloads/`** with a clear, lowercase, hyphenated filename (e.g. `jasika-nihaan-educator.png`). Do not skip this.
+
+2. **Do not put these on the public website by default:** Do **not** copy into `public/`, do **not** run `firebase deploy`, and do **not** share a `child-consultant.web.app` URL for generated portraits unless the user **explicitly** asks to publish a specific image to hosting.
+
+3. **Tell the user** only the **local path** (Downloads), and remind them that real photos should come from the person when used live.
+
+The user has stated these AI portraits are for **local use only** and must not be posted to the internet without clear permission each time.
