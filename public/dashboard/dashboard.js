@@ -86,6 +86,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+if (typeof Chart !== "undefined") {
+  Chart.defaults.font = Chart.defaults.font || {};
+  Chart.defaults.font.family = "'Noto Sans', 'PT Sans', sans-serif";
+}
+
 // Fetch all inquiry data
 async function fetchSubmissions() {
   const submissionsCol = collection(db, "inquiries");

@@ -2,6 +2,7 @@
 
 // Razorpay Live API Key (Prajwal Waingankar Account)
 const RAZORPAY_KEY_ID = 'rzp_live_S6y99PjkyiSG8O';
+const INR_SIGN = '\u20B9';
 
 // Packages are now fetched dynamically from Firestore.
 
@@ -48,17 +49,36 @@ function initializeFirebaseForPayment() {
   return true;
 }
 
+function waitForRazorpayReady(timeoutMs) {
+  var max = timeoutMs != null ? timeoutMs : 12000;
+  var start = Date.now();
+  return new Promise(function (resolve) {
+    function tick() {
+      if (typeof Razorpay !== 'undefined') {
+        resolve(true);
+        return;
+      }
+      if (Date.now() - start >= max) {
+        resolve(false);
+        return;
+      }
+      setTimeout(tick, 50);
+    }
+    tick();
+  });
+}
+
 // Handle Razorpay Payment
 async function initiateRazorpayPayment(packageType) {
-  // Check if Razorpay is loaded
-  if (typeof Razorpay === 'undefined') {
-    alert('Payment system is loading. Please try again in a moment.');
-    return;
-  }
-
   // Check if Firebase is initialized
   if (!initializeFirebaseForPayment()) {
     alert('System initialization error. Please refresh the page.');
+    return;
+  }
+
+  var ready = await waitForRazorpayReady(12000);
+  if (!ready || typeof Razorpay === 'undefined') {
+    alert('Payment system is still loading. Please wait a few seconds and tap Book again, or refresh the page.');
     return;
   }
 
@@ -73,17 +93,25 @@ async function initiateRazorpayPayment(packageType) {
     const sessions = Math.max(1, parseInt(pkgData.sessions, 10) || 1);
     const durationLabel = formatPackageDurationLabel(pkgData);
     const displayName = (pkgData.name || '').trim() || pkgDoc.id;
+    const listPrice = Number(pkgData.price);
+    const payPrice = Number(pkgData.discountedPrice != null ? pkgData.discountedPrice : pkgData.price);
+    const priceNum = Number.isFinite(payPrice) && payPrice > 0 ? payPrice : (Number.isFinite(listPrice) ? listPrice : 0);
     const origPs = Number.isFinite(Number(pkgData.originalPricePerSession))
       ? Number(pkgData.originalPricePerSession)
-      : Math.round(Number(pkgData.price) / sessions);
+      : Math.round((Number.isFinite(listPrice) ? listPrice : priceNum) / sessions);
     const discPs = Number.isFinite(Number(pkgData.discountedPricePerSession))
       ? Number(pkgData.discountedPricePerSession)
-      : Math.round(Number(pkgData.discountedPrice || pkgData.price) / sessions);
+      : Math.round(priceNum / sessions);
+
+    if (!Number.isFinite(priceNum) || priceNum <= 0) {
+      alert('This package has no valid price. Please contact support.');
+      return;
+    }
 
     const packageDetails = {
       name: displayName + (pkgData.isBestSeller ? ' (Best Seller)' : ''),
-      price: pkgData.discountedPrice || pkgData.price,
-      originalPrice: pkgData.price,
+      price: priceNum,
+      originalPrice: Number.isFinite(listPrice) ? listPrice : priceNum,
       sessions,
       duration: durationLabel,
       description: [sessions ? `${sessions} Sessions` : '', durationLabel, 'Customized counselling'].filter(Boolean).join(' • '),
@@ -116,9 +144,9 @@ async function initiateRazorpayPayment(packageType) {
         package_type: packageType,
         total_sessions: packageDetails.sessions,
         duration_period: packageDetails.duration,
-        original_price: `₹${packageDetails.originalPrice}`,
-        discounted_price: `₹${packageDetails.price}`,
-        price_per_session: `₹${discPs}`
+        original_price: `${INR_SIGN}${packageDetails.originalPrice}`,
+        discounted_price: `${INR_SIGN}${packageDetails.price}`,
+        price_per_session: `${INR_SIGN}${discPs}`
       },
       theme: {
         color: '#f41192'
@@ -185,7 +213,7 @@ function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
           name: bookingData.userName || 'User',
           email: bookingData.userEmail || 'N/A',
           phone: 'N/A',
-          message: `NEW PACKAGE BOOKING ALERT\n\nPackage: ${packageDetails.name}\nSessions: ${packageDetails.sessions}\nDuration: ${packageDetails.duration}\nAmount: ₹${packageDetails.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
+          message: `NEW PACKAGE BOOKING ALERT\n\nPackage: ${packageDetails.name}\nSessions: ${packageDetails.sessions}\nDuration: ${packageDetails.duration}\nAmount: ${INR_SIGN}${packageDetails.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
         }).catch(err => console.error('Admin email notification failed:', err));
       }
 
@@ -264,6 +292,7 @@ function showPaymentSuccessMessage(packageDetails, paymentId) {
 
 // Export functions for global use
 window.initiateRazorpayPayment = initiateRazorpayPayment;
+window.waitForRazorpayReady = waitForRazorpayReady;
 window.formatPackageDurationLabel = formatPackageDurationLabel;
 window.calculateExpiryDateFromPackage = calculateExpiryDateFromPackage;
 window.getPackageDurationParts = getPackageDurationParts;

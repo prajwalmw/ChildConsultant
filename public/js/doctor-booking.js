@@ -3,10 +3,95 @@
 // Global variable to store doctors data
 let DOCTORS = [];
 let doctorsFetchStarted = false;
+const INR_SIGN = '\u20B9';
+
+function escapeHtmlAttr(value) {
+  if (value == null) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;');
+}
+
+function isFirebaseReady() {
+  if (typeof firebase === 'undefined') return false;
+  try {
+    if (firebase.apps && firebase.apps.length > 0) return true;
+    firebase.app();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Prefer live list from async fetch; fall back to module array. */
+function getDoctorList() {
+  if (typeof window !== 'undefined' && Array.isArray(window.DOCTORS) && window.DOCTORS.length > 0) {
+    return window.DOCTORS;
+  }
+  return DOCTORS;
+}
+
+function getDoctorById(doctorId) {
+  const key = doctorId == null ? '' : String(doctorId);
+  return getDoctorList().find(function (d) {
+    return String(d.id) === key;
+  });
+}
 
 /** Public site: hide only when explicitly inactive (missing `active` still shows — legacy docs). */
 function isDoctorActiveForPublic(doc) {
   return doc.active !== false;
+}
+
+/** Same-origin fallback if remote/Drive URL fails or field missing (via.placeholder.com is often blocked). */
+const DOCTOR_IMG_FALLBACK = 'images/doctors/dr_pediatrician.png';
+
+/**
+ * Turn Google Drive links into an embeddable image URL.
+ * drive.google.com/uc and drive.usercontent.google.com often send
+ * Cross-Origin-Resource-Policy: same-site, so <img> on other sites fails silently
+ * and the booking UI falls back to the local placeholder. lh3.googleusercontent.com
+ * matches what Drive's thumbnail redirect uses and loads cross-origin.
+ */
+function extractGoogleDriveFileId(url) {
+  if (!url || typeof url !== 'string') return '';
+  var trimmed = url.trim();
+  var m1 = trimmed.match(/\/file\/d\/([^\/\?]+)/);
+  if (m1) return m1[1];
+  var m2 = trimmed.match(/[?&]id=([^&]+)/);
+  if (m2) return m2[1];
+  return '';
+}
+
+function convertGoogleDriveImageUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  var trimmed = url.trim();
+  if (trimmed.indexOf('lh3.googleusercontent.com') !== -1) {
+    return trimmed;
+  }
+  var fileId = extractGoogleDriveFileId(trimmed);
+  if (fileId) {
+    return 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(fileId) + '=w1200';
+  }
+  return trimmed;
+}
+
+function pickDoctorImageRaw(doctor) {
+  if (!doctor || typeof doctor !== 'object') return '';
+  var keys = ['image', 'photoUrl', 'photoURL', 'imageUrl', 'photo', 'avatar', 'picture'];
+  for (var i = 0; i < keys.length; i++) {
+    var v = doctor[keys[i]];
+    if (v != null && String(v).trim()) return String(v).trim();
+  }
+  return '';
+}
+
+function doctorPortraitSrc(doctor) {
+  var raw = pickDoctorImageRaw(doctor);
+  if (!raw) return DOCTOR_IMG_FALLBACK;
+  return convertGoogleDriveImageUrl(raw);
 }
 
 // Fetch doctors from Firestore
@@ -20,8 +105,8 @@ async function fetchDoctorsFromFirestore() {
       .map(doc => {
         const data = doc.data();
         return {
-          id: doc.id,
           ...data,
+          id: doc.id,
           finalPrice: (data.discountedPrice && data.discountedPrice < data.sessionPrice) ? data.discountedPrice : data.sessionPrice
         };
       })
@@ -33,6 +118,185 @@ async function fetchDoctorsFromFirestore() {
     console.error('Error fetching doctors:', error);
     DOCTORS = [];
     return [];
+  }
+}
+
+function renderDoctorCards(doctors) {
+  const container = document.getElementById('doctors-container');
+  const noResults = document.getElementById('no-results');
+
+  if (!container || !doctors) return;
+
+  container.innerHTML = '';
+
+  if (doctors.length === 0) {
+    container.style.display = 'none';
+    if (noResults) noResults.style.display = 'block';
+    return;
+  }
+
+  container.style.display = 'grid';
+  if (noResults) noResults.style.display = 'none';
+
+  doctors.forEach((doctor, index) => {
+    const sessionPrice = Number(doctor.sessionPrice);
+    const finalPrice = Number(doctor.finalPrice);
+    const listPrice = Number.isFinite(sessionPrice) ? sessionPrice : 0;
+    const payPrice = Number.isFinite(finalPrice) ? finalPrice : listPrice;
+    const activePrice = payPrice < listPrice ? payPrice : listPrice;
+    const hasDiscount = payPrice < listPrice;
+    const inr = '\u20B9';
+    const specAttr = escapeHtmlAttr(doctor.title);
+    const nameAttr = escapeHtmlAttr(doctor.name || '');
+    const qualSafe = escapeHtmlAttr(doctor.qualification || '');
+    const titleSafe = escapeHtmlAttr(doctor.title || '');
+    const nameHtml = escapeHtmlAttr(doctor.name || '');
+    const idAttr = escapeHtmlAttr(doctor.id);
+    const portraitSrc = escapeHtmlAttr(doctorPortraitSrc(doctor));
+    const portraitFallback = escapeHtmlAttr(DOCTOR_IMG_FALLBACK);
+
+    const cardHTML = `
+            <div class="pro-doc-card" data-specialization="${specAttr}" data-experience="${parseInt(doctor.experience, 10) || 0}" data-price="${listPrice}" data-rating="${doctor.rating}">
+
+              <div class="pro-doc-top">
+                <div class="pro-doc-img-wrapper">
+                  <img src="${portraitSrc}" alt="${nameAttr}" class="pro-doc-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="100" height="100" onerror="this.onerror=null;this.src='${portraitFallback}'">
+                  ${doctor.isTopRated ? '<div class="pro-top-badge"><i class="fa fa-star"></i> Top Rated</div>' : ''}
+                </div>
+
+                <div class="pro-doc-info">
+                  <div class="pro-doc-name-row">
+                    <h3 class="pro-doc-name">${nameHtml}</h3>
+                    ${typeof isDoctorVerified === 'function' && isDoctorVerified(doctor)
+                      ? `<span class="pro-verified" title="Verified medical expert">${verifiedBadgeSVG(20, doctor.id + '_' + index)}</span>`
+                      : ''}
+                  </div>
+                  <p class="pro-doc-title">${titleSafe}</p>
+                  <p class="pro-doc-exp"><i class="fa fa-clock-o"></i> ${doctor.experience} Overall</p>
+                </div>
+              </div>
+
+              <div class="pro-doc-middle">
+                <div class="pro-stat">
+                  <i class="fa fa-graduation-cap" style="color: #8B5CF6;"></i>
+                  <span>${qualSafe}</span>
+                </div>
+                <div class="pro-stat">
+                  <i class="fa fa-thumbs-up" style="color: #10B981;"></i>
+                  <span class="pro-stat-highlight">${doctor.rating} <span style="color: #6B7280; font-weight: 400; margin-left: 4px;">(${doctor.totalRatings} Stories)</span></span>
+                </div>
+              </div>
+
+              <div class="pro-doc-bottom">
+                <div class="pro-price-block">
+                  <span class="pro-price-label">Consultation Fee</span>
+                  <div class="pro-price-val inr-money">
+                    ${inr}${activePrice}
+                    ${hasDiscount ? `<span class="pro-price-old">${inr}${listPrice}</span>` : ''}
+                  </div>
+                </div>
+                <div class="pro-actions">
+                  <button type="button" class="pro-btn pro-btn-outline" data-doctor-action="profile" data-doctor-id="${idAttr}">Profile</button>
+                  <button type="button" class="pro-btn pro-btn-primary" data-doctor-action="book" data-doctor-id="${idAttr}">Book Now</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+    container.innerHTML += cardHTML;
+  });
+}
+
+function filterDoctors() {
+  if (!window.DOCTORS || !Array.isArray(window.DOCTORS)) return;
+
+  const filterSpec = document.getElementById('filter-specialization');
+  const filterExp = document.getElementById('filter-experience');
+  const filterPrice = document.getElementById('filter-price');
+  const filterRating = document.getElementById('filter-rating');
+  if (!filterSpec || !filterExp || !filterPrice || !filterRating) return;
+
+  const specialization = filterSpec.value;
+  const experience = filterExp.value;
+  const priceRange = filterPrice.value;
+  const rating = filterRating.value;
+
+  let filtered = window.DOCTORS.filter((doctor) => {
+    if (specialization) {
+      const t = (doctor.title || '').trim().toLowerCase();
+      const s = specialization.trim().toLowerCase();
+      if (t !== s) return false;
+    }
+
+    if (experience) {
+      const docExp = parseInt(doctor.experience, 10);
+      if (!Number.isFinite(docExp) || docExp < parseInt(experience, 10)) return false;
+    }
+
+    if (priceRange) {
+      const [min, max] = priceRange.split('-').map(Number);
+      const sp = Number(doctor.sessionPrice);
+      const fp = Number(doctor.finalPrice);
+      const listP = Number.isFinite(sp) ? sp : 0;
+      const payP = Number.isFinite(fp) ? fp : listP;
+      const activePrice = payP < listP ? payP : listP;
+      if (activePrice < min || activePrice > max) return false;
+    }
+
+    if (rating && doctor.rating < parseFloat(rating)) return false;
+
+    return true;
+  });
+
+  renderDoctorCards(filtered);
+}
+
+let doctorCardActionsBound = false;
+function setupDoctorCardActions() {
+  if (doctorCardActionsBound) return;
+  const grid = document.getElementById('doctors-container');
+  if (!grid) return;
+  doctorCardActionsBound = true;
+  grid.addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-doctor-action]');
+    if (!btn || !grid.contains(btn)) return;
+    const id = btn.getAttribute('data-doctor-id');
+    if (id == null || id === '') return;
+    const action = btn.getAttribute('data-doctor-action');
+    e.preventDefault();
+    if (action === 'profile') {
+      showDoctorProfile(id);
+    } else if (action === 'book') {
+      bookDoctorSession(id);
+    }
+  });
+}
+
+let doctorFiltersBound = false;
+function setupDoctorFilters() {
+  if (doctorFiltersBound) return;
+  doctorFiltersBound = true;
+  const filterSpec = document.getElementById('filter-specialization');
+  const filterExp = document.getElementById('filter-experience');
+  const filterPrice = document.getElementById('filter-price');
+  const filterRating = document.getElementById('filter-rating');
+  const clearBtn = document.getElementById('clear-filters');
+
+  if (filterSpec) filterSpec.addEventListener('change', filterDoctors);
+  if (filterExp) filterExp.addEventListener('change', filterDoctors);
+  if (filterPrice) filterPrice.addEventListener('change', filterDoctors);
+  if (filterRating) filterRating.addEventListener('change', filterDoctors);
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      if (filterSpec) filterSpec.value = '';
+      if (filterExp) filterExp.value = '';
+      if (filterPrice) filterPrice.value = '';
+      if (filterRating) filterRating.value = '';
+      if (window.DOCTORS && window.DOCTORS.length > 0) {
+        renderDoctorCards(window.DOCTORS);
+      }
+    });
   }
 }
 
@@ -50,48 +314,78 @@ async function initializeDoctors() {
   // Set global DOCTORS variable for filters to work
   window.DOCTORS = DOCTORS;
 
-  // Render the doctor cards
+  // Render the doctor cards (defined in this file — do not rely on inline HTML script)
   if (DOCTORS.length > 0) {
-    if (typeof window.renderDoctorCards === 'function') {
-      try {
-        window.renderDoctorCards(DOCTORS);
-      } catch (e) {
-        console.error('renderDoctorCards failed:', e);
-        if (container) {
-          container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #c00;"><p>Could not display doctors. Please refresh the page.</p></div>';
-        }
+    try {
+      renderDoctorCards(DOCTORS);
+    } catch (e) {
+      console.error('renderDoctorCards failed:', e);
+      if (container) {
+        container.style.display = 'grid';
+        container.innerHTML =
+          '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #c00;"><p>Could not display doctors. Please refresh the page.</p><p style="font-size:13px;color:#666;margin-top:8px;">If this persists, open the browser console (F12) and share any red errors with support.</p></div>';
       }
-    } else {
-      console.error('renderDoctorCards function not found');
     }
   } else {
     if (container) {
-      container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #999;"><i class="fa fa-exclamation-circle" style="font-size: 40px; margin-bottom: 15px;"></i><p>No doctors available at the moment. Please check back later.</p></div>';
+      container.style.display = 'grid';
+      container.innerHTML =
+        '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #999;"><i class="fa fa-exclamation-circle" style="font-size: 40px; margin-bottom: 15px;"></i><p>No doctors available at the moment. Please check back later.</p></div>';
     }
   }
 }
 
 let domReady = false;
 let firebaseWaitAttempts = 0;
-const FIREBASE_WAIT_MAX = 40;
+const FIREBASE_WAIT_MAX = 80;
 
-document.addEventListener('DOMContentLoaded', function() {
+function bootDoctorListing() {
   domReady = true;
+  setupDoctorCardActions();
+  setupDoctorFilters();
+  tryInitialize();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootDoctorListing);
+} else {
+  bootDoctorListing();
+}
+
+window.addEventListener('load', function () {
+  if (doctorsFetchStarted) return;
+  firebaseWaitAttempts = 0;
   tryInitialize();
 });
 
 function tryInitialize() {
-  if (!domReady || !document.getElementById('doctors-container')) return;
-  if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+  const container = document.getElementById('doctors-container');
+  if (!domReady || !container) return;
+  if (!isFirebaseReady()) {
     firebaseWaitAttempts++;
     if (firebaseWaitAttempts < FIREBASE_WAIT_MAX) {
       setTimeout(tryInitialize, 100);
+      return;
+    }
+    if (!doctorsFetchStarted) {
+      container.innerHTML =
+        '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #c00;"><p style="margin:0 0 8px;">Could not load booking data (Firebase unavailable).</p><p style="margin:0;font-size:14px;color:#666;">Check your connection, disable strict blockers for this site, then refresh.</p></div>';
+      container.style.display = 'grid';
     }
     return;
   }
   if (doctorsFetchStarted) return;
   doctorsFetchStarted = true;
-  initializeDoctors();
+  initializeDoctors().catch(function (err) {
+    console.error('initializeDoctors failed:', err);
+    doctorsFetchStarted = false;
+    var c = document.getElementById('doctors-container');
+    if (c) {
+      c.style.display = 'grid';
+      c.innerHTML =
+        '<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #c00;"><p>Could not load doctors.</p><p style="font-size:13px;color:#666;margin-top:8px;">Check your connection and refresh. If it continues, open the browser console (F12) for details.</p></div>';
+    }
+  });
 }
 
 // Generate star rating HTML
@@ -116,8 +410,12 @@ function generateStarRating(rating) {
 
 // Show doctor profile modal
 function showDoctorProfile(doctorId) {
-  const doctor = DOCTORS.find(d => d.id === doctorId);
+  const doctor = getDoctorById(doctorId);
   if (!doctor) return;
+
+  const portraitSrc = escapeHtmlAttr(doctorPortraitSrc(doctor));
+  const portraitFallback = escapeHtmlAttr(DOCTOR_IMG_FALLBACK);
+  const modalNameAttr = escapeHtmlAttr(doctor.name || '');
 
   const modalHTML = `
     <div id="doctorProfileModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
@@ -127,7 +425,7 @@ function showDoctorProfile(doctorId) {
         <div style="padding: 40px;">
           <div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">
             <div style="flex-shrink: 0;">
-              <img src="${doctor.image}" alt="${doctor.name}" width="140" height="140" loading="lazy" decoding="async" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #FDF2F8; padding: 4px; box-shadow: 0 8px 16px rgba(244,17,146,0.08);" onerror="this.src='images/doctors/default_placeholder.jpg'">
+              <img src="${portraitSrc}" alt="${modalNameAttr}" width="140" height="140" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #FDF2F8; padding: 4px; box-shadow: 0 8px 16px rgba(244,17,146,0.08);" onerror="this.onerror=null;this.src='${portraitFallback}'">
               <div style="text-align: center; margin-top: 15px;">
                 <div style="font-size: 28px; font-weight: 800; color: #1E293B;">${doctor.rating}</div>
                 <div>${generateStarRating(doctor.rating)}</div>
@@ -161,15 +459,15 @@ function showDoctorProfile(doctorId) {
 
               <div style="background: linear-gradient(135deg, #FFF9FB, #F0F9FF); border: 2px solid #FDF2F8; color: #1E293B; padding: 16px 24px; border-radius: 16px; display: inline-block; margin-bottom: 20px;">
                 <div style="font-size: 12px; color: #64748B; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">Consultation Fee</div>
-                <div style="font-size: 28px; font-weight: 800; color: #9e0ff1;">
+                <div class="inr-money" style="font-size: 28px; font-weight: 800; color: #9e0ff1;">
                   ${doctor.finalPrice < doctor.sessionPrice 
-                    ? `₹${doctor.finalPrice} <span style="text-decoration: line-through; font-size: 16px; color: #9CA3AF; margin-left: 6px; font-weight: 500;">₹${doctor.sessionPrice}</span>` 
-                    : `₹${doctor.sessionPrice}`}
+                    ? `${INR_SIGN}${doctor.finalPrice} <span style="text-decoration: line-through; font-size: 16px; color: #9CA3AF; margin-left: 6px; font-weight: 500;">${INR_SIGN}${doctor.sessionPrice}</span>` 
+                    : `${INR_SIGN}${doctor.sessionPrice}`}
                 </div>
               </div>
 
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="bookDoctorSession('${doctor.id}')" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 16px rgba(244,17,146,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(244,17,146,0.2)'" style="background: linear-gradient(135deg, #f41192, #9e0ff1); color: white; padding: 15px 30px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; letter-spacing: 0.04em; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.2); flex: 1; min-width: 180px; transition: all 0.2s ease; font-family: 'PT Sans', sans-serif;">Book an Appointment</button>
+                <button type="button" onclick="bookDoctorSession(${JSON.stringify(doctor.id)})" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 16px rgba(244,17,146,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(244,17,146,0.2)'" style="background: linear-gradient(135deg, #f41192, #9e0ff1); color: white; padding: 15px 30px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; letter-spacing: 0.04em; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.2); flex: 1; min-width: 180px; transition: all 0.2s ease; font-family: 'PT Sans', sans-serif;">Book an Appointment</button>
               </div>
             </div>
           </div>
@@ -227,8 +525,11 @@ function closeDoctorProfile() {
 
 // Book doctor session (opens Calendly popup, then Razorpay)
 function bookDoctorSession(doctorId) {
-  const doctor = DOCTORS.find(d => d.id === doctorId);
-  if (!doctor) return;
+  const doctor = getDoctorById(doctorId);
+  if (!doctor) {
+    console.warn('bookDoctorSession: doctor not found for id', doctorId);
+    return;
+  }
 
   // Store doctor info for payment after Calendly
   sessionStorage.setItem('selectedDoctor', JSON.stringify({
@@ -244,6 +545,11 @@ function bookDoctorSession(doctorId) {
   const calendlyUrl = doctor.calendlyUrl || 'https://calendly.com/aqiraa-care/doctor-appointment?month=2026-01';
 
   console.log('Opening Calendly with URL:', calendlyUrl);
+
+  if (typeof Calendly === 'undefined' || typeof Calendly.initPopupWidget !== 'function') {
+    alert('The scheduling calendar is still loading. Please wait a few seconds and tap Book again.');
+    return;
+  }
 
   // Get logged-in user details
   const user = firebase.auth().currentUser;
@@ -296,7 +602,7 @@ function showBookingInstructions(doctor) {
       <button onclick="document.getElementById('bookingInstructions').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">×</button>
       <h4 style="color: #f41192; margin-bottom: 10px; font-size: 18px;">📅 Booking ${doctor.name}</h4>
       <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-        Select your preferred date and time in the new tab. After scheduling, return here to complete your payment of <strong>₹${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong>.
+        Select your preferred date and time in the new tab. After scheduling, return here to complete your payment of <strong class="inr-money">${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong>.
       </p>
       <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">I've Scheduled - Proceed to Payment</button>
     </div>
@@ -340,9 +646,9 @@ function showPaymentInstructions(doctor, eventDetails) {
       <h4 style="color: #4CAF50; margin-bottom: 10px; font-size: 18px;">🎉 Appointment Scheduled!</h4>
       ${appointmentInfo}
       <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-        Complete your booking by paying <strong>₹${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong> to confirm your appointment with ${doctor.name}.
+        Complete your booking by paying <strong class="inr-money">${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong> to confirm your appointment with ${doctor.name}.
       </p>
-      <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ₹${doctor.finalPrice || doctor.price || doctor.sessionPrice}</button>
+      <button onclick="proceedToDoctorPayment()" class="inr-money" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</button>
     </div>
   `;
 
@@ -394,7 +700,7 @@ function initiateDoctorPayment(doctor) {
       doctor_id: doctor.id,
       doctor_name: doctor.name,
       session_type: 'individual_consultation',
-      session_price: `₹${doctor.price}`
+      session_price: `${INR_SIGN}${doctor.price}`
     },
     theme: {
       color: '#f41192'
@@ -445,7 +751,7 @@ function handleDoctorPaymentSuccess(paymentResponse, doctor) {
           name: bookingData.userName || 'User',
           email: bookingData.userEmail || 'N/A',
           phone: 'N/A',
-          message: `NEW DOCTOR BOOKING ALERT\n\nDoctor: ${doctor.name}\nAmount: ₹${doctor.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
+          message: `NEW DOCTOR BOOKING ALERT\n\nDoctor: ${doctor.name}\nAmount: ${INR_SIGN}${doctor.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
         }).catch(err => console.error('Admin email notification failed:', err));
       }
 
@@ -467,3 +773,5 @@ window.showPaymentInstructions = showPaymentInstructions;
 window.proceedToDoctorPayment = proceedToDoctorPayment;
 window.DOCTORS = DOCTORS;
 window.generateStarRating = generateStarRating;
+window.renderDoctorCards = renderDoctorCards;
+window.filterDoctors = filterDoctors;

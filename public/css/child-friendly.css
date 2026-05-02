@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@600;700;800&display=swap');
+
 /*
  * Child-Friendly UI/UX Enhancements
  * Designed for children aged 3-12 years
@@ -37,6 +39,11 @@
    2. PLAYFUL TYPOGRAPHY
    ============================================ */
 /* Fonts: PT Sans (original Bootstrap template Google Font) — loaded from HTML */
+
+.inr-money,
+.inr-money * {
+  font-family: 'Noto Sans', 'PT Sans', 'Segoe UI', system-ui, sans-serif !important;
+}
 
 body {
   font-family: 'PT Sans', sans-serif;

@@ -17,6 +17,7 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 const db = firebase.firestore();
+const INR_SIGN = '\u20B9';
 
 // Global variables
 let allDoctors = [];
@@ -151,9 +152,11 @@ function renderDoctorsTable(doctors) {
             </td>
             <td>${doctor.experience || doctor.experienceYears + ' Years'}</td>
             <td>
-              ${doctor.discountedPrice && doctor.discountedPrice < doctor.sessionPrice 
-                ? `<span style="text-decoration: line-through; color: #999; font-size: 12px;">₹${doctor.sessionPrice}</span><br><span style="color: #f41192; font-weight: bold;">₹${doctor.discountedPrice}</span>` 
-                : `₹${doctor.sessionPrice}`}
+              <span class="inr-money">${
+                doctor.discountedPrice && doctor.discountedPrice < doctor.sessionPrice 
+                  ? `<span style="text-decoration: line-through; color: #999; font-size: 12px;">${INR_SIGN}${doctor.sessionPrice}</span><br><span style="color: #f41192; font-weight: bold;">${INR_SIGN}${doctor.discountedPrice}</span>` 
+                  : `${INR_SIGN}${doctor.sessionPrice}`
+              }</span>
             </td>
             <td>
               <div style="display: flex; align-items: center; gap: 5px;">
@@ -627,9 +630,11 @@ function renderPackagesTable(packages) {
               ${pkg.isBestSeller ? '<span class="badge badge-top" style="margin-left: 8px;">Best Seller ⭐</span>' : ''}
             </td>
             <td>
-              <span style="text-decoration: line-through; color: #999; font-size: 12px;">₹${pkg.price.toLocaleString('en-IN')}</span><br>
-              <span style="color: #f41192; font-weight: bold; font-size: 16px;">₹${(pkg.discountedPrice || pkg.price).toLocaleString('en-IN')}</span>
-              <div style="font-size: 11px; color: #888; margin-top: 4px;">₹${ops.toLocaleString('en-IN')} list / ₹${dps.toLocaleString('en-IN')} pay per session</div>
+              <span class="inr-money">
+              <span style="text-decoration: line-through; color: #999; font-size: 12px;">${INR_SIGN}${pkg.price.toLocaleString('en-IN')}</span><br>
+              <span style="color: #f41192; font-weight: bold; font-size: 16px;">${INR_SIGN}${(pkg.discountedPrice || pkg.price).toLocaleString('en-IN')}</span>
+              <div style="font-size: 11px; color: #888; margin-top: 4px;">${INR_SIGN}${ops.toLocaleString('en-IN')} list / ${INR_SIGN}${dps.toLocaleString('en-IN')} pay per session</div>
+              </span>
             </td>
             <td>
               <strong>${sess} sessions</strong><br>

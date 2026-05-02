@@ -135,7 +135,8 @@ service cloud.firestore {
 
     // ============================================
     // SITE CONFIG (public read for assistant only — no secrets in git)
-    // Document: siteConfig/assistant — fields: geminiApiKey (string), model (optional string)
+    // siteConfig/assistant (public read): geminiApiKey + optional model — free-tier path (browser calls Gemini).
+    // Never commit keys in Git; restrict key in Google AI Studio to your Hosting URL referrer.
     // ============================================
     match /siteConfig/{docId} {
       allow read: if docId == 'assistant';

@@ -1,3 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@600;700;800&display=swap');
+
+/* Headings use PT Sans globally (child-friendly.css); force Noto for rupee so h3/h2 inside prices don't revert to PT Sans */
+.inr-money,
+.inr-money * {
+  font-family: 'Noto Sans', 'PT Sans', 'Segoe UI', system-ui, sans-serif !important;
+}
+
 /* Profile submenu styles */
 /* Remove down arrow for profile-menu */
 .profile-menu > a:before {

@@ -1,29 +1,26 @@
-// Aqiraa Doctor Selection AI Assistant
-// Uses Google Gemini from the browser. API keys must NOT live in this file (they get leaked via GitHub).
+// Aqiraa Doctor Selection AI Assistant — Gemini only (free tier: Hosting + Firestore, no Blaze).
 //
-// Setup: In Firebase Console → Firestore → create collection `siteConfig`, document id `assistant`, field:
-//   geminiApiKey: "<your key from https://aistudio.google.com/apikey>"
-// Optional field: model (default "gemini-2.0-flash") e.g. "gemini-1.5-flash"
+// Add your key ONLY in Firebase Console → Firestore → siteConfig/assistant :
+//   geminiApiKey (string) — from https://aistudio.google.com/apikey (free quota)
+//   model (optional string), default gemini-flash-latest
 //
-// Then deploy firestore rules so `siteConfig/assistant` is readable on the web.
+// Do NOT put the Gemini key in GitHub or in tracked source files. Restrict the key in
+// Google AI Studio / Cloud Console to your site referrer (e.g. child-consultant.web.app).
 
-const GEMINI_GENERATE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+const GEMINI_API_BASE =
+  'https://generativelanguage.googleapis.com/v1beta/models';
 
-// Loaded dynamically from Firestore — always up to date
 let DOCTORS_PANEL = [];
 let SYSTEM_PROMPT = '';
+let assistantGeminiModel = 'gemini-flash-latest';
 let assistantGeminiApiKey = '';
-let assistantGeminiModel = 'gemini-2.0-flash';
 
 async function loadAssistantConfig() {
   assistantGeminiApiKey = '';
   try {
     if (typeof firebase === 'undefined' || !firebase.firestore) return;
     const snap = await firebase.firestore().collection('siteConfig').doc('assistant').get();
-    if (!snap.exists) {
-      console.warn('Aqiraa Assistant: no siteConfig/assistant document. Add geminiApiKey in Firestore.');
-      return;
-    }
+    if (!snap.exists) return;
     const d = snap.data() || {};
     const key = (d.geminiApiKey || d.apiKey || '').trim();
     if (key) assistantGeminiApiKey = key;
@@ -35,13 +32,16 @@ async function loadAssistantConfig() {
 
 async function loadDoctorsAndBuildPrompt() {
   try {
-    const snapshot = await firebase.firestore()
-      .collection('doctors')
-      .where('active', '==', true)
-      .get();
+    const snapshot = await firebase.firestore().collection('doctors').get();
 
     DOCTORS_PANEL = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .map(doc => {
+        const data = doc.data();
+        return { ...data, id: doc.id };
+      })
+      .filter(function (d) {
+        return d.active !== false;
+      })
       .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 
     const doctorList = DOCTORS_PANEL.map(d =>
@@ -254,16 +254,16 @@ window.toggleAssistant = function () {
 
 async function startConversation() {
   chatHistory = [];
+  recommendationDone = false;
   const container = document.getElementById('ai-chat-messages');
   if (container) container.innerHTML = '';
 
-  // Load only when user opens assistant (avoids duplicate Firestore work on every page load)
-  const needsDoctors = DOCTORS_PANEL.length === 0;
-  const needsKey = !assistantGeminiApiKey;
-  if (needsDoctors || needsKey) {
+  if (DOCTORS_PANEL.length === 0) {
     addBotMessage('One moment... ⏳');
     await Promise.all([loadAssistantConfig(), loadDoctorsAndBuildPrompt()]);
     if (container) container.innerHTML = '';
+  } else {
+    await loadAssistantConfig();
   }
 
   const input = document.getElementById('ai-chat-input');
@@ -352,14 +352,23 @@ window.sendAssistantMessage = async function () {
   addTypingIndicator();
 
   try {
-    if (!assistantGeminiApiKey) {
-      await loadAssistantConfig();
+    await loadAssistantConfig();
+    if (!SYSTEM_PROMPT || DOCTORS_PANEL.length === 0) {
+      await loadDoctorsAndBuildPrompt();
+    }
+    if (!SYSTEM_PROMPT || DOCTORS_PANEL.length === 0) {
+      removeTypingIndicator();
+      addBotMessage('Could not load doctors for the assistant. Please refresh the page.');
+      return;
     }
     if (!assistantGeminiApiKey) {
       removeTypingIndicator();
-      addBotMessage('The doctor finder assistant is not configured yet. You can still scroll down to see all our doctors and book a consultation.');
+      addBotMessage(
+        'AI assistant is not configured yet. In Firebase Console → Firestore, create document siteConfig/assistant with field geminiApiKey (your free Google AI Studio key). Never paste that key into GitHub.'
+      );
       return;
     }
+
     const response = await callGemini();
     removeTypingIndicator();
 
@@ -378,8 +387,22 @@ window.sendAssistantMessage = async function () {
   } catch (err) {
     removeTypingIndicator();
     const msg = err && err.message ? String(err.message) : '';
-    if (msg.includes('403') || msg.includes('API key') || msg.includes('leaked')) {
-      addBotMessage('The assistant cannot reach the AI service (API key issue). Please use the doctor list below, or contact us if this keeps happening.');
+    if (msg === 'MISSING_GEMINI_KEY' || msg.includes('MISSING_GEMINI_KEY')) {
+      addBotMessage(
+        'Add geminiApiKey to Firestore siteConfig/assistant (Firebase Console only — not in GitHub).'
+      );
+    } else if (
+      msg.includes('Failed to fetch') ||
+      msg.includes('NetworkError') ||
+      msg.includes('CORS')
+    ) {
+      addBotMessage(
+        'Browser could not reach Gemini (network or CORS). Check API key “HTTP referrer” restrictions include https://child-consultant.web.app'
+      );
+    } else if (msg.includes('403') || msg.includes('401') || msg.includes('API key') || msg.includes('PERMISSION_DENIED')) {
+      addBotMessage(
+        'Gemini rejected the key (invalid, revoked, or restricted). Create a fresh key in Google AI Studio, update Firestore siteConfig/assistant.geminiApiKey only, and restrict the key to your website — never commit keys to a public repo.'
+      );
     } else {
       addBotMessage("Sorry, I'm having trouble connecting. Please try again in a moment.");
     }
@@ -393,32 +416,49 @@ window.sendAssistantMessage = async function () {
 };
 
 async function callGemini() {
+  if (!assistantGeminiApiKey) {
+    throw new Error('MISSING_GEMINI_KEY');
+  }
+
+  const url = `${GEMINI_API_BASE}/${encodeURIComponent(
+    assistantGeminiModel
+  )}:generateContent`;
+
   const body = {
     systemInstruction: { parts: [{ text: SYSTEM_PROMPT || 'You are a helpful assistant.' }] },
-    contents: chatHistory
+    contents: chatHistory,
   };
 
-  const url = `${GEMINI_GENERATE_URL}/${assistantGeminiModel}:generateContent?key=${encodeURIComponent(assistantGeminiApiKey)}`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    headers: {
+      'Content-Type': 'application/json',
+      'X-goog-api-key': assistantGeminiApiKey,
+    },
+    body: JSON.stringify(body),
   });
 
   const raw = await res.text();
   if (!res.ok) {
-    throw new Error(`API ${res.status}: ${raw.slice(0, 500)}`);
+    throw new Error(`API ${res.status}: ${raw.slice(0, 400)}`);
   }
+
   let data;
   try {
     data = JSON.parse(raw);
   } catch (e) {
-    throw new Error('Invalid JSON from Gemini API');
+    throw new Error('Invalid JSON from Gemini');
   }
-  const text = data.candidates && data.candidates[0] && data.candidates[0].content
-    && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
-    ? data.candidates[0].content.parts[0].text
-    : '';
+
+  const text =
+    data.candidates &&
+    data.candidates[0] &&
+    data.candidates[0].content &&
+    data.candidates[0].content.parts &&
+    data.candidates[0].content.parts[0]
+      ? data.candidates[0].content.parts[0].text
+      : '';
+
   if (!text && data.error) {
     throw new Error(data.error.message || JSON.stringify(data.error));
   }
@@ -429,7 +469,10 @@ async function callGemini() {
 }
 
 function handleRecommendation(doctorId, reason) {
-  const doctor = DOCTORS_PANEL.find(d => d.id === doctorId);
+  const idStr = String(doctorId);
+  const doctor = DOCTORS_PANEL.find(function (d) {
+    return String(d.id) === idStr;
+  });
   const name = doctor ? doctor.name : 'a specialist';
 
   recommendationDone = true;
@@ -473,7 +516,7 @@ window.restartAssistant = async function () {
 function highlightRecommendedDoctor(doctorId) {
   // Remove previous highlights
   document.querySelectorAll('.ai-recommended-tag').forEach(el => el.remove());
-  document.querySelectorAll('.doctor-card').forEach(card => {
+  document.querySelectorAll('.pro-doc-card').forEach(card => {
     card.classList.remove('ai-recommended-card');
     card.style.border = '';
     card.style.boxShadow = '';
@@ -484,12 +527,13 @@ function highlightRecommendedDoctor(doctorId) {
   // Style already injected via ai-assistant-styles
 
   const container = document.getElementById('doctors-container');
-  const allCards = document.querySelectorAll('.doctor-card');
+  const allCards = document.querySelectorAll('.pro-doc-card');
+  const idStr = String(doctorId);
   let found = false;
 
   allCards.forEach(card => {
-    const bookBtn = card.querySelector(`[onclick*="${doctorId}"]`);
-    if (bookBtn) {
+    const bookBtn = card.querySelector('button[data-doctor-action="book"]');
+    if (bookBtn && bookBtn.getAttribute('data-doctor-id') === idStr) {
       found = true;
       card.classList.add('ai-recommended-card');
       card.style.position = 'relative';

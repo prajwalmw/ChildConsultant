@@ -149,6 +149,8 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
     <!-- Subtle separator -->
     <div style="padding: 40px 0; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,249,251,0.3) 100%);">
@@ -192,7 +194,7 @@
               <option value="15">15+ Years</option>
             </select>
 
-            <select id="filter-price" style="padding: 8px 12px; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 13px; color: #666; outline: none; cursor: pointer; background: white; min-width: 140px;">
+            <select id="filter-price" class="inr-money" style="padding: 8px 12px; border: 2px solid #e8e8e8; border-radius: 8px; font-size: 13px; color: #666; outline: none; cursor: pointer; background: white; min-width: 140px;">
               <option value="">Price Range</option>
               <option value="0-500">Under ₹500</option>
               <option value="500-1000">₹500 - ₹1000</option>
@@ -214,7 +216,7 @@
         </div>
 
         <div id="doctors-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; max-width: 1300px; margin: 0 auto; padding: 0;">
-          <!-- Doctor cards will be dynamically inserted here -->
+          <div id="doctors-container-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: #64748b; font-size: 16px; line-height: 1.5;">Loading specialists…</div>
         </div>
 
         <div id="no-results" style="display: none; text-align: center; padding: 50px; max-width: 1300px; margin: 0 auto;">
@@ -470,150 +472,6 @@
     </style>
 
     <script src="js/verified-badge.js?v=6"></script>
-    <script>
-      // Render doctor cards function
-      function renderDoctorCards(doctors) {
-        const container = document.getElementById('doctors-container');
-        const noResults = document.getElementById('no-results');
-
-        if (!container || !doctors) return;
-
-        container.innerHTML = '';
-
-        if (doctors.length === 0) {
-          container.style.display = 'none';
-          noResults.style.display = 'block';
-          return;
-        }
-
-        container.style.display = 'grid';
-        noResults.style.display = 'none';
-
-        doctors.forEach((doctor, index) => {
-          const activePrice = doctor.finalPrice < doctor.sessionPrice ? doctor.finalPrice : doctor.sessionPrice;
-          const hasDiscount = doctor.finalPrice < doctor.sessionPrice;
-
-          const cardHTML = `
-            <div class="pro-doc-card" data-specialization="${doctor.title}" data-experience="${parseInt(doctor.experience)}" data-price="${doctor.sessionPrice}" data-rating="${doctor.rating}">
-
-              <div class="pro-doc-top">
-                <div class="pro-doc-img-wrapper">
-                  <img src="${doctor.image}" alt="${doctor.name}" class="pro-doc-img" loading="lazy" decoding="async" width="100" height="100" onerror="this.src='https://via.placeholder.com/100/f41192/ffffff?text=${doctor.name.charAt(0)}'">
-                  ${doctor.isTopRated ? '<div class="pro-top-badge"><i class="fa fa-star"></i> Top Rated</div>' : ''}
-                </div>
-                
-                <div class="pro-doc-info">
-                  <div class="pro-doc-name-row">
-                    <h3 class="pro-doc-name">${doctor.name}</h3>
-                    ${typeof isDoctorVerified === 'function' && isDoctorVerified(doctor)
-                      ? `<span class="pro-verified" title="Verified medical expert">${verifiedBadgeSVG(20, doctor.id + '_' + index)}</span>`
-                      : ''}
-                  </div>
-                  <p class="pro-doc-title">${doctor.title}</p>
-                  <p class="pro-doc-exp"><i class="fa fa-clock-o"></i> ${doctor.experience} Overall</p>
-                </div>
-              </div>
-              
-              <div class="pro-doc-middle">
-                <div class="pro-stat">
-                  <i class="fa fa-graduation-cap" style="color: #8B5CF6;"></i>
-                  <span>${doctor.qualification}</span>
-                </div>
-                <div class="pro-stat">
-                  <i class="fa fa-thumbs-up" style="color: #10B981;"></i>
-                  <span class="pro-stat-highlight">${doctor.rating} <span style="color: #6B7280; font-weight: 400; margin-left: 4px;">(${doctor.totalRatings} Stories)</span></span>
-                </div>
-              </div>
-
-              <div class="pro-doc-bottom">
-                <div class="pro-price-block">
-                  <span class="pro-price-label">Consultation Fee</span>
-                  <div class="pro-price-val">
-                    &#8377;${activePrice}
-                    ${hasDiscount ? `<span class="pro-price-old">&#8377;${doctor.sessionPrice}</span>` : ''}
-                  </div>
-                </div>
-                <div class="pro-actions">
-                  <button onclick="showDoctorProfile('${doctor.id}')" class="pro-btn pro-btn-outline">Profile</button>
-                  <button onclick="bookDoctorSession('${doctor.id}')" class="pro-btn pro-btn-primary">Book Now</button>
-                </div>
-              </div>
-            </div>
-          `;
-
-          container.innerHTML += cardHTML;
-        });
-      }
-
-      // Filter doctors function
-      function filterDoctors() {
-        if (!window.DOCTORS || !Array.isArray(window.DOCTORS)) return;
-
-        const specialization = document.getElementById('filter-specialization').value;
-        const experience = document.getElementById('filter-experience').value;
-        const priceRange = document.getElementById('filter-price').value;
-        const rating = document.getElementById('filter-rating').value;
-
-        let filtered = window.DOCTORS.filter(doctor => {
-          if (specialization) {
-            const t = (doctor.title || '').trim().toLowerCase();
-            const s = specialization.trim().toLowerCase();
-            if (t !== s) return false;
-          }
-
-          // Filter by experience
-          if (experience) {
-            const docExp = parseInt(doctor.experience);
-            if (docExp < parseInt(experience)) return false;
-          }
-
-          // Filter by price range
-          if (priceRange) {
-            const [min, max] = priceRange.split('-').map(Number);
-            const activePrice = doctor.finalPrice < doctor.sessionPrice ? doctor.finalPrice : doctor.sessionPrice;
-            if (activePrice < min || activePrice > max) return false;
-          }
-
-          // Filter by rating
-          if (rating && doctor.rating < parseFloat(rating)) return false;
-
-          return true;
-        });
-
-        renderDoctorCards(filtered);
-      }
-
-      // Make renderDoctorCards global so doctor-booking.js can call it
-      window.renderDoctorCards = renderDoctorCards;
-
-      // Initialize filters on page load
-      document.addEventListener('DOMContentLoaded', function() {
-        // Add filter event listeners
-        const filterSpec = document.getElementById('filter-specialization');
-        const filterExp = document.getElementById('filter-experience');
-        const filterPrice = document.getElementById('filter-price');
-        const filterRating = document.getElementById('filter-rating');
-        const clearBtn = document.getElementById('clear-filters');
-
-        if (filterSpec) filterSpec.addEventListener('change', filterDoctors);
-        if (filterExp) filterExp.addEventListener('change', filterDoctors);
-        if (filterPrice) filterPrice.addEventListener('change', filterDoctors);
-        if (filterRating) filterRating.addEventListener('change', filterDoctors);
-
-        // Clear filters button
-        if (clearBtn) {
-          clearBtn.addEventListener('click', function() {
-            if (filterSpec) filterSpec.value = '';
-            if (filterExp) filterExp.value = '';
-            if (filterPrice) filterPrice.value = '';
-            if (filterRating) filterRating.value = '';
-            if (window.DOCTORS && window.DOCTORS.length > 0) {
-              renderDoctorCards(window.DOCTORS);
-            }
-          });
-        }
-      });
-    </script>
 
     <div class="space-medium bg-light" style="display: none;">
       <div class="container">
@@ -843,9 +701,6 @@
           // Auto-advance slides every 4 seconds
           setInterval(nextSlide, 4000);
         </script>
-
-      </div>
-    </div>
 
     <div id="services" class="space-medium" style="background: linear-gradient(135deg, #FFF5F7 0%, #F0F9FF 100%); padding: 80px 0; border-top: 1px solid rgba(225, 190, 231, 0.3);">
       <div class="container" style="max-width: 98%; width: 98%;">
@@ -1083,8 +938,8 @@
           </div>
         </div>
       </div>
-    </div>
       </div>
+    </div>
 
 
     <!-- Child Packages Section -->
@@ -1362,6 +1217,7 @@
       document.body.appendChild(popup);
     }
   </script>
+  <script src="js/doctor-booking.js?v=30"></script>
   <script src="js/menumaker.js"></script>
   <script type="text/javascript" src="js/jquery.sticky.js"></script>
   <script type="text/javascript" src="js/sticky-header.js"></script>
@@ -1371,23 +1227,57 @@
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
-  <!-- Razorpay: deferred so first paint / doctors load are not blocked -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+  <!-- Razorpay checkout (sync so Book Now always finds window.Razorpay after this block) -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <!-- Razorpay Payment Configuration -->
-  <script src="js/razorpay-config.js"></script>
+  <script src="js/razorpay-config.js?v=3"></script>
 
-  <!-- Doctor Booking System (after verified-badge.js, loaded above) -->
-  <script src="js/doctor-booking.js?v=22"></script>
-  <script src="js/doctor-assistant.js?v=3"></script>
+  <!-- Doctor booking loaded earlier (after Firebase init); assistant stays here -->
+  <script src="js/doctor-assistant.js?v=7"></script>
 
   <!-- Dynamic Packages Loading -->
   <script>
+    let packagesBookDelegationBound = false;
+    function bindPackagesBookDelegation() {
+      const container = document.getElementById('dynamic-packages-container');
+      if (!container || packagesBookDelegationBound) return;
+      packagesBookDelegationBound = true;
+      container.addEventListener('click', function (e) {
+        const btn = e.target.closest('button[data-package-book]');
+        if (!btn || !container.contains(btn)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.getAttribute('data-package-id');
+        if (!id) return;
+        const fn = window.initiateRazorpayPayment;
+        if (typeof fn !== 'function') {
+          alert('Payment is still loading. Please wait a moment and try again.');
+          return;
+        }
+        Promise.resolve(fn(id)).catch(function (err) {
+          console.error('Package booking error:', err);
+          alert('Could not start payment. Please try again.');
+        });
+      });
+    }
+
+    function escapePkgAttr(value) {
+      if (value == null) return '';
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;');
+    }
+
     async function loadPackages() {
+      bindPackagesBookDelegation();
       const container = document.getElementById('dynamic-packages-container');
       if (!container) return;
 
       try {
+        const inrPkg = '\u20B9';
         const snapshot = await db.collection('packages').orderBy('displayOrder', 'asc').get();
         
         if (snapshot.empty) {
@@ -1438,15 +1328,15 @@
               <div style="background: ${s.headerBg}; color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
                 <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">${cardTitle}</h2>
               </div>
-              <div style="margin-bottom: 12px;">
-                <p style="text-decoration: line-through; color: ${s.oldPriceColor}; font-size: 16px; margin-bottom: 3px;">₹${(Number(pkg.price) || 0).toLocaleString('en-IN')}</p>
-                <h3 style="font-size: 32px; font-weight: 800; color: ${s.newPriceColor}; margin: 0; line-height: 1;">₹${(Number(pkg.discountedPrice != null ? pkg.discountedPrice : pkg.price) || 0).toLocaleString('en-IN')}</h3>
+              <div class="inr-money" style="margin-bottom: 12px;">
+                <p style="text-decoration: line-through; color: ${s.oldPriceColor}; font-size: 16px; margin-bottom: 3px;">${inrPkg}${(Number(pkg.price) || 0).toLocaleString('en-IN')}</p>
+                <h3 style="font-size: 32px; font-weight: 800; color: ${s.newPriceColor}; margin: 0; line-height: 1;">${inrPkg}${(Number(pkg.discountedPrice != null ? pkg.discountedPrice : pkg.price) || 0).toLocaleString('en-IN')}</h3>
               </div>
               ${durationLabel ? `<div style="background: ${s.tagBg}; color: ${s.tagColor}; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">Duration: ${durationLabel}</div>` : ''}
               <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
                 ${featuresHtml}
               </div>
-              <button onclick="initiateRazorpayPayment('${pkg.id}')" class="btn" style="background: ${s.btnBg}; color: white; padding: 11px 25px; border-radius: 22px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0, 0.1); width: 100%; margin-top: 4px;">
+              <button type="button" class="btn" data-package-book="1" data-package-id="${escapePkgAttr(pkg.id)}" style="background: ${s.btnBg}; color: white; padding: 11px 25px; border-radius: 22px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0, 0.1); width: 100%; margin-top: 4px;">
                 Book Now
               </button>
               <p style="font-size: 11px; color: #999; margin-top: 8px; margin-bottom: 0;">*Conditions Apply</p>
@@ -1462,13 +1352,22 @@
       }
     }
     
-    document.addEventListener('DOMContentLoaded', () => {
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(() => loadPackages(), { timeout: 2500 });
+    function scheduleLoadPackages() {
+      bindPackagesBookDelegation();
+      const run = () => {
+        if (typeof requestIdleCallback === 'function') {
+          requestIdleCallback(() => loadPackages(), { timeout: 2500 });
+        } else {
+          setTimeout(loadPackages, 150);
+        }
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
       } else {
-        setTimeout(loadPackages, 150);
+        run();
       }
-    });
+    }
+    scheduleLoadPackages();
   </script>
 
   <script>
