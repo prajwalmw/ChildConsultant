@@ -1,8 +1,9 @@
 // Aqiraa Doctor Selection AI Assistant — Gemini only (free tier: Hosting + Firestore, no Blaze).
 //
+// Speed: streaming (SSE) + config cache. maxOutputTokens must fit full {"recommend","reason"} JSON — too low truncates and breaks doctor highlight.
 // Add your key ONLY in Firebase Console → Firestore → siteConfig/assistant :
 //   geminiApiKey (string) — from https://aistudio.google.com/apikey (free quota)
-//   model (optional string), default gemini-flash-latest
+//   model (optional string), default gemini-flash-latest (try gemini-2.0-flash if available for latency)
 //
 // Do NOT put the Gemini key in GitHub or in tracked source files. Restrict the key in
 // Google AI Studio / Cloud Console to your site referrer (e.g. child-consultant.web.app).
@@ -10,12 +11,52 @@
 const GEMINI_API_BASE =
   'https://generativelanguage.googleapis.com/v1beta/models';
 
+/** Room for short chat + full recommendation JSON (truncation used to break parse + scroll/highlight). */
+const GEMINI_GENERATION_CONFIG = {
+  maxOutputTokens: 2048,
+  temperature: 0.45,
+  topP: 0.95,
+};
+
+const GEMINI_RETRY_CONFIG = {
+  maxOutputTokens: 8192,
+  temperature: 0.35,
+  topP: 0.95,
+};
+
+/** Skip Firestore config reads on every message (key/model rarely change). */
+let assistantConfigFetchedAt = 0;
+const ASSISTANT_CONFIG_TTL_MS = 15 * 60 * 1000;
+
+/** Sparkle icon (same paths as user SVG); both shapes filled plain white for gradient FAB / headers. */
+function svgAiAssistantIcon(sizePx) {
+  var s = sizePx || 24;
+  return (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="' +
+    s +
+    '" height="' +
+    s +
+    '" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' +
+    '<path fill="#ffffff" d="M23.426,31.911l-1.719,3.936c-0.661,1.513-2.754,1.513-3.415,0l-1.719-3.936c-1.529-3.503-4.282-6.291-7.716-7.815l-4.73-2.1c-1.504-0.668-1.504-2.855,0-3.523l4.583-2.034c3.522-1.563,6.324-4.455,7.827-8.077l1.741-4.195c0.646-1.557,2.797-1.557,3.443,0l1.741,4.195c1.503,3.622,4.305,6.514,7.827,8.077l4.583,2.034c1.504,0.668,1.504,2.855,0,3.523l-4.73,2.1C27.708,25.62,24.955,28.409,23.426,31.911z"/>' +
+    '<path fill="#ffffff" d="M38.423,43.248l-0.493,1.131c-0.361,0.828-1.507,0.828-1.868,0l-0.493-1.131c-0.879-2.016-2.464-3.621-4.44-4.5l-1.52-0.675c-0.822-0.365-0.822-1.56,0-1.925l1.435-0.638c2.027-0.901,3.64-2.565,4.504-4.65l0.507-1.222c0.353-0.852,1.531-0.852,1.884,0l0.507,1.222c0.864,2.085,2.477,3.749,4.504,4.65l1.435,0.638c0.822,0.365,0.822,1.56,0,1.925l-1.52,0.675C40.887,39.627,39.303,41.232,38.423,43.248z"/>' +
+    '</svg>'
+  );
+}
+
 let DOCTORS_PANEL = [];
 let SYSTEM_PROMPT = '';
 let assistantGeminiModel = 'gemini-flash-latest';
 let assistantGeminiApiKey = '';
 
-async function loadAssistantConfig() {
+async function loadAssistantConfig(forceRefresh) {
+  const now = Date.now();
+  if (
+    !forceRefresh &&
+    assistantGeminiApiKey &&
+    now - assistantConfigFetchedAt < ASSISTANT_CONFIG_TTL_MS
+  ) {
+    return;
+  }
   assistantGeminiApiKey = '';
   try {
     if (typeof firebase === 'undefined' || !firebase.firestore) return;
@@ -25,6 +66,7 @@ async function loadAssistantConfig() {
     const key = (d.geminiApiKey || d.apiKey || '').trim();
     if (key) assistantGeminiApiKey = key;
     if (d.model && String(d.model).trim()) assistantGeminiModel = String(d.model).trim();
+    assistantConfigFetchedAt = Date.now();
   } catch (e) {
     console.error('Aqiraa Assistant: could not load siteConfig/assistant', e);
   }
@@ -78,6 +120,8 @@ Match based on the expertise listed above for each doctor. Use best judgement fo
 let chatHistory = [];
 let assistantOpen = false;
 let recommendationDone = false;
+/** Auto-open when doctors section scrolls into view — at most once per page load (observer disconnects). */
+let aiDoctorSectionAutoOpenHandled = false;
 
 // Inject floating bubble + chat window
 function injectChatWindow() {
@@ -107,6 +151,13 @@ function injectChatWindow() {
       #ai-chat-window { animation: ai-chat-in 0.22s ease; }
       #ai-tooltip {
         animation: ai-tooltip-in 0.3s ease 1.2s both;
+        background: #ffffff !important;
+        color: #312e81 !important;
+        -webkit-text-fill-color: #312e81 !important;
+        border: 1px solid rgba(124, 58, 237, 0.4) !important;
+        box-shadow: 0 6px 22px rgba(15, 23, 42, 0.14) !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
       }
       .typing-dot{width:7px;height:7px;background:#9e0ff1;border-radius:50%;animation:tdot 1s infinite}
       .typing-dot:nth-child(2){animation-delay:.2s}
@@ -116,6 +167,12 @@ function injectChatWindow() {
       #ai-chat-header { background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%) !important; }
       #ai-chat-header .ai-header-title { color: #ffffff !important; font-weight: 700 !important; font-size: 14px !important; }
       #ai-chat-header .ai-header-subtitle { color: rgba(255,255,255,0.85) !important; font-size: 11px !important; }
+      /* Beat global child-friendly.css "div { color: dark !important }" on user bubbles */
+      #ai-chat-messages .ai-chat-user-bubble,
+      #ai-chat-messages .ai-chat-user-bubble * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+      }
       @keyframes ai-glow-pulse {
         0% { box-shadow: 0 0 0 0 rgba(168,85,247,0.6), 0 8px 32px rgba(168,85,247,0.35); }
         50% { box-shadow: 0 0 0 8px rgba(168,85,247,0.0), 0 12px 48px rgba(168,85,247,0.5); }
@@ -146,10 +203,16 @@ function injectChatWindow() {
         background: linear-gradient(90deg, #7c3aed, #a855f7, #ec4899, #a855f7, #7c3aed);
         background-size: 200% auto;
         animation: ai-tag-pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards, ai-shimmer 2.5s linear 0.4s infinite;
-        color: #ffffff; padding: 5px 16px; border-radius: 20px;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        padding: 5px 16px; border-radius: 20px;
         font-size: 12px; font-weight: 800; white-space: nowrap;
         box-shadow: 0 4px 16px rgba(168,85,247,0.5);
         letter-spacing: 0.5px; z-index: 10;
+      }
+      .ai-recommended-tag * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
       }
     `;
     document.head.appendChild(style);
@@ -161,9 +224,11 @@ function injectChatWindow() {
 
       <!-- Tooltip label -->
       <div id="ai-tooltip" style="
-        background: #1a1a2e; color: white; font-size: 12px; font-weight: 600;
+        background: #ffffff; color: #312e81; font-size: 12px; font-weight: 600;
         padding: 7px 14px; border-radius: 20px; white-space: nowrap;
         pointer-events: none; letter-spacing: 0.3px;
+        border: 1px solid rgba(124, 58, 237, 0.35);
+        box-shadow: 0 6px 22px rgba(15, 23, 42, 0.12);
       ">Find the right doctor ✨</div>
 
       <!-- FAB button -->
@@ -174,7 +239,8 @@ function injectChatWindow() {
         display: flex; align-items: center; justify-content: center;
         box-shadow: 0 6px 20px rgba(168,85,247,0.4);
       ">
-        <i id="ai-fab-icon" class="fa fa-magic" style="color: white; font-size: 20px;"></i>
+        <span id="ai-fab-icon-open" style="display:flex;align-items:center;justify-content:center;line-height:0;">${svgAiAssistantIcon(26)}</span>
+        <i id="ai-fab-icon-close" class="fa fa-times" style="display:none;color:#fff;font-size:22px;line-height:1;"></i>
       </div>
     </div>
 
@@ -190,7 +256,7 @@ function injectChatWindow() {
       <div id="ai-chat-header" style="background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(255,255,255,0.15);">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <i class="fa fa-magic" style="color: #ffffff; font-size: 14px;"></i>
+            ${svgAiAssistantIcon(20)}
           </div>
           <div>
             <div class="ai-header-title">Aqiraa Assistant</div>
@@ -236,14 +302,20 @@ function injectChatWindow() {
 
 window.toggleAssistant = function () {
   const win = document.getElementById('ai-chat-window');
-  const icon = document.getElementById('ai-fab-icon');
+  const iconOpen = document.getElementById('ai-fab-icon-open');
+  const iconClose = document.getElementById('ai-fab-icon-close');
   const tooltip = document.getElementById('ai-tooltip');
   if (!win) return;
   assistantOpen = !assistantOpen;
   win.style.display = assistantOpen ? 'flex' : 'none';
-  if (icon) {
-    icon.className = assistantOpen ? 'fa fa-times' : 'fa fa-magic';
-    icon.style.fontSize = assistantOpen ? '20px' : '22px';
+  if (iconOpen && iconClose) {
+    if (assistantOpen) {
+      iconOpen.style.display = 'none';
+      iconClose.style.display = 'block';
+    } else {
+      iconOpen.style.display = 'flex';
+      iconClose.style.display = 'none';
+    }
   }
   if (tooltip) tooltip.style.display = 'none';
   // Only start conversation on very first open
@@ -280,7 +352,7 @@ function addBotMessage(text) {
   div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-start;';
   div.innerHTML = `
     <div style="width: 28px; height: 28px; background: linear-gradient(135deg, #9e0ff1, #f41192); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
-      <i class="fa fa-magic" style="color: white; font-size: 10px;"></i>
+      ${svgAiAssistantIcon(15)}
     </div>
     <div style="background: white; border: 1px solid #f0e6ff; border-radius: 14px 14px 14px 2px; padding: 10px 14px; font-size: 13px; color: #333; max-width: 260px; line-height: 1.5; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
       ${text}
@@ -296,7 +368,7 @@ function addUserMessage(text) {
   const div = document.createElement('div');
   div.style.cssText = 'display: flex; justify-content: flex-end; margin-bottom: 12px;';
   div.innerHTML = `
-    <div style="background: linear-gradient(135deg, #9e0ff1, #f41192); color: white; border-radius: 14px 14px 2px 14px; padding: 10px 14px; font-size: 13px; max-width: 260px; line-height: 1.5;">
+    <div class="ai-chat-user-bubble" style="background: linear-gradient(135deg, #9e0ff1, #f41192); color: #ffffff; border-radius: 14px 14px 2px 14px; padding: 10px 14px; font-size: 13px; max-width: 260px; line-height: 1.5;">
       ${text}
     </div>
   `;
@@ -312,7 +384,7 @@ function addTypingIndicator() {
   div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-start;';
   div.innerHTML = `
     <div style="width: 28px; height: 28px; background: linear-gradient(135deg, #9e0ff1, #f41192); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-      <i class="fa fa-magic" style="color: white; font-size: 10px;"></i>
+      ${svgAiAssistantIcon(15)}
     </div>
     <div style="background: white; border: 1px solid #f0e6ff; border-radius: 14px; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
       <span style="display: inline-flex; gap: 4px; align-items: center;">
@@ -336,6 +408,138 @@ function addTypingIndicator() {
 function removeTypingIndicator() {
   const el = document.getElementById('typing-indicator');
   if (el) el.remove();
+}
+
+function buildGeminiRequestBody(overrides) {
+  var gen = GEMINI_GENERATION_CONFIG;
+  if (overrides && overrides.generationConfig) {
+    gen = Object.assign({}, GEMINI_GENERATION_CONFIG, overrides.generationConfig);
+  }
+  return {
+    systemInstruction: {
+      parts: [{ text: SYSTEM_PROMPT || 'You are a helpful assistant.' }],
+    },
+    contents: chatHistory,
+    generationConfig: gen,
+  };
+}
+
+/** Parse recommendation JSON from model text (single object); avoids fragile regex on truncated output. */
+function parseRecommendationFromModelText(text) {
+  if (!text || text.indexOf('"recommend"') === -1) return null;
+  var start = text.indexOf('{');
+  var end = text.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) return null;
+  try {
+    var o = JSON.parse(text.slice(start, end + 1));
+    if (o && o.recommend) return o;
+  } catch (e) {
+    /* incomplete or extra prose */
+  }
+  return null;
+}
+
+function looksLikeRecommendationAttempt(text) {
+  return !!(text && /"recommend"\s*:/.test(text));
+}
+
+function extractTextFromGeminiChunk(data) {
+  if (!data || !data.candidates || !data.candidates[0]) return '';
+  const c = data.candidates[0];
+  if (c.content && c.content.parts) {
+    var t = '';
+    for (var i = 0; i < c.content.parts.length; i++) {
+      if (c.content.parts[i].text) t += c.content.parts[i].text;
+    }
+    return t;
+  }
+  return '';
+}
+
+/** Stream tokens via SSE — feels much faster than waiting for full generateContent. */
+async function callGeminiStreaming(requestBody, onDelta) {
+  if (!assistantGeminiApiKey) {
+    throw new Error('MISSING_GEMINI_KEY');
+  }
+  var url =
+    GEMINI_API_BASE +
+    '/' +
+    encodeURIComponent(assistantGeminiModel) +
+    ':streamGenerateContent?alt=sse';
+  var res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-goog-api-key': assistantGeminiApiKey,
+    },
+    body: JSON.stringify(requestBody),
+  });
+  if (!res.ok) {
+    var errText = await res.text();
+    throw new Error('API ' + res.status + ': ' + errText.slice(0, 400));
+  }
+  if (!res.body || !res.body.getReader) {
+    throw new Error('Streaming not supported in this browser');
+  }
+  var reader = res.body.getReader();
+  var decoder = new TextDecoder();
+  var buffer = '';
+  var fullText = '';
+  while (true) {
+    var read = await reader.read();
+    if (read.done) break;
+    buffer += decoder.decode(read.value, { stream: true });
+    var lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (var li = 0; li < lines.length; li++) {
+      var line = lines[li].trim();
+      if (line.indexOf('data:') !== 0) continue;
+      var jsonStr = line.slice(5).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+      try {
+        var data = JSON.parse(jsonStr);
+        var piece = extractTextFromGeminiChunk(data);
+        if (piece) {
+          fullText += piece;
+          if (typeof onDelta === 'function') onDelta(piece, fullText);
+        }
+      } catch (parseErr) {
+        console.warn('Aqiraa Assistant: SSE chunk parse', parseErr);
+      }
+    }
+  }
+  if (!fullText.trim()) {
+    throw new Error('No text in model response (safety filter or empty stream)');
+  }
+  return fullText;
+}
+
+function beginStreamingBotMessage() {
+  var container = document.getElementById('ai-chat-messages');
+  if (!container) return null;
+  var div = document.createElement('div');
+  div.id = 'ai-streaming-row';
+  div.style.cssText =
+    'display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-start;';
+  div.innerHTML =
+    '<div style="width: 28px; height: 28px; background: linear-gradient(135deg, #9e0ff1, #f41192); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">' +
+    svgAiAssistantIcon(15) +
+    '</div>' +
+    '<div data-ai-stream-bubble="1" style="background: white; border: 1px solid #f0e6ff; border-radius: 14px 14px 14px 2px; padding: 10px 14px; font-size: 13px; color: #333; max-width: 260px; line-height: 1.5; box-shadow: 0 1px 4px rgba(0,0,0,0.06); white-space: pre-wrap; word-break: break-word;"></div>';
+  container.appendChild(div);
+  var bubble = div.querySelector('[data-ai-stream-bubble]');
+  container.scrollTop = container.scrollHeight;
+  return {
+    append: function (delta) {
+      if (bubble) {
+        bubble.textContent += delta;
+        container.scrollTop = container.scrollHeight;
+      }
+    },
+    remove: function () {
+      div.remove();
+    },
+  };
 }
 
 window.sendAssistantMessage = async function () {
@@ -369,21 +573,61 @@ window.sendAssistantMessage = async function () {
       return;
     }
 
-    const response = await callGemini();
-    removeTypingIndicator();
+    var requestBody = buildGeminiRequestBody();
+    var streamUi = null;
+    var gotDelta = false;
+    var response = '';
 
-    const jsonMatch = response.match(/\{[\s\S]*"recommend"[\s\S]*?\}/);
-    if (jsonMatch) {
-      try {
-        const rec = JSON.parse(jsonMatch[0]);
-        handleRecommendation(rec.recommend, rec.reason);
-        input.disabled = true; // keep disabled after recommendation
+    try {
+      response = await callGeminiStreaming(requestBody, function (delta) {
+        if (!gotDelta) {
+          gotDelta = true;
+          removeTypingIndicator();
+          streamUi = beginStreamingBotMessage();
+        }
+        if (streamUi) streamUi.append(delta);
+      });
+    } catch (streamErr) {
+      console.warn('Aqiraa Assistant: streaming failed, retrying without stream', streamErr);
+      if (streamUi) {
+        streamUi.remove();
+        streamUi = null;
+      }
+      if (gotDelta) {
+        removeTypingIndicator();
+        addBotMessage("Sorry, the reply was cut off. Please try again.");
         return;
-      } catch (e) { /* fall through */ }
+      }
+      removeTypingIndicator();
+      response = await callGeminiGenerate(requestBody);
+      if (response) addBotMessage(response);
+    }
+
+    var rec = parseRecommendationFromModelText(response);
+    if (!rec && looksLikeRecommendationAttempt(response)) {
+      if (streamUi) {
+        streamUi.remove();
+        streamUi = null;
+        gotDelta = false;
+      }
+      try {
+        response = await callGeminiGenerate(
+          buildGeminiRequestBody({ generationConfig: GEMINI_RETRY_CONFIG })
+        );
+        rec = parseRecommendationFromModelText(response);
+      } catch (retryErr) {
+        console.warn('Aqiraa Assistant: recommendation retry failed', retryErr);
+      }
+    }
+
+    if (rec && rec.recommend) {
+      if (streamUi) streamUi.remove();
+      handleRecommendation(rec.recommend, rec.reason || '');
+      input.disabled = true;
+      return;
     }
 
     chatHistory.push({ role: 'model', parts: [{ text: response }] });
-    addBotMessage(response);
   } catch (err) {
     removeTypingIndicator();
     const msg = err && err.message ? String(err.message) : '';
@@ -415,7 +659,7 @@ window.sendAssistantMessage = async function () {
   }
 };
 
-async function callGemini() {
+async function callGeminiGenerate(requestBody) {
   if (!assistantGeminiApiKey) {
     throw new Error('MISSING_GEMINI_KEY');
   }
@@ -424,10 +668,7 @@ async function callGemini() {
     assistantGeminiModel
   )}:generateContent`;
 
-  const body = {
-    systemInstruction: { parts: [{ text: SYSTEM_PROMPT || 'You are a helpful assistant.' }] },
-    contents: chatHistory,
-  };
+  const body = requestBody || buildGeminiRequestBody();
 
   const res = await fetch(url, {
     method: 'POST',
@@ -540,7 +781,10 @@ function highlightRecommendedDoctor(doctorId) {
 
       const tag = document.createElement('div');
       tag.className = 'ai-recommended-tag';
-      tag.innerHTML = '<i class="fa fa-magic"></i>&nbsp; AI Recommended';
+      tag.innerHTML =
+        '<span style="display:inline-flex;vertical-align:middle;margin-right:5px;line-height:0;">' +
+        svgAiAssistantIcon(13) +
+        '</span> AI Recommended';
       card.insertBefore(tag, card.firstChild);
 
       // Move recommended card to first position in the grid
@@ -557,7 +801,41 @@ function highlightRecommendedDoctor(doctorId) {
   }
 }
 
+/** Open the assistant once when the doctors panel scrolls into view (observer disconnects after). */
+function setupDoctorSectionAutoOpenAssistant() {
+  const target = document.getElementById('doctor-booking');
+  if (!target || typeof IntersectionObserver === 'undefined') return;
+
+  const observer = new IntersectionObserver(
+    function (entries) {
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        if (!entry.isIntersecting) continue;
+        if (entry.intersectionRatio < 0.12) continue;
+        if (aiDoctorSectionAutoOpenHandled) return;
+
+        aiDoctorSectionAutoOpenHandled = true;
+        observer.disconnect();
+
+        if (!assistantOpen && typeof window.toggleAssistant === 'function') {
+          window.toggleAssistant();
+        }
+        return;
+      }
+    },
+    {
+      root: null,
+      threshold: [0, 0.08, 0.12, 0.18, 0.25, 0.35],
+      rootMargin: '0px 0px -8% 0px',
+    }
+  );
+
+  observer.observe(target);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   injectChatWindow();
-  // Doctors + Gemini config load on first FAB open only — keeps homepage fast (no duplicate Firestore vs doctor-booking.js)
+  requestAnimationFrame(function () {
+    setupDoctorSectionAutoOpenAssistant();
+  });
 });

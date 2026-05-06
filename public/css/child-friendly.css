@@ -149,6 +149,26 @@ label {
   color: rgba(255,255,255,0.85) !important;
 }
 
+/* User-sent bubbles in assistant (gradient background needs white text) */
+#ai-chat-messages .ai-chat-user-bubble,
+#ai-chat-messages .ai-chat-user-bubble * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Doctor grid: AI ribbon + filter clear — purple controls need white label (beats button/div !important rules) */
+.ai-recommended-tag,
+.ai-recommended-tag * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+#clear-filters,
+#clear-filters i {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
 /* Navigation text */
 .navigation ul li a {
   color: var(--dark) !important;

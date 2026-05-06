@@ -420,7 +420,7 @@ function showDoctorProfile(doctorId) {
   const modalHTML = `
     <div id="doctorProfileModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
       <div style="background: white; border-radius: 24px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-        <button onclick="closeDoctorProfile()" style="position: absolute; top: 20px; right: 20px; background: #f41192; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10; box-shadow: 0 4px 12px rgba(244,17,146,0.3);">×</button>
+        <button onclick="closeDoctorProfile()" style="position: absolute; top: 20px; right: 20px; background: #f41192; color: #ffffff !important; -webkit-text-fill-color: #ffffff; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10; box-shadow: 0 4px 12px rgba(244,17,146,0.3);">×</button>
 
         <div style="padding: 40px;">
           <div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">
@@ -467,7 +467,7 @@ function showDoctorProfile(doctorId) {
               </div>
 
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button type="button" onclick="bookDoctorSession(${JSON.stringify(doctor.id)})" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 16px rgba(244,17,146,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(244,17,146,0.2)'" style="background: linear-gradient(135deg, #f41192, #9e0ff1); color: white; padding: 15px 30px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; letter-spacing: 0.04em; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.2); flex: 1; min-width: 180px; transition: all 0.2s ease; font-family: 'PT Sans', sans-serif;">Book an Appointment</button>
+                <button type="button" onclick="bookDoctorSession(${JSON.stringify(doctor.id)})" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 16px rgba(244,17,146,0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(244,17,146,0.2)'" style="background: linear-gradient(135deg, #f41192, #9e0ff1); color: #ffffff !important; -webkit-text-fill-color: #ffffff; padding: 15px 30px; border-radius: 25px; border: none; font-weight: 700; font-size: 16px; letter-spacing: 0.04em; cursor: pointer; box-shadow: 0 4px 12px rgba(244,17,146,0.2); flex: 1; min-width: 180px; transition: all 0.2s ease; font-family: 'PT Sans', sans-serif;">Book an Appointment</button>
               </div>
             </div>
           </div>
@@ -604,7 +604,7 @@ function showBookingInstructions(doctor) {
       <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
         Select your preferred date and time in the new tab. After scheduling, return here to complete your payment of <strong class="inr-money">${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong>.
       </p>
-      <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">I've Scheduled - Proceed to Payment</button>
+      <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: #ffffff !important; -webkit-text-fill-color: #ffffff; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">I've Scheduled - Proceed to Payment</button>
     </div>
   `;
 
@@ -648,7 +648,7 @@ function showPaymentInstructions(doctor, eventDetails) {
       <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
         Complete your booking by paying <strong class="inr-money">${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong> to confirm your appointment with ${doctor.name}.
       </p>
-      <button onclick="proceedToDoctorPayment()" class="inr-money" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: white; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</button>
+      <button onclick="proceedToDoctorPayment()" class="inr-money" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: #ffffff !important; -webkit-text-fill-color: #ffffff; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</button>
     </div>
   `;
 

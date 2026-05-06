@@ -92,6 +92,7 @@
               <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
                 <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('doctor-booking').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Consult Doctor</a>
                 <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('packages').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Explore Packages</a>
+                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('contact-form').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Talk to us</a>
               </div>
             </div>
           </div>
@@ -209,8 +210,8 @@
               <option value="3.5">3.5+ ⭐</option>
             </select>
 
-            <button id="clear-filters" style="padding: 8px 16px; background: linear-gradient(135deg, #9e0ff1, #b97dd4); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform 0.2s ease; margin-left: auto;">
-              <i class="fa fa-times"></i> Clear
+            <button id="clear-filters" type="button" style="padding: 8px 16px; background: linear-gradient(135deg, #9e0ff1, #b97dd4); color: #ffffff !important; -webkit-text-fill-color: #ffffff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform 0.2s ease; margin-left: auto;">
+              <i class="fa fa-times" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff;"></i> Clear
             </button>
           </div>
         </div>
@@ -425,12 +426,17 @@
 
       .pro-btn-primary {
         background: linear-gradient(135deg, #f41192, #9e0ff1);
-        color: white;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff;
         box-shadow: 0 4px 12px rgba(244, 17, 146, 0.2);
       }
 
-      .pro-btn-primary:hover {
+      .pro-btn-primary:hover,
+      .pro-btn-primary:focus,
+      .pro-btn-primary:active {
         background: linear-gradient(135deg, #e00b84, #8b0bc0);
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff;
         transform: scale(1.02);
         box-shadow: 0 6px 16px rgba(244, 17, 146, 0.3);
       }
@@ -989,6 +995,12 @@
         transform: scale(1.05);
         box-shadow: 0 8px 25px rgba(158, 15, 241, 0.5) !important;
       }
+      .package-card button[data-package-book],
+      .package-card button[data-package-book]:hover,
+      .package-card button[data-package-book]:focus {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff;
+      }
       @media (max-width: 768px) {
         .package-card {
           max-width: 100% !important;
@@ -1217,7 +1229,10 @@
       document.body.appendChild(popup);
     }
   </script>
-  <script src="js/doctor-booking.js?v=30"></script>
+  <!-- Razorpay must load right after Firebase so checkout + handler always register before other page scripts -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="js/razorpay-config.js?v=5"></script>
+  <script src="js/doctor-booking.js?v=32"></script>
   <script src="js/menumaker.js"></script>
   <script type="text/javascript" src="js/jquery.sticky.js"></script>
   <script type="text/javascript" src="js/sticky-header.js"></script>
@@ -1227,18 +1242,57 @@
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
-  <!-- Razorpay checkout (sync so Book Now always finds window.Razorpay after this block) -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
-  <!-- Razorpay Payment Configuration -->
-  <script src="js/razorpay-config.js?v=3"></script>
-
-  <!-- Doctor booking loaded earlier (after Firebase init); assistant stays here -->
-  <script src="js/doctor-assistant.js?v=7"></script>
+  <!-- Doctor booking + Razorpay: loaded earlier after Firebase; assistant stays here -->
+  <script src="js/doctor-assistant.js?v=18"></script>
 
   <!-- Dynamic Packages Loading -->
   <script>
     let packagesBookDelegationBound = false;
+
+    /** Always append (used when recover retry must bypass “already in DOM” duplicate skips). */
+    function appendScript(src) {
+      return new Promise(function (resolve) {
+        var el = document.createElement('script');
+        el.src = src;
+        el.async = false;
+        el.onload = function () {
+          resolve();
+        };
+        el.onerror = function () {
+          resolve();
+        };
+        document.head.appendChild(el);
+      });
+    }
+
+    async function ensureInitiateRazorpayForPackages() {
+      try {
+        var deadline = Date.now() + 12000;
+        while (Date.now() < deadline) {
+          if (typeof window.initiateRazorpayPayment === 'function') return window.initiateRazorpayPayment;
+          await new Promise(function (r) {
+            setTimeout(r, 60);
+          });
+        }
+        var bust = Date.now();
+        await appendScript('https://checkout.razorpay.com/v1/checkout.js?recover=' + bust);
+        var t1 = Date.now();
+        while (Date.now() - t1 < 20000 && typeof window.Razorpay === 'undefined') {
+          await new Promise(function (r) {
+            setTimeout(r, 40);
+          });
+        }
+        await appendScript('js/razorpay-config.js?v=5&recover=' + bust);
+        await new Promise(function (r) {
+          setTimeout(r, 280);
+        });
+        return typeof window.initiateRazorpayPayment === 'function' ? window.initiateRazorpayPayment : null;
+      } catch (err) {
+        console.error('ensureInitiateRazorpayForPackages', err);
+        return typeof window.initiateRazorpayPayment === 'function' ? window.initiateRazorpayPayment : null;
+      }
+    }
+
     function bindPackagesBookDelegation() {
       const container = document.getElementById('dynamic-packages-container');
       if (!container || packagesBookDelegationBound) return;
@@ -1250,15 +1304,20 @@
         e.stopPropagation();
         const id = btn.getAttribute('data-package-id');
         if (!id) return;
-        const fn = window.initiateRazorpayPayment;
-        if (typeof fn !== 'function') {
-          alert('Payment is still loading. Please wait a moment and try again.');
-          return;
-        }
-        Promise.resolve(fn(id)).catch(function (err) {
-          console.error('Package booking error:', err);
-          alert('Could not start payment. Please try again.');
-        });
+        (async function () {
+          var fn = typeof window.initiateRazorpayPayment === 'function' ? window.initiateRazorpayPayment : null;
+          if (!fn) fn = await ensureInitiateRazorpayForPackages();
+          if (typeof fn !== 'function') {
+            alert(
+              'Payment could not start (checkout script did not load). Check your connection, disable blockers for this site, or refresh the page and try again.'
+            );
+            return;
+          }
+          Promise.resolve(fn(id)).catch(function (err) {
+            console.error('Package booking error:', err);
+            alert('Could not start payment. Please try again.');
+          });
+        })();
       });
     }
 

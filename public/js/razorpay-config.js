@@ -1,4 +1,11 @@
 // Razorpay Configuration and Payment Handler
+// Wrapped so the file can be injected twice (recovery) without const redeclaration errors.
+(function () {
+  'use strict';
+  if (window.__aqiraaRzpConfigExecuted) {
+    return;
+  }
+  window.__aqiraaRzpConfigExecuted = true;
 
 // Razorpay Live API Key (Prajwal Waingankar Account)
 const RAZORPAY_KEY_ID = 'rzp_live_S6y99PjkyiSG8O';
@@ -50,7 +57,7 @@ function initializeFirebaseForPayment() {
 }
 
 function waitForRazorpayReady(timeoutMs) {
-  var max = timeoutMs != null ? timeoutMs : 12000;
+  var max = timeoutMs != null ? timeoutMs : 20000;
   var start = Date.now();
   return new Promise(function (resolve) {
     function tick() {
@@ -68,15 +75,15 @@ function waitForRazorpayReady(timeoutMs) {
   });
 }
 
-// Handle Razorpay Payment
-async function initiateRazorpayPayment(packageType) {
+// Handle Razorpay Payment — attached to window immediately so package buttons never see a missing handler.
+window.initiateRazorpayPayment = async function initiateRazorpayPayment(packageType) {
   // Check if Firebase is initialized
   if (!initializeFirebaseForPayment()) {
     alert('System initialization error. Please refresh the page.');
     return;
   }
 
-  var ready = await waitForRazorpayReady(12000);
+  var ready = await waitForRazorpayReady(20000);
   if (!ready || typeof Razorpay === 'undefined') {
     alert('Payment system is still loading. Please wait a few seconds and tap Book again, or refresh the page.');
     return;
@@ -290,9 +297,10 @@ function showPaymentSuccessMessage(packageDetails, paymentId) {
   document.body.insertAdjacentHTML('beforeend', successHTML);
 }
 
-// Export functions for global use
-window.initiateRazorpayPayment = initiateRazorpayPayment;
+// Export helpers for global use (initiateRazorpayPayment assigned above)
 window.waitForRazorpayReady = waitForRazorpayReady;
 window.formatPackageDurationLabel = formatPackageDurationLabel;
 window.calculateExpiryDateFromPackage = calculateExpiryDateFromPackage;
 window.getPackageDurationParts = getPackageDurationParts;
+
+})();
