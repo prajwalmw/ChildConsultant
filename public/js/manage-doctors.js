@@ -130,6 +130,7 @@ function renderDoctorsTable(doctors) {
           <th>Price</th>
           <th>Rating</th>
           <th>Verified</th>
+          <th>Online</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -173,6 +174,15 @@ function renderDoctorsTable(doctors) {
                 <span class="ig-verified-preview" aria-hidden="true">${typeof verifiedBadgeSVG === 'function' ? verifiedBadgeSVG(20, 'row_' + doctor.id) : ''}</span>
               </div>
             </td>
+            <td class="online-cell">
+              <div class="switch-wrap" title="Green dot on homepage; Gemini AI only suggests doctors that are on">
+                <span class="doctor-online-dot ${doctor.online !== false ? 'is-on' : 'is-off'}" aria-hidden="true"></span>
+                <label class="switch">
+                  <input type="checkbox" ${doctor.online !== false ? 'checked' : ''} onchange="setDoctorOnlineField('${doctor.id}', this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </td>
             <td>
               <span class="badge ${doctor.active ? 'badge-active' : 'badge-inactive'}">
                 ${doctor.active ? 'Active' : 'Inactive'}
@@ -202,10 +212,13 @@ function updateStats() {
   const total = allDoctors.length;
   const active = allDoctors.filter(d => d.active).length;
   const topRated = allDoctors.filter(d => d.isTopRated).length;
+  const onlineAi = allDoctors.filter(d => d.online !== false).length;
 
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-active').textContent = active;
   document.getElementById('stat-top').textContent = topRated;
+  const elOnline = document.getElementById('stat-online');
+  if (elOnline) elOnline.textContent = onlineAi;
 }
 
 async function setDoctorVerifiedField(doctorId, verified) {
@@ -219,6 +232,22 @@ async function setDoctorVerifiedField(doctorId, verified) {
   } catch (error) {
     console.error('Error updating verified:', error);
     alert('Could not update verified badge: ' + error.message);
+    loadDoctors();
+  }
+}
+
+async function setDoctorOnlineField(doctorId, online) {
+  try {
+    await db.collection('doctors').doc(doctorId).update({
+      online,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    const d = allDoctors.find((x) => x.id === doctorId);
+    if (d) d.online = online;
+    updateStats();
+  } catch (error) {
+    console.error('Error updating online:', error);
+    alert('Could not update online status: ' + error.message);
     loadDoctors();
   }
 }
@@ -248,6 +277,8 @@ function openAddModal() {
   document.getElementById('imagePreview').style.display = 'none';
   const dv = document.getElementById('doctorVerified');
   if (dv) dv.checked = true;
+  const don = document.getElementById('doctorOnline');
+  if (don) don.checked = true;
   document.getElementById('doctorModal').classList.add('active');
 }
 
@@ -296,6 +327,8 @@ async function editDoctor(doctorId) {
     document.getElementById('doctorTopRated').checked = doctor.isTopRated || false;
     const dv = document.getElementById('doctorVerified');
     if (dv) dv.checked = doctor.verified !== false;
+    const don = document.getElementById('doctorOnline');
+    if (don) don.checked = doctor.online !== false;
 
     // Populate expertise
     expertiseArray = doctor.expertise || [];
@@ -511,6 +544,9 @@ async function handleSubmit(event) {
       isTopRated: document.getElementById('doctorTopRated').checked,
       verified: document.getElementById('doctorVerified')
         ? document.getElementById('doctorVerified').checked
+        : true,
+      online: document.getElementById('doctorOnline')
+        ? document.getElementById('doctorOnline').checked
         : true,
       expertise: expertiseArray,
       languages: languageArray,

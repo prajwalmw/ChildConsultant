@@ -562,6 +562,20 @@
       opacity: 1;
     }
 
+    .doctor-online-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .doctor-online-dot.is-on {
+      background: #22c55e;
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.35);
+    }
+    .doctor-online-dot.is-off {
+      background: #9ca3af;
+    }
+
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
@@ -635,6 +649,10 @@
         <div class="stat-card">
           <h3>Top Rated</h3>
           <div class="stat-number" id="stat-top">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Online (AI)</h3>
+          <div class="stat-number" id="stat-online">0</div>
         </div>
       </div>
 
@@ -808,6 +826,15 @@
             </label>
             <small style="color: #666; font-size: 12px; display: block; margin-top: 6px;">
               Instagram-style blue check beside the doctor name on the homepage and in the profile popup. Turn off for doctors who should not show as verified.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="doctorOnline" checked> Online for homepage &amp; AI doctor finder
+            </label>
+            <small style="color: #666; font-size: 12px; display: block; margin-top: 6px;">
+              When on: green dot next to the name on the homepage, and this doctor can be recommended by the Gemini assistant. When off: hidden from AI matching (still listed on the site if Active).
             </small>
           </div>
 

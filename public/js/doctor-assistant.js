@@ -1,4 +1,5 @@
 // Aqiraa Doctor Selection AI Assistant — Gemini only (free tier: Hosting + Firestore, no Blaze).
+// Doctors included in prompts: Firestore doctors where active !== false AND online !== false (missing online counts as on).
 //
 // Speed: streaming (SSE) + config cache. maxOutputTokens must fit full {"recommend","reason"} JSON — too low truncates and breaks doctor highlight.
 // Add your key ONLY in Firebase Console → Firestore → siteConfig/assistant :
@@ -82,7 +83,7 @@ async function loadDoctorsAndBuildPrompt() {
         return { ...data, id: doc.id };
       })
       .filter(function (d) {
-        return d.active !== false;
+        return d.active !== false && d.online !== false;
       })
       .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 
@@ -110,6 +111,7 @@ Rules:
 
 Valid doctor IDs: ${doctorIds}
 
+You must recommend only doctors from the list above. Those IDs are the only ones available; do not use any other ID (for example, doctors who are off-line are not in this list).
 Match based on the expertise listed above for each doctor. Use best judgement for unclear concerns.`;
 
   } catch (err) {
@@ -562,7 +564,9 @@ window.sendAssistantMessage = async function () {
     }
     if (!SYSTEM_PROMPT || DOCTORS_PANEL.length === 0) {
       removeTypingIndicator();
-      addBotMessage('Could not load doctors for the assistant. Please refresh the page.');
+      addBotMessage(
+        'No doctors are available for AI matching (inactive or Online turned off in Admin → Manage Doctors). Refresh after your admin enables specialists.'
+      );
       return;
     }
     if (!assistantGeminiApiKey) {
@@ -714,7 +718,20 @@ function handleRecommendation(doctorId, reason) {
   const doctor = DOCTORS_PANEL.find(function (d) {
     return String(d.id) === idStr;
   });
-  const name = doctor ? doctor.name : 'a specialist';
+  if (!doctor) {
+    recommendationDone = false;
+    addBotMessage(
+      "I couldn't match that to an available specialist right now. Please try again in a moment, or choose a doctor from the list — only on-call profiles are included here."
+    );
+    const input = document.getElementById('ai-chat-input');
+    if (input) {
+      input.disabled = false;
+      input.focus();
+    }
+    return;
+  }
+
+  const name = doctor.name;
 
   recommendationDone = true;
   addBotMessage(`Great! Based on your child's needs, I recommend <strong>${name}</strong>. ${reason} 🎯<br><br>Scrolling to their card now...`);
