@@ -2,6 +2,15 @@
 <html lang="en">
 
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-770377350"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-770377350');
+  </script>
+
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -12,6 +21,8 @@
   <meta name="keywords"
     content="pediatric care, children healthcare, child doctor, pediatrician, kids health, child consultant, Aqiraa, family healthcare">
   <title>Aqiraa</title>
+  <!-- Preferred public URL (HTTPS + www). Configure apex → www redirect in DNS/hosting if needed. -->
+  <link rel="canonical" href="https://www.aqiraa.com/">
   <link rel="icon" type="image/png" href="images/logo.png">
   <link rel="shortcut icon" type="image/png" href="images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,6 +41,54 @@
   <link rel="stylesheet" type="text/css" href="css/fontello.css">
   <link rel="stylesheet" href="css/child-friendly.css">
   <link rel="stylesheet" href="css/home-responsive.css">
+
+  <script>
+    /* Always scroll document.scrollingElement — scrollIntoView breaks when #animsition-box uses overflow-x: hidden */
+    (function () {
+      window.aqiraaScrollToAnchorById = function (id, ev, opts) {
+        opts = opts || {};
+        if (ev && ev.preventDefault) {
+          ev.preventDefault();
+          ev.stopPropagation();
+        }
+        if (id === 'packages' || id === 'choose-your-package') id = 'packages-section';
+        var el = document.getElementById(id);
+        if (!el) return false;
+        var offset = 96;
+        var behavior = opts.behavior === 'auto' || opts.behavior === 'instant' ? 'auto' : 'smooth';
+        function apply() {
+          var root = document.scrollingElement || document.documentElement;
+          var cur = root.scrollTop;
+          var y = el.getBoundingClientRect().top + cur - offset;
+          var top = Math.max(0, y);
+          try {
+            root.scrollTo({ top: top, behavior: behavior });
+          } catch (e) {
+            root.scrollTop = top;
+          }
+          if (behavior !== 'smooth' && Math.abs(root.scrollTop - top) > 2) {
+            try {
+              window.scrollTo({ top: top, behavior: behavior });
+            } catch (e2) {}
+            root.scrollTop = top;
+            if (document.body) document.body.scrollTop = top;
+          }
+        }
+        apply();
+        if (behavior === 'smooth') {
+          requestAnimationFrame(function () {
+            requestAnimationFrame(apply);
+          });
+        }
+        try {
+          if (window.location.hash !== '#' + id) {
+            window.history.replaceState(null, '', '#' + id);
+          }
+        } catch (e) {}
+        return false;
+      };
+    })();
+  </script>
 
 </head>
 
@@ -93,7 +152,7 @@
               <h3 class="hero-text">Comprehensive Care | Every Milestone | Every Child</h3>
               <div class="hero-cta-row">
                 <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('doctor-booking').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Book Doctor</a>
-                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('packages').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Explore Packages</a>
+                <a href="javascript:void(0);" class="btn btn-white" onclick="return window.aqiraaScrollToAnchorById('packages-section', event);" style="min-width: 180px;">Explore Packages</a>
                 <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('contact-form').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Talk to us</a>
               </div>
             </div>
@@ -466,6 +525,15 @@
         }
       }
 
+      /* Anchor jump offset under sticky header (ads deep-links) */
+      #doctor-booking,
+      #contact-form,
+      #packages-section,
+      #services,
+      #what-aqiraa-offers {
+        scroll-margin-top: 96px;
+      }
+
       .pro-verified {
         display: inline-flex;
         align-items: center;
@@ -547,8 +615,8 @@
     </div>
       </div>
 
-        <!-- What Aqiraa Offers Section -->
-        <div class="row" style="margin-top: 80px; margin-bottom: 60px;">
+        <!-- What Aqiraa Offers Section (deep-link: #what-aqiraa-offers) -->
+        <div id="what-aqiraa-offers" class="row" style="margin-top: 80px; margin-bottom: 60px;">
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="section-title text-center" style="margin-bottom: 10px;">
               <h2 style="font-size: 38px; color: #f41192; font-weight: 800;">✨ What Aqiraa Offers ✨</h2>
@@ -949,8 +1017,8 @@
     </div>
 
 
-    <!-- Child Packages Section -->
-    <div id="packages" class="space-medium" style="background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%); padding: 60px 0 50px 0;">
+    <!-- Child Packages Section — deep-link #packages-section; legacy #packages / #choose-your-package handled in animsition-script.js -->
+    <div id="packages-section" class="space-medium" style="background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%); padding: 60px 0 50px 0;">
       <div class="container packages-shell">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -1237,7 +1305,7 @@
   <script src="js/menumaker.js"></script>
   <!-- Sticky header disabled on homepage: jquery.sticky fixed the nav and overlapped section content when scrolling. -->
   <script type="text/javascript" src="js/animsition.js"></script>
-  <script type="text/javascript" src="js/animsition-script.js"></script>
+  <script type="text/javascript" src="js/animsition-script.js?v=6"></script>
   <script src="js/back-to-top.js" type="text/javascript"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>

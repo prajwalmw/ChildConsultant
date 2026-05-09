@@ -4,7 +4,7 @@
 
 #animsition-box {
   overflow-x: hidden;
-  max-width: 100vw;
+  max-width: 100%;
 }
 
 /*
@@ -520,7 +520,7 @@
     font-size: clamp(26px, 6vw, 38px) !important;
   }
 
-  #packages .section-title h1 {
+  #packages-section .section-title h1 {
     font-size: clamp(26px, 6vw, 36px) !important;
   }
 
@@ -564,11 +564,11 @@
 }
 
 /* --- Packages (classic centered container width, stable card gaps) --- */
-#packages .packages-shell {
+#packages-section .packages-shell {
   max-width: 1400px !important;
 }
 
-#packages .packages-home-row {
+#packages-section .packages-home-row {
   gap: 28px !important;
   padding-left: 15px !important;
   padding-right: 15px !important;
