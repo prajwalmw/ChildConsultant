@@ -4,8 +4,9 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#00c3c9">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- White avoids a teal/dark strip at the very top of some mobile browsers (reads like a stray line) -->
+  <meta name="theme-color" content="#ffffff">
   <meta name="description"
     content="Aqiraa - Your child's health is our priority! Expert pediatric care for children aged 3-12 years. Friendly doctors, fun environment, and comprehensive healthcare.">
   <meta name="keywords"
@@ -28,6 +29,7 @@
   <link href="css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="css/fontello.css">
   <link rel="stylesheet" href="css/child-friendly.css">
+  <link rel="stylesheet" href="css/home-responsive.css">
 
 </head>
 
@@ -57,7 +59,7 @@
                 <a href="index.html" class="logo-link animsition-link">
                   <picture>
                     <source srcset="images/logo.webp" type="image/webp">
-                    <img src="images/logo.png" alt="Aqiraa Logo" class="logo-img" width="512" height="512" decoding="async" fetchpriority="high" style="height: 120px !important; width: auto !important; max-width: none !important; max-height: 120px !important; box-shadow: 0 10px 30px rgba(168, 218, 255, 0.7); border-radius: 10px;">
+                    <img src="images/logo.png" alt="Aqiraa Logo" class="logo-img hero-logo" width="512" height="512" decoding="async" fetchpriority="high" style="width: auto; box-shadow: 0 10px 30px rgba(168, 218, 255, 0.7); border-radius: 10px;">
                   </picture>
                 </a>
               </div>
@@ -72,7 +74,7 @@
                     <a href="#" id="profile-icon" style="padding:0 10px;">
                       <img id="profile-img" src="" alt="Profile" style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;">
                     </a>
-                    <ul id="profile-submenu" style="display:none; position:absolute; right:0; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.15); min-width:120px; z-index:1000;">
+                    <ul id="profile-submenu" style="display:none; background:#fff;">
                       <li><a href="parent/update_profile.html" class="animsition-link" style="color:#333;">Update Profile</a></li>
                       <li><a href="#" id="logout-btn" style="color:#333;">Logout</a></li>
                     </ul>
@@ -86,11 +88,11 @@
       <div class="container">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12">
-            <div class="hero-caption text-center" style="margin-top: -70px; position: relative; z-index: 10;">
+            <div class="hero-caption text-center hero-caption-tuning" style="position: relative; z-index: 10;">
               <h1 class="hero-title">Nurturing Little Minds</h1>
               <h3 class="hero-text">Comprehensive Care | Every Milestone | Every Child</h3>
-              <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
-                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('doctor-booking').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Consult Doctor</a>
+              <div class="hero-cta-row">
+                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('doctor-booking').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Book Doctor</a>
                 <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('packages').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Explore Packages</a>
                 <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('contact-form').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Talk to us</a>
               </div>
@@ -102,8 +104,7 @@
             <div class="hero-illustration" style="position: relative; z-index: 1; pointer-events: none;">
               <picture>
                 <source srcset="images/child_group.webp" type="image/webp">
-                <img src="images/child_group.png" alt="Happy Children" class="hero-img" fetchpriority="high" decoding="async" width="1200" height="800"
-                   style="width: 100%; margin: 0; margin-top: -300px; display: block; pointer-events: none; filter: drop-shadow(0 8px 20px rgba(255, 215, 0, 0.5)) contrast(1.1) brightness(1.05);">
+                <img src="images/child_group.png" alt="Happy Children" class="hero-img hero-main-img" fetchpriority="high" decoding="async" width="1200" height="800">
               </picture>
             </div>
           </div>
@@ -122,7 +123,7 @@
             </div>
           </div>
         </div>
-        <div class="row" style="display: flex; align-items: center;">
+        <div class="row about-home-row" style="display: flex; align-items: center;">
           <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12" style="display: flex; align-items: center; justify-content: center;">
             <div style="text-align: center; padding: 10px;">
               <!-- Baby Image without circle -->
@@ -172,8 +173,8 @@
         </div>
 
         <!-- Filter Section -->
-        <div style="max-width: 1300px; margin: 0 auto 20px auto; padding: 0;">
-          <div style="background: white; border-radius: 12px; padding: 15px 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div class="doctor-filters-wrap" style="max-width: 1300px; margin: 0 auto 20px auto; padding: 0;">
+          <div class="doctor-filters-bar" style="background: white; border-radius: 12px; padding: 15px 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 8px; color: #f41192; font-weight: 700; font-size: 15px;">
               <i class="fa fa-filter"></i>
               <span>Filter:</span>
@@ -216,7 +217,7 @@
           </div>
         </div>
 
-        <div id="doctors-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; max-width: 1300px; margin: 0 auto; padding: 0;">
+        <div id="doctors-container" class="doctors-grid" style="max-width: 1300px; margin: 0 auto; padding: 0;">
           <div id="doctors-container-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: #64748b; font-size: 16px; line-height: 1.5;">Loading specialists…</div>
         </div>
 
@@ -717,7 +718,7 @@
             </div>
           </div>
         </div>
-        <div class="row" style="display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 12px; margin: 0; width: 100%; align-items: stretch;">
+        <div class="row services-home-row" style="display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 12px; margin: 0; width: 100%; align-items: stretch;">
         <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" style="flex: 1; min-width: 0; padding: 0; display: flex;">
           <div class="service-block" style="margin-bottom: 10px; display: flex; flex-direction: column; width: 100%; min-height: 420px;">
             <div class="service-img" style="margin-bottom: 15px; flex-shrink: 0;"> <a href="service-list.html" class="imghover animsition-link"><picture><source srcset="images/dr_dietician.webp" type="image/webp"><img src="images/dr_dietician.png" loading="lazy" decoding="async" width="720" height="480"
@@ -950,7 +951,7 @@
 
     <!-- Child Packages Section -->
     <div id="packages" class="space-medium" style="background: linear-gradient(135deg, #FFF9FB 0%, #F0F9FF 100%); padding: 60px 0 50px 0;">
-      <div class="container" style="max-width: 1400px;">
+      <div class="container packages-shell">
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="section-title text-center" style="margin-bottom: 40px;">
@@ -961,7 +962,7 @@
           </div>
         </div>
 
-        <div class="row" id="dynamic-packages-container" style="display: flex; justify-content: center; align-items: stretch; gap: 28px; flex-wrap: nowrap; margin: 0 auto; padding: 0 15px;">
+        <div class="row packages-home-row" id="dynamic-packages-container" style="display: flex; justify-content: center; align-items: stretch; flex-wrap: nowrap; margin: 0 auto;">
           <div style="text-align: center; width: 100%; padding: 40px; color: #666;">
             <i class="fa fa-spinner fa-spin" style="font-size: 40px; color: #f41192; margin-bottom: 15px;"></i>
             <p>Loading packages...</p>
@@ -1234,8 +1235,7 @@
   <script src="js/razorpay-config.js?v=5"></script>
   <script src="js/doctor-booking.js?v=32"></script>
   <script src="js/menumaker.js"></script>
-  <script type="text/javascript" src="js/jquery.sticky.js"></script>
-  <script type="text/javascript" src="js/sticky-header.js"></script>
+  <!-- Sticky header disabled on homepage: jquery.sticky fixed the nav and overlapped section content when scrolling. -->
   <script type="text/javascript" src="js/animsition.js"></script>
   <script type="text/javascript" src="js/animsition-script.js"></script>
   <script src="js/back-to-top.js" type="text/javascript"></script>
@@ -1381,7 +1381,7 @@
           const cardTitle = String(cardTitleRaw).toUpperCase();
 
           html += `
-          <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1; min-width: 260px; max-width: 320px; padding: 0;">
+          <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1 1 0; min-width: 0; max-width: none; padding: 0;">
             <div class="package-card" style="background: ${s.cardBg}; border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0, 0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid ${s.border}; position: relative; overflow: visible;">
               ${bestSellerHtml}
               <div style="background: ${s.headerBg}; color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">

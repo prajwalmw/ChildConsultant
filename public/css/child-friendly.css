@@ -401,6 +401,34 @@ h3 {
   box-shadow: 0 4px 15px rgba(225, 190, 231, 0.6);
 }
 
+/*
+ * Profile avatar dropdown: same .navigation ul li a selector also matches
+ * submenu links, which looked like floating “chips” inside a rectangular panel.
+ * Use full-width row hovers instead of nav pills.
+ */
+.navigation .profile-menu > ul li {
+  padding: 0;
+}
+
+.navigation .profile-menu > ul li a {
+  border-radius: 0 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  padding: 12px 16px !important;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--dark) !important;
+}
+
+.navigation .profile-menu > ul li a:hover,
+.navigation .profile-menu > ul li a:focus-visible {
+  background: rgba(235, 100, 167, 0.12) !important;
+  color: #9d1760 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 /* ============================================
    5. PLAYFUL BUTTONS
    ============================================ */

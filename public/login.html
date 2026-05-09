@@ -27,7 +27,7 @@
       border-radius: 12px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.12);
       padding: 40px 32px 32px 32px;
-      max-width: 400px;
+      max-width: 420px;
       width: 100%;
       text-align: center;
     }
@@ -91,27 +91,146 @@
     #firebaseui-auth-container {
         margin-top: 20px;
     }
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #e0f7f8;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      background: #f5fbfb;
+      color: #555;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s, color 0.2s;
+    }
+    .auth-tab.active {
+      background: #00c3c9;
+      color: #fff;
+    }
+    .auth-tab:not(.active):hover {
+      background: #e8fafa;
+    }
+    .login-desc { margin-bottom: 16px; }
+    .form-hint {
+      font-size: 13px;
+      color: #666;
+      text-align: left;
+      margin: -8px 0 12px;
+      line-height: 1.4;
+    }
+    .btn-secondary {
+      background: #eefafb !important;
+      color: #006e72 !important;
+      margin-top: 10px;
+      border: 2px solid #00c3c9;
+    }
+    .btn-secondary:hover {
+      background: #dff7f8 !important;
+    }
+    .btn-ghost {
+      background: transparent !important;
+      color: #666 !important;
+      font-weight: 600;
+      margin-top: 8px;
+      border: none;
+      box-shadow: none;
+    }
+    .verify-panel, .signup-sent-panel {
+      text-align: left;
+      padding: 8px 0 0;
+      line-height: 1.55;
+    }
+    .verify-panel p, .signup-sent-panel p {
+      color: #444 !important;
+      margin-bottom: 12px;
+      font-size: 15px;
+    }
+    .verify-panel strong { color: #006e72; }
+    #signupSentEmail, #verifyEmailAddr {
+      font-weight: 700;
+      color: #00a4a8;
+      word-break: break-all;
+    }
+    .spam-alert {
+      background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #78350f !important;
+    }
+    .spam-alert strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+      color: #92400e !important;
+    }
   </style>
 </head>
 <body>
   <div class="login-card">
     <img src="images/logo.png" alt="Childcare Logo" class="login-logo">
     <div class="login-title">Welcome</div>
-    <div class="login-desc">Sign in or sign up to get started.</div>
-    
-    <form id="emailPasswordForm" class="custom-form">
-        <div class="form-group">
-            <input type="email" id="loginEmail" class="form-control" placeholder="Email Address" required>
-        </div>
-        <div class="form-group">
-            <input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
-        </div>
-        <button type="submit" id="submitBtn" class="btn btn-primary">Sign In / Register</button>
-    </form>
+    <div class="login-desc" id="authSubtitle">Choose sign in or create an account.</div>
 
-    <div class="separator"><span>OR</span></div>
-    
-    <div id="firebaseui-auth-container"></div>
+    <div id="authFormSection">
+      <div class="auth-tabs" role="tablist" aria-label="Authentication mode">
+        <button type="button" class="auth-tab active" id="tabSignIn" data-mode="signin" aria-selected="true">Sign in</button>
+        <button type="button" class="auth-tab" id="tabSignUp" data-mode="signup" aria-selected="false">Create account</button>
+      </div>
+
+      <form id="emailPasswordForm" class="custom-form">
+          <div class="form-group">
+              <input type="email" id="loginEmail" class="form-control" placeholder="Email Address" required autocomplete="email">
+          </div>
+          <div class="form-group">
+              <input type="password" id="loginPassword" class="form-control" placeholder="Password" required autocomplete="current-password" minlength="6">
+          </div>
+          <div class="form-group" id="confirmPasswordGroup" style="display: none;">
+              <input type="password" id="loginPasswordConfirm" class="form-control" placeholder="Confirm password" autocomplete="new-password" minlength="6">
+          </div>
+          <p class="form-hint" id="passwordHintSignUp" style="display: none;">Use at least 6 characters. We’ll send a verification link to this email — you must confirm it before signing in.</p>
+          <button type="submit" id="submitBtn" class="btn btn-primary">Sign in</button>
+      </form>
+
+      <div class="separator"><span>OR</span></div>
+
+      <div id="firebaseui-auth-container"></div>
+    </div>
+
+    <div id="signupSentPanel" class="signup-sent-panel" style="display: none;" aria-live="polite">
+      <p><strong>Check your email</strong></p>
+      <p>We sent a verification link to <span id="signupSentEmail"></span>. Open it to confirm this address, then return here and use <strong>Sign in</strong>.</p>
+      <div class="spam-alert" role="alert">
+        <strong>Important — check Spam / Junk</strong>
+        Gmail and other providers often file automated messages under <strong>Spam</strong>, <strong>Promotions</strong>, or <strong>Junk</strong>. If you don’t see the email in your inbox within a minute, open those folders and look for the sender (Firebase / noreply). We cannot fully control spam filtering from the website; marking the message as “Not spam” helps future mail land in your inbox.
+      </div>
+      <p style="font-size: 13px; color: #666;">Each inbox must be real — disposable addresses won’t receive the link.</p>
+      <button type="button" class="btn btn-primary" id="btnBackToSignInFromSignup">Back to sign in</button>
+    </div>
+
+    <div id="verifyEmailPanel" class="verify-panel" style="display: none;" aria-live="polite">
+      <p><strong>Verify your email</strong></p>
+      <p>This account isn’t verified yet. We can only send login links to addresses you control. Open the message sent to <span id="verifyEmailAddr"></span> and tap <strong>Confirm</strong>.</p>
+      <div class="spam-alert" role="alert">
+        <strong>Don’t see the email?</strong>
+        Check <strong>Spam</strong>, <strong>Junk</strong>, and <strong>Promotions</strong>. Firebase verification mail is sometimes filtered there.
+      </div>
+      <button type="button" class="btn btn-primary" id="btnResendVerification">Resend verification email</button>
+      <button type="button" class="btn btn-secondary" id="btnCheckVerified">I’ve verified — continue</button>
+      <button type="button" class="btn btn-ghost" id="btnSignOutVerify">Sign out</button>
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -136,41 +255,159 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    let authMode = 'signin'; // 'signin' | 'signup'
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      var tabIn = document.getElementById('tabSignIn');
+      var tabUp = document.getElementById('tabSignUp');
+      var sub = document.getElementById('authSubtitle');
+      var btn = document.getElementById('submitBtn');
+      var confirmGrp = document.getElementById('confirmPasswordGroup');
+      var hintUp = document.getElementById('passwordHintSignUp');
+      var pass = document.getElementById('loginPassword');
+      var pass2 = document.getElementById('loginPasswordConfirm');
+
+      if (mode === 'signup') {
+        tabIn.classList.remove('active');
+        tabUp.classList.add('active');
+        tabIn.setAttribute('aria-selected', 'false');
+        tabUp.setAttribute('aria-selected', 'true');
+        sub.textContent = 'Create your parent account to get started.';
+        btn.textContent = 'Create account';
+        confirmGrp.style.display = 'block';
+        hintUp.style.display = 'block';
+        pass.placeholder = 'Choose a password';
+        pass.setAttribute('autocomplete', 'new-password');
+        pass2.required = true;
+      } else {
+        tabUp.classList.remove('active');
+        tabIn.classList.add('active');
+        tabUp.setAttribute('aria-selected', 'false');
+        tabIn.setAttribute('aria-selected', 'true');
+        sub.textContent = 'Sign in with your email and password.';
+        btn.textContent = 'Sign in';
+        confirmGrp.style.display = 'none';
+        hintUp.style.display = 'none';
+        pass.placeholder = 'Password';
+        pass.setAttribute('autocomplete', 'current-password');
+        pass2.required = false;
+        pass2.value = '';
+      }
+    }
+
+    document.getElementById('tabSignIn').addEventListener('click', function () {
+      setAuthMode('signin');
+    });
+    document.getElementById('tabSignUp').addEventListener('click', function () {
+      setAuthMode('signup');
+    });
+
+    function friendlyAuthMessage(err) {
+      if (!err) return 'Something went wrong. Please try again.';
+      var code = err.code || '';
+      if (code === 'auth/email-already-in-use') {
+        return 'This email is already registered. Switch to Sign in.';
+      }
+      if (code === 'auth/weak-password') {
+        return 'Password is too weak. Use at least 6 characters.';
+      }
+      if (code === 'auth/invalid-email') {
+        return 'Please enter a valid email address.';
+      }
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        return 'Incorrect email or password. If you’re new here, switch to Create account.';
+      }
+      if (code === 'auth/too-many-requests') {
+        return 'Too many attempts. Wait a few minutes or try again later.';
+      }
+      var msg = err.message || '';
+      if (msg.indexOf('INVALID_LOGIN_CREDENTIALS') !== -1) {
+        return 'Incorrect email or password—or this email isn’t registered yet. Use Create account if you’re new.';
+      }
+      return msg || 'Authentication failed. Please try again.';
+    }
+
+    function verificationActionSettings() {
+      return {
+        url: window.location.href.replace(/\?.*$/, ''),
+        handleCodeInApp: false
+      };
+    }
+
+    function usesEmailPassword(user) {
+      return user && user.providerData && user.providerData.some(function (p) {
+        return p.providerId === 'password';
+      });
+    }
+
+    function showAuthFormSection() {
+      document.getElementById('authFormSection').style.display = 'block';
+      document.getElementById('signupSentPanel').style.display = 'none';
+      document.getElementById('verifyEmailPanel').style.display = 'none';
+      document.getElementById('authSubtitle').textContent = authMode === 'signup'
+        ? 'Create your parent account to get started.'
+        : 'Sign in with your email and password.';
+    }
+
     // --- Core Logic for User Profile Management ---
-    async function handleSignInSuccess(user, isNewUser) {
+    async function syncUserToFirestore(user, isNewUser) {
       const userRef = db.collection('users').doc(user.uid);
       const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-      
+      const emailSafe = user.email || '';
+      var displayName =
+        user.displayName ||
+        (emailSafe ? emailSafe.split('@')[0] : '') ||
+        'Parent';
       const userData = {
         uid: user.uid,
-        email: user.email,
-        displayName: user.displayName || user.email.split('@')[0],
-        photoURL: user.photoURL || "images/default-profile.png",
-        lastLogin: timestamp
+        email: emailSafe,
+        displayName: displayName,
+        photoURL: user.photoURL || 'images/default-profile.png',
+        lastLogin: timestamp,
+        emailVerified: user.emailVerified === true
       };
 
-      try {
-        if (isNewUser) {
-          // New user: create the document with default role 'parent'
-          userData.role = "parent"; 
-          userData.hasPortalAccess = false; // Default flag for portal access
-          userData.createdAt = timestamp;
-          await userRef.set(userData);
-        } else {
-          // Existing user: only update fields (we preserve the existing role)
-          await userRef.update({ 
-            lastLogin: timestamp,
-            displayName: userData.displayName,
-            photoURL: userData.photoURL
-          });
-        }
-        console.log("User profile updated/created successfully. Role:", userData.role || 'existing role preserved');
-        window.location.href = 'index.html';
-      } catch (error) {
-        console.error("Error managing user profile in Firestore:", error);
-        // Still redirect even if profile update fails
-        window.location.href = 'index.html'; 
+      if (isNewUser) {
+        userData.role = 'parent';
+        userData.hasPortalAccess = false;
+        userData.createdAt = timestamp;
+        await userRef.set(userData);
+      } else {
+        await userRef.update({
+          lastLogin: timestamp,
+          displayName: userData.displayName,
+          photoURL: userData.photoURL,
+          emailVerified: user.emailVerified === true
+        });
       }
+    }
+
+    async function finishLoginAndRedirect(user, isNewUser) {
+      try {
+        await syncUserToFirestore(user, isNewUser);
+        console.log('User profile synced. Redirecting.');
+      } catch (error) {
+        console.error('Error managing user profile in Firestore:', error);
+      }
+      window.location.href = 'index.html';
+    }
+
+    /** Email/password users must verify inbox (link from Firebase) before using the app. Google OAuth accounts are already verified by Google. */
+    async function afterAuthUserReady(user, isNewUser) {
+      if (usesEmailPassword(user) && !user.emailVerified) {
+        document.getElementById('verifyEmailAddr').textContent = user.email || '';
+        document.getElementById('authFormSection').style.display = 'none';
+        document.getElementById('signupSentPanel').style.display = 'none';
+        document.getElementById('verifyEmailPanel').style.display = 'block';
+        document.getElementById('authSubtitle').textContent = 'Confirm your email to continue.';
+        return;
+      }
+      await finishLoginAndRedirect(user, isNewUser);
+    }
+
+    async function handleSignInSuccess(user, isNewUser) {
+      await afterAuthUserReady(user, isNewUser);
     }
 
     // --- 1. Custom Email/Password Form Handler (Handles Sign-in and Sign-up) ---
@@ -179,35 +416,42 @@
 
     emailPasswordForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
+      const passwordConfirm = document.getElementById('loginPasswordConfirm').value;
 
       submitBtn.disabled = true;
       submitBtn.innerText = 'Processing...';
 
       try {
-        // Try to sign in first (for existing users)
-        const result = await auth.signInWithEmailAndPassword(email, password);
-        await handleSignInSuccess(result.user, false);
-      } catch (error) {
-        // If sign-in fails, check the error code
-        if (error.code === 'auth/user-not-found') {
-          // User not found, try to create a new account (Sign-up)
-          try {
-            const result = await auth.createUserWithEmailAndPassword(email, password);
-            await handleSignInSuccess(result.user, true);
-          } catch (signupError) {
-            console.error("Signup error:", signupError.code, signupError.message);
-            alert(`Registration failed. Error: ${signupError.message}`);
+        if (authMode === 'signup') {
+          if (password.length < 6) {
+            alert('Password must be at least 6 characters.');
+            return;
           }
+          if (password !== passwordConfirm) {
+            alert('Passwords do not match.');
+            return;
+          }
+          const created = await auth.createUserWithEmailAndPassword(email, password);
+          await created.user.sendEmailVerification(verificationActionSettings());
+          await syncUserToFirestore(created.user, true);
+          await auth.signOut();
+          document.getElementById('signupSentEmail').textContent = email;
+          document.getElementById('authFormSection').style.display = 'none';
+          document.getElementById('verifyEmailPanel').style.display = 'none';
+          document.getElementById('signupSentPanel').style.display = 'block';
+          document.getElementById('authSubtitle').textContent = 'Verification email sent.';
         } else {
-          // General sign-in error (e.g., wrong password, invalid email)
-          console.error("Sign-in error:", error.code, error.message);
-          alert(`Login failed. Error: ${error.message}`);
+          const result = await auth.signInWithEmailAndPassword(email, password);
+          await handleSignInSuccess(result.user, false);
         }
+      } catch (error) {
+        console.error('Email auth error:', error.code, error.message);
+        alert(friendlyAuthMessage(error));
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = 'Sign In / Register';
+        submitBtn.innerText = authMode === 'signup' ? 'Create account' : 'Sign in';
       }
     });
 
@@ -236,6 +480,53 @@
 
     const ui = new firebaseui.auth.AuthUI(auth);
     ui.start('#firebaseui-auth-container', uiConfig);
+
+    document.getElementById('btnBackToSignInFromSignup').addEventListener('click', function () {
+      setAuthMode('signin');
+      showAuthFormSection();
+    });
+
+    document.getElementById('btnResendVerification').addEventListener('click', async function () {
+      var u = auth.currentUser;
+      if (!u) {
+        alert('Session expired. Sign in again with your password.');
+        document.getElementById('verifyEmailPanel').style.display = 'none';
+        showAuthFormSection();
+        return;
+      }
+      try {
+        await u.sendEmailVerification(verificationActionSettings());
+        alert('Verification email sent. Check your inbox and spam folder.');
+      } catch (err) {
+        console.error(err);
+        alert(friendlyAuthMessage(err));
+      }
+    });
+
+    document.getElementById('btnCheckVerified').addEventListener('click', async function () {
+      var u = auth.currentUser;
+      if (!u) return;
+      try {
+        await u.reload();
+        if (u.emailVerified) {
+          await finishLoginAndRedirect(u, false);
+        } else {
+          alert('Still not verified. Open the link in the email we sent, then try again.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not refresh your status. Try again.');
+      }
+    });
+
+    document.getElementById('btnSignOutVerify').addEventListener('click', async function () {
+      try {
+        await auth.signOut();
+      } catch (e) {}
+      document.getElementById('verifyEmailPanel').style.display = 'none';
+      setAuthMode('signin');
+      showAuthFormSection();
+    });
 
   </script>
 </body>

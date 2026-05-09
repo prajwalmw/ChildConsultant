@@ -173,7 +173,7 @@
             transform: translateY(-2px);
         }
         .parent-header {
-            padding: 20px 24px;
+            padding: 12px 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -210,6 +210,14 @@
             align-items: center;
             gap: 12px;
         }
+        .parent-meta {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+        }
         .parent-name {
             font-size: 15px;
             font-weight: 600;
@@ -218,7 +226,7 @@
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
-            margin-bottom: 4px;
+            margin-bottom: 0;
         }
         .parent-avatar {
             width: 42px;
@@ -491,25 +499,69 @@
             gap: 10px;
             flex-wrap: wrap;
         }
+        /* Register New Child — happy Aqiraa palette + FA icon aligned with label */
         .btn-register {
-            background: #10b981;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f472b6 0%, #ec4899 38%, #d946ef 72%, #a855f7 100%);
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            padding: 14px 28px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.03em;
             text-decoration: none;
+            text-transform: uppercase;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+            justify-content: center;
+            gap: 12px;
+            line-height: 1.2;
+            border: 2px solid rgba(255, 255, 255, 0.45);
+            box-shadow:
+                0 6px 20px rgba(236, 72, 153, 0.45),
+                0 2px 0 rgba(255, 255, 255, 0.35) inset,
+                0 -2px 14px rgba(168, 85, 247, 0.35) inset;
+            transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.2s ease;
+        }
+        .btn-register i.fa {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 1.35em;
+            height: 1.35em;
+            font-size: 1.15em;
+            line-height: 1;
+            margin: 0;
+            transform: translateY(0.5px);
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.12));
         }
         .btn-register:hover {
-            background: #059669;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
-            color: white;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 40%, #c026d3 75%, #9333ea 100%);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow:
+                0 10px 28px rgba(219, 39, 119, 0.5),
+                0 2px 0 rgba(255, 255, 255, 0.38) inset,
+                0 0 26px rgba(192, 38, 211, 0.45);
+            filter: brightness(1.04);
+        }
+        .btn-register:active {
+            transform: translateY(0) scale(0.99);
+            box-shadow: 0 3px 12px rgba(190, 24, 93, 0.45);
+        }
+        .btn-register:focus-visible {
+            outline: 3px solid #fbcfe8;
+            outline-offset: 3px;
+        }
+        .register-another-child-wrap {
+            text-align: center;
+            margin-top: 6px;
+            padding-top: 18px;
+            border-top: 2px dashed #e2e8f0;
         }
         .btn-back {
             background: white;
@@ -758,7 +810,7 @@
                         <div class="parent-header" onclick="toggleParent('${parent.id}', '${parentName}')">
                             <div class="parent-info">
                                 <div class="parent-avatar">${initials}</div>
-                                <div style="flex: 1;">
+                                <div class="parent-meta">
                                     <div class="parent-name">
                                         <span>${parentName}</span>
                                         <span class="child-count-badge" id="badge-${parent.id}">
@@ -892,6 +944,13 @@
 
         // --- Render Children ---
         function renderChildren(container, children, parentId) {
+            const registerAnotherHtml = `
+                <div class="register-another-child-wrap">
+                    <a href="register_child.html?parentId=${parentId}" class="btn-register">
+                        <i class="fa fa-plus-circle"></i> Register New Child
+                    </a>
+                </div>
+            `;
             container.innerHTML = children.map(child => {
                 const childName = child.name || 'N/A';
                 const patientId = child.id;
@@ -950,7 +1009,7 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+            }).join('') + registerAnotherHtml;
         }
 
         // --- Search Functionality ---

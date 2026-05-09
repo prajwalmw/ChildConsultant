@@ -1,0 +1,22 @@
+---
+description: Owner uses only free tiers — no paid Firebase/integrations unless they explicitly opt in to pay.
+alwaysApply: true
+---
+
+# Free tier only (no paid flows)
+
+The project owner will **not** pay for usage-based or subscription services for app flows. When designing or implementing features:
+
+## Use by default
+
+- **Firebase Spark (no-cost):** Hosting, Firestore and Auth within free quotas, email/password, OAuth providers that don’t bill per SMS (e.g. Google sign-in), built-in **email verification links** (not SMS).
+- **Client-side and free APIs** within documented free quotas (e.g. EmailJS free tier, Google AI Studio free quota where applicable).
+
+## Do not add unless the user explicitly agrees to pay
+
+- **Firebase Blaze-only** features: Phone/SMS authentication (billed SMS), heavy **Cloud Functions** at scale, paid extensions.
+- **Paid SMS / transactional email** APIs for OTP codes, paid CAPTCHA enterprise tiers beyond free usage, etc.
+
+If a requested feature **requires** billing (e.g. Firebase SMS OTP), **do not implement it** as part of the default product. Explain that it needs a paid plan and offer **free alternatives** (e.g. email verification link, Google sign-in).
+
+Before adding third-party services, confirm they remain usable on a **permanent free tier** for this use case.
