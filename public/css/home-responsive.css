@@ -203,43 +203,23 @@
   }
 }
 
-@media (max-width: 767px) {
-  .hero-section .header {
-    --hero-logo-h: 56px;
-    --hero-logo-bridge-lift: 8px;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-  }
-
-  .hero-section .header .row {
-    align-items: center !important;
-  }
-
-  .hero-section .header .col-md-3,
-  .hero-section .header .col-sm-6.col-xs-6:first-child {
-    align-items: center !important;
-  }
-
-  .hero-section .header .logo-container {
-    transform: translateY(calc(var(--hero-logo-h) / 2 - var(--hero-logo-bridge-lift, 0px)));
-  }
-
-  .hero-section .header #navigation.small-screen {
-    float: none;
-    width: 100%;
-  }
-}
-
-/* Phones: avoid tall overlap crowding stacked nav */
-@media (max-width: 575px) {
-  .hero-section .header .logo-container {
-    transform: none;
-  }
-}
+/* (max-width: 767px) small-screen nav: see “Mobile: horizontal overflow” block */
 
 .hero-cta-row .btn-white {
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+/* Clicks must hit buttons: hero image uses negative margin and sits in a later row, so it can paint over CTAs. */
+.hero-caption .hero-cta-row {
+  position: relative;
+  z-index: 50;
+}
+
+.hero-illustration,
+.hero-illustration picture,
+.hero-illustration img {
+  pointer-events: none !important;
 }
 
 /* --- Hero --- */
@@ -254,6 +234,58 @@
   display: block;
   pointer-events: none;
   filter: drop-shadow(0 8px 20px rgba(255, 215, 0, 0.5)) contrast(1.1) brightness(1.05);
+}
+
+/* Special offer cloud — decorative asset, drifts sideways (matches legacy hero treatment) */
+.hero-section .pricing-cloud-wrapper {
+  position: absolute;
+  top: 20px;
+  right: -120px;
+  z-index: 12;
+  pointer-events: none;
+  animation: aqiraa-pricing-cloud-float 8s ease-in-out infinite;
+  background: transparent;
+}
+
+@keyframes aqiraa-pricing-cloud-float {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-30px);
+  }
+}
+
+.hero-section .pricing-cloud-wrapper img {
+  width: 340px;
+  height: auto;
+  display: block;
+  background: transparent;
+}
+
+@media (max-width: 1200px) {
+  .hero-section .pricing-cloud-wrapper {
+    top: 10px;
+    right: -140px;
+    animation: aqiraa-pricing-cloud-float-sm 8s ease-in-out infinite;
+  }
+
+  @keyframes aqiraa-pricing-cloud-float-sm {
+    0%,
+    100% {
+      transform: scale(0.7) translateX(0);
+    }
+    50% {
+      transform: scale(0.7) translateX(-25px);
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  .hero-section .pricing-cloud-wrapper {
+    display: none !important;
+  }
 }
 
 /* Hero logo — prominent again; nav stays compact via tighter link padding below */
@@ -583,6 +615,12 @@
   margin-top: 10px;
 }
 
+@media (min-width: 768px) {
+  .hero-section .hero-caption .hero-cta-row .btn-white {
+    min-width: 180px;
+  }
+}
+
 /* --- AI assistant FAB (safe area on phones) --- */
 #ai-fab {
   bottom: max(14px, env(safe-area-inset-bottom, 0px)) !important;
@@ -599,5 +637,213 @@
 
   .top-bar .row > div {
     text-align: center !important;
+  }
+}
+
+/* =============================================================================
+ * Mobile: horizontal overflow + header / hamburger (fixes white side strip, cut-off MENU)
+ * Root cause: logo max-width 78vw inside col-xs-6 (~50% width) exceeds column.
+ * ============================================================================= */
+@media (max-width: 767px) {
+  html {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  body.animsition {
+    overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
+  }
+
+  #animsition-box.animsition-box:not(.portal-app-shell) {
+    overflow-x: clip;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  /* Beat desktop rule `#animsition-box:not(...) > .hero-section { overflow: visible !important }` */
+  #animsition-box:not(.portal-app-shell) > .hero-section {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+    max-width: 100vw !important;
+    padding-top: max(12px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+  }
+
+  .hero-section > .container {
+    max-width: 100%;
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+
+  /* Bootstrap .row negative gutters can extend past the viewport */
+  .hero-section > .container > .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /*
+   * Mobile header: match desktop — compact toolbar row + logo “bridge” (half on white bar, half on hero).
+   * Stacking logo above full-width MENU caused a very tall white toolbar; keep MENU on the right, one row.
+   */
+  .hero-section .header {
+    --hero-logo-h: 64px;
+    --hero-logo-bridge-lift: 10px;
+    padding-top: max(8px, calc(env(safe-area-inset-top, 0px) * 0.35 + 6px)) !important;
+    padding-bottom: 10px !important;
+    overflow: visible !important;
+  }
+
+  .hero-section .header .row {
+    position: relative !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    min-height: 0 !important;
+    padding-left: clamp(76px, 24vw, 128px) !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    row-gap: 0 !important;
+  }
+
+  .hero-section .header .col-md-3,
+  .hero-section .header .col-sm-6.col-xs-6:first-child {
+    position: absolute !important;
+    left: max(10px, env(safe-area-inset-left, 0px)) !important;
+    bottom: 4px !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    float: none !important;
+    z-index: 1003 !important;
+  }
+
+  .hero-section .header .logo-container {
+    position: relative !important;
+    transform: translateY(calc(var(--hero-logo-h) / 2 - var(--hero-logo-bridge-lift, 0px))) !important;
+  }
+
+  .hero-section .header .logo-container .logo-img,
+  .hero-section .header .logo-link .logo-img,
+  .hero-section .header .logo-img.hero-logo {
+    max-height: var(--hero-logo-h) !important;
+    height: auto !important;
+    width: auto !important;
+    max-width: min(200px, 44vw) !important;
+  }
+
+  .hero-section .header .container {
+    padding-left: max(10px, env(safe-area-inset-left, 0px));
+    padding-right: max(10px, env(safe-area-inset-right, 0px));
+  }
+
+  .hero-section .header .col-md-9,
+  .hero-section .header .col-sm-12 {
+    flex: 1 1 auto !important;
+    max-width: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .hero-section .header #navigation.navigation.pull-right,
+  .hero-section .header #navigation.small-screen {
+    float: none !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin-top: 0 !important;
+    margin-left: auto !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+
+  .hero-section .header #navigation.small-screen #menu-button {
+    position: relative !important;
+    box-sizing: border-box !important;
+    width: auto !important;
+    max-width: min(200px, 48vw) !important;
+    margin-top: 0 !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    padding: 12px 17px !important;
+    overflow: visible;
+    white-space: nowrap;
+  }
+
+  /* Primary CTAs — column stack + explicit gaps (more reliable than wrap+gap on narrow phones) */
+  .hero-section .hero-caption .hero-cta-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 14px !important;
+    row-gap: 14px !important;
+    margin-top: 18px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .hero-section .hero-caption .hero-cta-row .btn-white {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: min(340px, 92vw) !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .hero-illustration {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .hero-main-img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .hero-cta-row {
+    padding-left: 12px;
+    padding-right: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 575px) {
+  .offers-slider-wrapper {
+    padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+  }
+
+  .hero-section .header {
+    --hero-logo-h: 58px;
+    --hero-logo-bridge-lift: 9px;
+  }
+
+  .hero-section .header .row {
+    padding-left: clamp(68px, 22vw, 118px) !important;
+  }
+
+  .hero-section .header .logo-container .logo-img,
+  .hero-section .header .logo-img.hero-logo {
+    max-width: min(180px, 42vw) !important;
+  }
+
+  .hero-section .hero-caption .hero-cta-row {
+    gap: 16px !important;
+    row-gap: 16px !important;
   }
 }

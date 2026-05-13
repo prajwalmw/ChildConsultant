@@ -8,7 +8,108 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'AW-770377350');
+    if (/[?&]ga_debug=1(?:&|$)/.test(location.search)) {
+      gtag('config', 'AW-770377350', { debug_mode: true });
+    } else {
+      gtag('config', 'AW-770377350');
+    }
+    /**
+     * Google Ads — Click conversion (Submit lead form). From: Goals → Submit lead form → See event snippet (Click).
+     * Call after a successful lead save (we pass no URL so there is no redirect).
+     */
+    function gtag_report_conversion(url) {
+      var callback = function () {
+        if (typeof url !== 'undefined') {
+          window.location = url;
+        }
+      };
+      gtag('event', 'conversion', {
+        send_to: 'AW-770377350/oHqjCLrQuqocEIaNrO8C',
+        value: 1.0,
+        currency: 'USD',
+        transaction_id: 'lead_' + Date.now(),
+        event_callback: callback
+      });
+      return false;
+    }
+
+    /**
+     * Google Ads — Purchase (Page load style = fire after payment succeeds in JS).
+     * In Ads, set this conversion's currency to INR to match Razorpay (snippet may show USD as placeholder).
+     */
+    window.AQIRAA_PURCHASE_SEND_TO = 'AW-770377350/7JI7CLfQuqocEIaNrO8C';
+
+    /**
+     * @param {number|string} value
+     * @param {string} [currency]
+     * @param {string} [transactionId]
+     * @param {function(): void} [eventCallback] — runs after Google receives the hit (use before redirect so Tag Assistant / Ads see the conversion). Falls back after 2.5s if the callback never runs (blockers, etc.).
+     */
+    window.aqiraaFirePurchaseConversion = function (value, currency, transactionId, eventCallback) {
+      var sendTo = typeof window.AQIRAA_PURCHASE_SEND_TO === 'string' ? window.AQIRAA_PURCHASE_SEND_TO.trim() : '';
+      if (!sendTo || sendTo.indexOf('AW-770377350/') !== 0) {
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn('[Aqiraa Ads] Purchase not sent — set window.AQIRAA_PURCHASE_SEND_TO (Purchase conversion Event snippet send_to).');
+        }
+        if (typeof eventCallback === 'function') setTimeout(eventCallback, 0);
+        return;
+      }
+      var v = parseFloat(value);
+      if (!Number.isFinite(v) || v < 0) v = 0;
+      var cur = (currency || 'INR').toUpperCase();
+      var tid = transactionId != null && transactionId !== '' ? String(transactionId) : 'pur_' + Date.now();
+      if (typeof gtag !== 'function') {
+        if (typeof eventCallback === 'function') setTimeout(eventCallback, 0);
+        return;
+      }
+      var payload = {
+        send_to: sendTo,
+        value: v,
+        currency: cur,
+        transaction_id: tid
+      };
+      if (typeof eventCallback === 'function') {
+        var fired = false;
+        function once() {
+          if (fired) return;
+          fired = true;
+          try {
+            eventCallback();
+          } catch (e) {}
+        }
+        payload.event_callback = once;
+        setTimeout(once, 2500);
+      }
+      gtag('event', 'conversion', payload);
+    };
+
+    /**
+     * Google Ads — "Page view" conversion (Goals → Page view → Tag Assistant label evcACJbQqKocElaNrO8C).
+     * Fires once per full page load on the homepage only. Your Ads rule used …/index.html while real URLs are …/ — fix the rule in Ads to https://www.aqiraa.com/ (see comment below).
+     */
+    (function () {
+      var PAGE_VIEW_SEND_TO = 'AW-770377350/evcACJbQqKocElaNrO8C';
+      function homepagePath() {
+        var p = location.pathname || '/';
+        return p === '/' || p === '/index.html';
+      }
+      function allowedHost() {
+        var h = location.hostname;
+        return h === 'www.aqiraa.com' || h === 'aqiraa.com' || h === 'child-consultant.web.app';
+      }
+      function fire() {
+        if (!homepagePath() || !allowedHost()) return;
+        if (typeof gtag !== 'function') return;
+        gtag('event', 'conversion', { send_to: PAGE_VIEW_SEND_TO });
+      }
+      if (document.readyState === 'complete') {
+        setTimeout(fire, 0);
+      } else {
+        window.addEventListener('load', function () {
+          setTimeout(fire, 0);
+        });
+      }
+    })();
   </script>
 
   <meta charset="utf-8">
@@ -40,7 +141,8 @@
   <link href="css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="css/fontello.css">
   <link rel="stylesheet" href="css/child-friendly.css">
-  <link rel="stylesheet" href="css/home-responsive.css">
+  <!-- Bump ?v= after edits to home-responsive.css — CDN caches CSS up to 7d without query changes -->
+  <link rel="stylesheet" href="css/home-responsive.css?v=20260513-pricing-cloud-alpha">
 
   <script>
     /* Always scroll document.scrollingElement — scrollIntoView breaks when #animsition-box uses overflow-x: hidden */
@@ -56,30 +158,40 @@
         if (!el) return false;
         var offset = 96;
         var behavior = opts.behavior === 'auto' || opts.behavior === 'instant' ? 'auto' : 'smooth';
+
+        function pageScrollY() {
+          return (
+            window.pageYOffset ||
+            window.scrollY ||
+            document.documentElement.scrollTop ||
+            (document.body && document.body.scrollTop) ||
+            0
+          );
+        }
+
         function apply() {
-          var root = document.scrollingElement || document.documentElement;
-          var cur = root.scrollTop;
-          var y = el.getBoundingClientRect().top + cur - offset;
-          var top = Math.max(0, y);
+          var cur = pageScrollY();
+          var top = Math.max(0, el.getBoundingClientRect().top + cur - offset);
           try {
-            root.scrollTo({ top: top, behavior: behavior });
+            window.scrollTo({ top: top, left: 0, behavior: behavior });
           } catch (e) {
-            root.scrollTop = top;
+            window.scrollTo(0, top);
           }
-          if (behavior !== 'smooth' && Math.abs(root.scrollTop - top) > 2) {
-            try {
-              window.scrollTo({ top: top, behavior: behavior });
-            } catch (e2) {}
+          var root = document.scrollingElement || document.documentElement;
+          if (root && behavior !== 'smooth' && Math.abs(pageScrollY() - top) > 2) {
             root.scrollTop = top;
             if (document.body) document.body.scrollTop = top;
           }
         }
+
         apply();
-        if (behavior === 'smooth') {
+        /* Instant/hash: re-run after layout (images, fonts). Smooth: ONE apply only — double smooth scrollTo cancels itself in Chrome/Safari. */
+        if (behavior === 'auto') {
           requestAnimationFrame(function () {
             requestAnimationFrame(apply);
           });
         }
+
         try {
           if (window.location.hash !== '#' + id) {
             window.history.replaceState(null, '', '#' + id);
@@ -144,16 +256,19 @@
           </div>
         </div>
       </div>
-      <div class="container">
+      <div class="container" style="position: relative;">
+        <div class="pricing-cloud-wrapper" aria-hidden="true">
+          <img src="images/special_offer_pricing.png" alt="" width="680" height="400" loading="eager" decoding="async">
+        </div>
         <div class="row">
           <div class="col-lg-12 col-md-12 col-sm-12">
             <div class="hero-caption text-center hero-caption-tuning" style="position: relative; z-index: 10;">
               <h1 class="hero-title">Nurturing Little Minds</h1>
               <h3 class="hero-text">Comprehensive Care | Every Milestone | Every Child</h3>
               <div class="hero-cta-row">
-                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('doctor-booking').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Book Doctor</a>
-                <a href="javascript:void(0);" class="btn btn-white" onclick="return window.aqiraaScrollToAnchorById('packages-section', event);" style="min-width: 180px;">Explore Packages</a>
-                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('contact-form').scrollIntoView({behavior: 'smooth', block: 'start'});" style="min-width: 180px;">Talk to us</a>
+                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('doctor-booking').scrollIntoView({behavior: 'smooth', block: 'start'});">Book Doctor</a>
+                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); var el=document.getElementById('packages-section'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); try{if(location.hash!=='#packages-section')history.replaceState(null,'','#packages-section');}catch(e){} return false;">Explore Packages</a>
+                <a href="javascript:void(0);" class="btn btn-white" onclick="event.preventDefault(); document.getElementById('contact-form').scrollIntoView({behavior: 'smooth', block: 'start'});">Talk to us</a>
               </div>
             </div>
           </div>
@@ -454,6 +569,166 @@
         color: #9CA3AF;
         text-decoration: line-through;
         font-weight: 500;
+      }
+
+      .pro-doc-card--first-offer {
+        position: relative;
+        background: linear-gradient(180deg, #ffffff 0%, #fffdfb 50%, #fffbeb 100%);
+        box-shadow: 0 12px 36px rgba(245, 158, 11, 0.09), 0 0 0 1px rgba(245, 158, 11, 0.16);
+      }
+
+      .pro-price-block--hot {
+        position: relative;
+        background: linear-gradient(145deg, #fffbeb 0%, #fff7ed 55%, #f8fafc 100%);
+        border: 1px solid rgba(245, 158, 11, 0.42);
+        border-radius: 14px;
+        padding: 10px 12px 12px;
+        margin: -2px 0 0 -2px;
+        box-shadow: 0 4px 18px rgba(245, 158, 11, 0.12);
+        animation: aqiraaOfferGlow 2.8s ease-in-out infinite;
+      }
+
+      @keyframes aqiraaOfferGlow {
+        0%,
+        100% {
+          box-shadow: 0 4px 18px rgba(245, 158, 11, 0.12);
+        }
+        50% {
+          box-shadow: 0 8px 26px rgba(245, 158, 11, 0.28), 0 0 0 1px rgba(251, 191, 36, 0.35);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .pro-price-block--hot {
+          animation: none;
+        }
+        .pro-btn-primary--pulse {
+          animation: none !important;
+        }
+      }
+
+      .pro-price-val--first-offer {
+        flex-direction: column;
+        align-items: flex-start;
+        align-content: flex-start;
+        gap: 0;
+      }
+
+      /* ₹1 numerals: indigo/teal — keeps pink gradient unique to Book Now */
+      .pro-price-hot-digit {
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        background: linear-gradient(135deg, #3730a3 0%, #4f46e5 45%, #0f766e 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: #4338ca;
+        -webkit-text-fill-color: transparent;
+      }
+
+      @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+        .pro-price-hot-digit {
+          color: #4338ca;
+          -webkit-text-fill-color: #4338ca;
+        }
+      }
+
+      .pro-price-hot-digit--lg {
+        font-size: 34px;
+      }
+
+      .pro-first-offer-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 8px;
+        width: 100%;
+      }
+
+      .pro-first-offer-stack--tight {
+        margin-top: 6px;
+      }
+
+      /* Deal chip: amber — visually separate from magenta Book Now */
+      .pro-first-offer-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        padding: 6px 14px 7px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: #7c2d12 !important;
+        -webkit-text-fill-color: #7c2d12;
+        background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 55%, #fde68a 100%);
+        border: 2px solid #f59e0b;
+        box-shadow: 0 2px 10px rgba(245, 158, 11, 0.28);
+      }
+
+      .pro-first-offer-badge .fa {
+        font-size: 13px;
+        color: #d97706;
+        -webkit-text-fill-color: #d97706;
+        filter: none;
+      }
+
+      .pro-first-offer-hint {
+        font-size: 11px;
+        font-weight: 600;
+        color: #57534e;
+        line-height: 1.35;
+        max-width: 200px;
+      }
+
+      .pro-modal-fee--hot {
+        border-color: rgba(245, 158, 11, 0.45) !important;
+        box-shadow: 0 8px 28px rgba(245, 158, 11, 0.12) !important;
+        animation: aqiraaOfferGlow 2.8s ease-in-out infinite;
+      }
+
+      .pro-modal-fee-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .pro-btn-primary--pulse {
+        animation: aqiraaBookPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes aqiraaBookPulse {
+        0%,
+        100% {
+          box-shadow: 0 4px 14px rgba(158, 15, 241, 0.32);
+        }
+        50% {
+          box-shadow: 0 8px 28px rgba(244, 17, 146, 0.5), 0 4px 16px rgba(158, 15, 241, 0.25);
+        }
+      }
+
+      .pkg-offer-stack {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .pkg-offer-hint {
+        font-size: 12px;
+        font-weight: 600;
+        color: #475569;
+        max-width: 220px;
+        line-height: 1.35;
+      }
+
+      .package-card--hot-offer {
+        box-shadow: 0 14px 36px rgba(245, 158, 11, 0.14), 0 0 0 1px rgba(245, 158, 11, 0.18) !important;
+        animation: aqiraaOfferGlow 2.8s ease-in-out infinite;
       }
 
       .pro-actions {
@@ -1300,8 +1575,9 @@
   </script>
   <!-- Razorpay must load right after Firebase so checkout + handler always register before other page scripts -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="js/razorpay-config.js?v=5"></script>
-  <script src="js/doctor-booking.js?v=32"></script>
+  <script src="js/razorpay-config.js?v=7"></script>
+  <!-- Optional: match Calendly custom question keys (a1, a2, …) to your event. Default { reason: 'a1', phone: 'a2' }. -->
+  <script src="js/doctor-booking.js?v=38"></script>
   <script src="js/menumaker.js"></script>
   <!-- Sticky header disabled on homepage: jquery.sticky fixed the nav and overlapped section content when scrolling. -->
   <script type="text/javascript" src="js/animsition.js"></script>
@@ -1350,7 +1626,7 @@
             setTimeout(r, 40);
           });
         }
-        await appendScript('js/razorpay-config.js?v=5&recover=' + bust);
+        await appendScript('js/razorpay-config.js?v=7&recover=' + bust);
         await new Promise(function (r) {
           setTimeout(r, 280);
         });
@@ -1448,9 +1724,14 @@
             : (_pkgName || pkg.id);
           const cardTitle = String(cardTitleRaw).toUpperCase();
 
+          const pkgPayNum = Number(pkg.discountedPrice != null ? pkg.discountedPrice : pkg.price) || 0;
+          const pkgFirstOffer = pkgPayNum === 1
+            ? '<div class="pkg-offer-stack"><span class="pro-first-offer-badge"><i class="fa fa-bolt" aria-hidden="true"></i> 1st time offer</span><span class="pkg-offer-hint">Intro package — full value</span></div>'
+            : '';
+
           html += `
           <div class="col-lg-3 col-md-6 col-sm-12" style="flex: 1 1 0; min-width: 0; max-width: none; padding: 0;">
-            <div class="package-card" style="background: ${s.cardBg}; border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0, 0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid ${s.border}; position: relative; overflow: visible;">
+            <div class="package-card${pkgPayNum === 1 ? ' package-card--hot-offer' : ''}" style="background: ${s.cardBg}; border-radius: 18px; padding: 25px 20px 20px 20px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0, 0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 3px solid ${s.border}; position: relative; overflow: visible;">
               ${bestSellerHtml}
               <div style="background: ${s.headerBg}; color: white; padding: 12px 18px; border-radius: 15px 15px 0 0; margin: -25px -20px 15px -20px;">
                 <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">${cardTitle}</h2>
@@ -1458,6 +1739,7 @@
               <div class="inr-money" style="margin-bottom: 12px;">
                 <p style="text-decoration: line-through; color: ${s.oldPriceColor}; font-size: 16px; margin-bottom: 3px;">${inrPkg}${(Number(pkg.price) || 0).toLocaleString('en-IN')}</p>
                 <h3 style="font-size: 32px; font-weight: 800; color: ${s.newPriceColor}; margin: 0; line-height: 1;">${inrPkg}${(Number(pkg.discountedPrice != null ? pkg.discountedPrice : pkg.price) || 0).toLocaleString('en-IN')}</h3>
+                ${pkgFirstOffer}
               </div>
               ${durationLabel ? `<div style="background: ${s.tagBg}; color: ${s.tagColor}; padding: 6px 12px; border-radius: 18px; display: inline-block; margin: 0 auto 12px; font-weight: 600; font-size: 14px;">Duration: ${durationLabel}</div>` : ''}
               <div style="text-align: left; margin-bottom: 12px; flex-grow: 1;">
@@ -1555,11 +1837,18 @@
           console.error("❌ EmailJS error:", err);
         }
 
-        if (firestoreSuccess && emailSuccess) {
+        if (firestoreSuccess) {
+          if (typeof gtag_report_conversion === 'function') {
+            gtag_report_conversion(undefined);
+          }
           inquiryForm.reset();
           submitBtn.disabled = false;
           submitBtn.innerText = "Submit";
-          alert("✅ Thank you! We’ll contact you soon.");
+          if (emailSuccess) {
+            alert("✅ Thank you! We’ll contact you soon.");
+          } else {
+            alert("✅ Thank you! We received your details. If something fails to deliver on our side, we may still reach you using what you submitted.");
+          }
         } else {
           submitBtn.disabled = false;
           submitBtn.innerText = "Submit";

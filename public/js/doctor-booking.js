@@ -4,6 +4,200 @@
 let DOCTORS = [];
 let doctorsFetchStarted = false;
 const INR_SIGN = '\u20B9';
+/** sessionStorage key — invitee details for Calendly + Razorpay + admin email (not the logged-in account). */
+const AQIRAA_DOCTOR_INVITEE_KEY = 'aqiraaDoctorInvitee';
+
+/**
+ * Map Calendly custom question URL keys (a1, a2, …) for this event type.
+ * Default assumes: a1 = reason/notes, a2 = phone. Override on the page before loading this script if your form order differs.
+ * @type {{ reason?: string, phone?: string }}
+ */
+function getCalendlyQuestionKeys() {
+  var k = typeof window !== 'undefined' ? window.AQIRAA_CALENDLY_QUESTION_KEYS : null;
+  if (k && typeof k === 'object') return k;
+  return { reason: 'a1', phone: 'a2' };
+}
+
+function normalizeInviteePhoneDigits(raw) {
+  var d = String(raw || '').replace(/\D/g, '');
+  if (d.length >= 12 && d.slice(0, 2) === '91') d = d.slice(-10);
+  if (d.length > 10 && d.charAt(0) === '0') d = d.replace(/^0+/, '');
+  return d;
+}
+
+function isValidInviteeEmail(s) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || '').trim());
+}
+
+function getDoctorInviteeFromSession() {
+  try {
+    var raw = sessionStorage.getItem(AQIRAA_DOCTOR_INVITEE_KEY);
+    if (!raw) return null;
+    var o = JSON.parse(raw);
+    if (!o || typeof o !== 'object') return null;
+    return {
+      fullName: String(o.fullName || '').trim(),
+      email: String(o.email || '').trim(),
+      phone: normalizeInviteePhoneDigits(o.phone),
+      note: String(o.note || '').trim()
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+function buildCalendlyUrlAndPrefill(baseUrl, invitee) {
+  var keys = getCalendlyQuestionKeys();
+  var prefill = {};
+  if (invitee.fullName) prefill.name = invitee.fullName;
+  if (invitee.email) prefill.email = invitee.email;
+  var customAnswers = {};
+  if (invitee.note && keys.reason) customAnswers[keys.reason] = invitee.note;
+  if (invitee.phone && keys.phone && invitee.phone.length === 10) {
+    customAnswers[keys.phone] = '+91' + invitee.phone;
+  }
+  if (Object.keys(customAnswers).length) prefill.customAnswers = customAnswers;
+
+  var url = String(baseUrl || '');
+  try {
+    var u = new URL(url);
+    if (invitee.fullName) u.searchParams.set('name', invitee.fullName);
+    if (invitee.email) u.searchParams.set('email', invitee.email);
+    if (invitee.note && keys.reason) u.searchParams.set(keys.reason, invitee.note);
+    if (invitee.phone && keys.phone && invitee.phone.length === 10) {
+      u.searchParams.set(keys.phone, '+91' + invitee.phone);
+    }
+    url = u.toString();
+  } catch (e) {}
+
+  return { url: url, prefill: prefill };
+}
+
+function aqiraaOnCalendlyScheduledMessage(e) {
+  if (!e || !e.data || typeof e.data !== 'object') return;
+  if (!e.origin || String(e.origin).indexOf('calendly.com') === -1) return;
+  if (e.data.event !== 'calendly.event_scheduled') return;
+  try {
+    sessionStorage.setItem('calendlyEvent', JSON.stringify(e.data.payload));
+  } catch (err) {}
+  var calendlyOverlay = document.querySelector('.calendly-popup-close');
+  if (calendlyOverlay) calendlyOverlay.click();
+  setTimeout(function () {
+    proceedToDoctorPayment();
+  }, 500);
+}
+
+function ensureCalendlyBookingListener() {
+  if (typeof window === 'undefined' || window.__aqiraaCalendlyBookingListener) return;
+  window.__aqiraaCalendlyBookingListener = true;
+  window.addEventListener('message', aqiraaOnCalendlyScheduledMessage);
+}
+
+/**
+ * Collect patient/guest contact before Calendly so admin mail and Razorpay match the booking, not the staff account.
+ */
+function showDoctorBookingContactModal(doctor, onContinue) {
+  var existing = document.getElementById('doctor-invitee-modal-overlay');
+  if (existing) existing.remove();
+
+  var def = { fullName: '', email: '', phone: '', note: '' };
+  var user = typeof firebase !== 'undefined' && firebase.auth ? firebase.auth().currentUser : null;
+  if (user) {
+    def.email = user.email || '';
+    def.fullName = user.displayName || '';
+  }
+
+  function render(defaults) {
+    var dn = escapeHtmlAttr(defaults.fullName);
+    var em = escapeHtmlAttr(defaults.email);
+    var ph = escapeHtmlAttr(defaults.phone);
+    var docName = escapeHtmlAttr(doctor.name || 'Doctor');
+
+    var html =
+      '<div id="doctor-invitee-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100002;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">' +
+      '<div style="background:#fff;border-radius:20px;max-width:460px;width:100%;padding:26px 22px 20px;box-shadow:0 20px 50px rgba(0,0,0,0.25);position:relative;">' +
+      '<button type="button" id="doctor-invitee-close" aria-label="Close" style="position:absolute;top:12px;right:12px;width:36px;height:36px;border:none;border-radius:50%;background:#f1f5f9;color:#64748b;font-size:20px;line-height:1;cursor:pointer;">×</button>' +
+      '<h3 style="margin:0 0 8px;font-size:20px;color:#1e293b;font-weight:800;">Book visit with ' +
+      docName +
+      '</h3>' +
+      '<p style="margin:0 0 16px;font-size:14px;color:#64748b;line-height:1.5;">Enter the <strong>patient or parent</strong> details for this appointment. We use this for Calendly, payment, and your confirmation — not the account you are logged into.</p>' +
+      '<label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">Full name *</label>' +
+      '<input id="doc-inv-name" type="text" autocomplete="name" value="' +
+      dn +
+      '" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:12px;font-size:15px;" />' +
+      '<label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">Email *</label>' +
+      '<input id="doc-inv-email" type="email" autocomplete="email" value="' +
+      em +
+      '" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:12px;font-size:15px;" />' +
+      '<label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">Mobile *</label>' +
+      '<input id="doc-inv-phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile" value="' +
+      ph +
+      '" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:12px;font-size:15px;" />' +
+      '<label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">Reason / notes</label>' +
+      '<textarea id="doc-inv-note" rows="2" placeholder="Brief reason for visit (optional)" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:18px;font-size:15px;resize:vertical;"></textarea>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+      '<button type="button" id="doc-inv-cancel" style="flex:1;min-width:120px;padding:14px;border-radius:14px;border:2px solid #e2e8f0;background:#fff;color:#475569;font-weight:700;cursor:pointer;font-size:15px;">Cancel</button>' +
+      '<button type="button" id="doc-inv-continue" style="flex:1;min-width:120px;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#f41192,#9e0ff1);color:#fff !important;-webkit-text-fill-color:#fff;font-weight:700;cursor:pointer;font-size:15px;box-shadow:0 4px 14px rgba(244,17,146,0.35);">Continue to calendar</button>' +
+      '</div></div></div>';
+
+    document.body.insertAdjacentHTML('beforeend', html);
+    var noteTa = document.getElementById('doc-inv-note');
+    if (noteTa) noteTa.value = defaults.note || '';
+
+    function close() {
+      var el = document.getElementById('doctor-invitee-modal-overlay');
+      if (el) el.remove();
+    }
+
+    function submit() {
+      var nameEl = document.getElementById('doc-inv-name');
+      var emailEl = document.getElementById('doc-inv-email');
+      var phoneEl = document.getElementById('doc-inv-phone');
+      var noteEl = document.getElementById('doc-inv-note');
+      var fullName = nameEl ? nameEl.value.trim() : '';
+      var email = emailEl ? emailEl.value.trim() : '';
+      var phone = normalizeInviteePhoneDigits(phoneEl ? phoneEl.value : '');
+      var note = noteEl ? noteEl.value.trim() : '';
+      if (fullName.length < 2) {
+        alert('Please enter the patient or parent full name.');
+        return;
+      }
+      if (!isValidInviteeEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      if (phone.length !== 10) {
+        alert('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+      close();
+      onContinue({ fullName: fullName, email: email, phone: phone, note: note });
+    }
+
+    document.getElementById('doc-inv-continue').addEventListener('click', submit);
+    document.getElementById('doc-inv-cancel').addEventListener('click', close);
+    document.getElementById('doctor-invitee-close').addEventListener('click', close);
+  }
+
+  if (user && isFirebaseReady()) {
+    firebase
+      .firestore()
+      .collection('users')
+      .doc(user.uid)
+      .get()
+      .then(function (snap) {
+        var data = snap.exists ? snap.data() : null;
+        var m = data && data.mobile != null ? String(data.mobile) : '';
+        if (m) def.phone = normalizeInviteePhoneDigits(m).slice(-10) || def.phone;
+        render(def);
+      })
+      .catch(function () {
+        render(def);
+      });
+  } else {
+    render(def);
+  }
+}
 
 function escapeHtmlAttr(value) {
   if (value == null) return '';
@@ -121,6 +315,61 @@ async function fetchDoctorsFromFirestore() {
   }
 }
 
+/** List / discounted pay amounts for display (matches card logic). */
+function getDoctorListAndPayPrices(doctor) {
+  var listP = Number.isFinite(Number(doctor.sessionPrice)) ? Number(doctor.sessionPrice) : 0;
+  var fp = Number.isFinite(Number(doctor.finalPrice)) ? Number(doctor.finalPrice) : listP;
+  var active = fp < listP ? fp : listP;
+  return { listP: listP, payP: fp, active: active, hasDisc: fp < listP };
+}
+
+function firstOfferPromoStack(forModal) {
+  var tight = forModal ? ' pro-first-offer-stack--tight' : '';
+  var hint = forModal ? 'Try a session at our best rate' : 'Full consult — intro price';
+  return (
+    '<div class="pro-first-offer-stack' +
+    tight +
+    '">' +
+    '<span class="pro-first-offer-badge"><i class="fa fa-bolt" aria-hidden="true"></i> 1st time offer</span>' +
+    '<span class="pro-first-offer-hint">' +
+    hint +
+    '</span>' +
+    '</div>'
+  );
+}
+
+/** Rich HTML for consultation fee (cards + profile modal). */
+function formatDoctorFeeInnerHtml(doctor, forModal) {
+  var x = getDoctorListAndPayPrices(doctor);
+  var inr = INR_SIGN;
+  if (x.active !== 1 || !Number.isFinite(x.active)) {
+    if (x.hasDisc) {
+      var oldW = forModal
+        ? `<span style="text-decoration: line-through; font-size: 16px; color: #9CA3AF; margin-left: 6px; font-weight: 500;">${inr}${x.listP}</span>`
+        : `<span class="pro-price-old">${inr}${x.listP}</span>`;
+      return `${inr}${x.payP}${oldW}`;
+    }
+    return `${inr}${x.listP}`;
+  }
+  var digitClass = forModal ? 'pro-price-hot-digit pro-price-hot-digit--lg' : 'pro-price-hot-digit';
+  var digit = '<span class="' + digitClass + '">' + inr + '1</span>';
+  var stack = firstOfferPromoStack(!!forModal);
+  if (x.hasDisc && x.listP > 1) {
+    var old2 = forModal
+      ? `<span style="text-decoration: line-through; font-size: 16px; color: #9CA3AF; margin-left: 6px; font-weight: 500;">${inr}${x.listP}</span>`
+      : `<span class="pro-price-old">${inr}${x.listP}</span>`;
+    return digit + stack + old2;
+  }
+  return digit + stack;
+}
+
+/** Plain text for tooltips, emails, payment copy (₹1 → note). */
+function formatDoctorFeePlain(doctor) {
+  var x = getDoctorListAndPayPrices(doctor);
+  if (x.active === 1 && Number.isFinite(x.active)) return INR_SIGN + '1 (1st time offer)';
+  return INR_SIGN + String(x.hasDisc ? x.payP : x.listP);
+}
+
 function renderDoctorCards(doctors) {
   const container = document.getElementById('doctors-container');
   const noResults = document.getElementById('no-results');
@@ -144,8 +393,6 @@ function renderDoctorCards(doctors) {
     const listPrice = Number.isFinite(sessionPrice) ? sessionPrice : 0;
     const payPrice = Number.isFinite(finalPrice) ? finalPrice : listPrice;
     const activePrice = payPrice < listPrice ? payPrice : listPrice;
-    const hasDiscount = payPrice < listPrice;
-    const inr = '\u20B9';
     const specAttr = escapeHtmlAttr(doctor.title);
     const nameAttr = escapeHtmlAttr(doctor.name || '');
     const qualSafe = escapeHtmlAttr(doctor.qualification || '');
@@ -156,7 +403,7 @@ function renderDoctorCards(doctors) {
     const portraitFallback = escapeHtmlAttr(DOCTOR_IMG_FALLBACK);
 
     const cardHTML = `
-            <div class="pro-doc-card" data-specialization="${specAttr}" data-experience="${parseInt(doctor.experience, 10) || 0}" data-price="${listPrice}" data-rating="${doctor.rating}">
+            <div class="pro-doc-card${activePrice === 1 ? ' pro-doc-card--first-offer' : ''}" data-specialization="${specAttr}" data-experience="${parseInt(doctor.experience, 10) || 0}" data-price="${listPrice}" data-rating="${doctor.rating}">
 
               <div class="pro-doc-top">
                 <div class="pro-doc-img-wrapper">
@@ -188,16 +435,15 @@ function renderDoctorCards(doctors) {
               </div>
 
               <div class="pro-doc-bottom">
-                <div class="pro-price-block">
+                <div class="pro-price-block${activePrice === 1 ? ' pro-price-block--hot' : ''}">
                   <span class="pro-price-label">Consultation Fee</span>
-                  <div class="pro-price-val inr-money">
-                    ${inr}${activePrice}
-                    ${hasDiscount ? `<span class="pro-price-old">${inr}${listPrice}</span>` : ''}
+                  <div class="pro-price-val inr-money${activePrice === 1 ? ' pro-price-val--first-offer' : ''}">
+                    ${formatDoctorFeeInnerHtml(doctor, false)}
                   </div>
                 </div>
                 <div class="pro-actions">
                   <button type="button" class="pro-btn pro-btn-outline" data-doctor-action="profile" data-doctor-id="${idAttr}">Profile</button>
-                  <button type="button" class="pro-btn pro-btn-primary" data-doctor-action="book" data-doctor-id="${idAttr}">Book Now</button>
+                  <button type="button" class="pro-btn pro-btn-primary${activePrice === 1 ? ' pro-btn-primary--pulse' : ''}" data-doctor-action="book" data-doctor-id="${idAttr}">Book Now</button>
                 </div>
               </div>
             </div>
@@ -416,6 +662,8 @@ function showDoctorProfile(doctorId) {
   const portraitSrc = escapeHtmlAttr(doctorPortraitSrc(doctor));
   const portraitFallback = escapeHtmlAttr(DOCTOR_IMG_FALLBACK);
   const modalNameAttr = escapeHtmlAttr(doctor.name || '');
+  const _pxModal = getDoctorListAndPayPrices(doctor);
+  const _modalFeeHotClass = _pxModal.active === 1 && Number.isFinite(_pxModal.active) ? ' pro-modal-fee--hot' : '';
 
   const modalHTML = `
     <div id="doctorProfileModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
@@ -457,12 +705,10 @@ function showDoctorProfile(doctorId) {
                 </div>
               </div>
 
-              <div style="background: linear-gradient(135deg, #FFF9FB, #F0F9FF); border: 2px solid #FDF2F8; color: #1E293B; padding: 16px 24px; border-radius: 16px; display: inline-block; margin-bottom: 20px;">
+              <div class="pro-modal-fee-wrap${_modalFeeHotClass}" style="background: linear-gradient(135deg, #FFF9FB, #F0F9FF); border: 2px solid #FDF2F8; color: #1E293B; padding: 16px 24px; border-radius: 16px; display: inline-block; margin-bottom: 20px;">
                 <div style="font-size: 12px; color: #64748B; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px;">Consultation Fee</div>
-                <div class="inr-money" style="font-size: 28px; font-weight: 800; color: #9e0ff1;">
-                  ${doctor.finalPrice < doctor.sessionPrice 
-                    ? `${INR_SIGN}${doctor.finalPrice} <span style="text-decoration: line-through; font-size: 16px; color: #9CA3AF; margin-left: 6px; font-weight: 500;">${INR_SIGN}${doctor.sessionPrice}</span>` 
-                    : `${INR_SIGN}${doctor.sessionPrice}`}
+                <div class="inr-money pro-modal-fee-inner" style="font-size: 28px; font-weight: 800; color: #9e0ff1;">
+                  ${formatDoctorFeeInnerHtml(doctor, true)}
                 </div>
               </div>
 
@@ -523,7 +769,7 @@ function closeDoctorProfile() {
   }
 }
 
-// Book doctor session (opens Calendly popup, then Razorpay)
+// Book doctor session (collect invitee → Calendly popup → Razorpay)
 function bookDoctorSession(doctorId) {
   const doctor = getDoctorById(doctorId);
   if (!doctor) {
@@ -531,64 +777,40 @@ function bookDoctorSession(doctorId) {
     return;
   }
 
-  // Store doctor info for payment after Calendly
-  sessionStorage.setItem('selectedDoctor', JSON.stringify({
-    id: doctor.id,
-    name: doctor.name,
-    price: doctor.finalPrice
-  }));
+  ensureCalendlyBookingListener();
 
-  // Close the modal
-  closeDoctorProfile();
-
-  // Use single Calendly link for all doctors (or doctor's custom link if provided)
-  const calendlyUrl = doctor.calendlyUrl || 'https://calendly.com/aqiraa-care/doctor-appointment?month=2026-01';
-
-  console.log('Opening Calendly with URL:', calendlyUrl);
-
-  if (typeof Calendly === 'undefined' || typeof Calendly.initPopupWidget !== 'function') {
-    alert('The scheduling calendar is still loading. Please wait a few seconds and tap Book again.');
-    return;
-  }
-
-  // Get logged-in user details
-  const user = firebase.auth().currentUser;
-  const prefillData = {};
-
-  if (user) {
-    if (user.displayName) {
-      prefillData.name = user.displayName;
+  showDoctorBookingContactModal(doctor, function (invitee) {
+    try {
+      sessionStorage.setItem(AQIRAA_DOCTOR_INVITEE_KEY, JSON.stringify(invitee));
+    } catch (err) {
+      console.warn('Could not store invitee in session', err);
     }
-    if (user.email) {
-      prefillData.email = user.email;
+
+    sessionStorage.setItem(
+      'selectedDoctor',
+      JSON.stringify({
+        id: doctor.id,
+        name: doctor.name,
+        price: doctor.finalPrice
+      })
+    );
+
+    closeDoctorProfile();
+
+    const calendlyBase = doctor.calendlyUrl || 'https://calendly.com/aqiraa-care/doctor-appointment?month=2026-01';
+    const built = buildCalendlyUrlAndPrefill(calendlyBase, invitee);
+
+    console.log('Opening Calendly with URL:', built.url);
+
+    if (typeof Calendly === 'undefined' || typeof Calendly.initPopupWidget !== 'function') {
+      alert('The scheduling calendar is still loading. Please wait a few seconds and tap Book again.');
+      return;
     }
-  }
 
-  // Open Calendly popup widget with pre-filled user data
-  // Note: The title "Doctor Appointment" comes from Calendly event settings and cannot be changed via API
-  Calendly.initPopupWidget({
-    url: calendlyUrl,
-    prefill: prefillData
-  });
-
-  // Listen for Calendly events
-  window.addEventListener('message', function(e) {
-    if (e.data.event && e.data.event === 'calendly.event_scheduled') {
-      // User successfully scheduled an appointment
-      console.log('Appointment scheduled:', e.data);
-
-      // Store the event details
-      sessionStorage.setItem('calendlyEvent', JSON.stringify(e.data.payload));
-
-      // Close Calendly popup
-      const calendlyOverlay = document.querySelector('.calendly-popup-close');
-      if (calendlyOverlay) calendlyOverlay.click();
-
-      // Auto-trigger Razorpay immediately (no intermediate dialog needed)
-      setTimeout(() => {
-        proceedToDoctorPayment();
-      }, 500);
-    }
+    Calendly.initPopupWidget({
+      url: built.url,
+      prefill: built.prefill
+    });
   });
 }
 
@@ -602,7 +824,7 @@ function showBookingInstructions(doctor) {
       <button onclick="document.getElementById('bookingInstructions').remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">×</button>
       <h4 style="color: #f41192; margin-bottom: 10px; font-size: 18px;">📅 Booking ${doctor.name}</h4>
       <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-        Select your preferred date and time in the new tab. After scheduling, return here to complete your payment of <strong class="inr-money">${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong>.
+        Select your preferred date and time in the new tab. After scheduling, return here to complete your payment of <strong class="inr-money">${formatDoctorFeePlain(doctor)}</strong>.
       </p>
       <button onclick="proceedToDoctorPayment()" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: #ffffff !important; -webkit-text-fill-color: #ffffff; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">I've Scheduled - Proceed to Payment</button>
     </div>
@@ -646,9 +868,9 @@ function showPaymentInstructions(doctor, eventDetails) {
       <h4 style="color: #4CAF50; margin-bottom: 10px; font-size: 18px;">🎉 Appointment Scheduled!</h4>
       ${appointmentInfo}
       <p style="color: #666; margin-bottom: 15px; font-size: 14px; line-height: 1.6;">
-        Complete your booking by paying <strong class="inr-money">${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</strong> to confirm your appointment with ${doctor.name}.
+        Complete your booking by paying <strong class="inr-money">${formatDoctorFeePlain(doctor)}</strong> to confirm your appointment with ${doctor.name}.
       </p>
-      <button onclick="proceedToDoctorPayment()" class="inr-money" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: #ffffff !important; -webkit-text-fill-color: #ffffff; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ${INR_SIGN}${doctor.finalPrice || doctor.price || doctor.sessionPrice}</button>
+      <button onclick="proceedToDoctorPayment()" class="inr-money" style="background: linear-gradient(135deg, #f41192, #FF6B9D); color: #ffffff !important; -webkit-text-fill-color: #ffffff; padding: 12px 25px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(244,17,146,0.3); font-size: 15px;">Complete Payment ${formatDoctorFeePlain(doctor)}</button>
     </div>
   `;
 
@@ -681,8 +903,10 @@ function initiateDoctorPayment(doctor) {
   }
 
   const user = firebase.auth().currentUser;
-  const userEmail = user ? user.email : '';
-  const userName = user ? user.displayName || '' : '';
+  const inv = getDoctorInviteeFromSession();
+  const userEmail = inv && inv.email ? inv.email : user ? user.email : '';
+  const userName = inv && inv.fullName ? inv.fullName : user ? user.displayName || '' : '';
+  const userPhone = inv && inv.phone && inv.phone.length === 10 ? inv.phone : '';
 
   const options = {
     key: 'rzp_live_S6y99PjkyiSG8O',
@@ -694,13 +918,15 @@ function initiateDoctorPayment(doctor) {
     prefill: {
       name: userName,
       email: userEmail,
-      contact: ''
+      contact: userPhone
     },
     notes: {
       doctor_id: doctor.id,
       doctor_name: doctor.name,
       session_type: 'individual_consultation',
-      session_price: `${INR_SIGN}${doctor.price}`
+      session_price: formatDoctorFeePlain(doctor),
+      invitee_email: userEmail,
+      invitee_phone: userPhone || 'n/a'
     },
     theme: {
       color: '#f41192'
@@ -726,6 +952,7 @@ function initiateDoctorPayment(doctor) {
 // Handle successful doctor payment
 function handleDoctorPaymentSuccess(paymentResponse, doctor) {
   const user = firebase.auth().currentUser;
+  const inv = getDoctorInviteeFromSession();
 
   const bookingData = {
     type: 'doctor_consultation',
@@ -737,26 +964,61 @@ function handleDoctorPaymentSuccess(paymentResponse, doctor) {
     paymentStatus: 'success',
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     userId: user ? user.uid : 'guest',
-    userEmail: user ? user.email : '',
-    userName: user ? user.displayName || '' : ''
+    userName: (inv && inv.fullName) || (user ? user.displayName || '' : '') || '',
+    userEmail: (inv && inv.email) || (user ? user.email : '') || '',
+    userPhone: (inv && inv.phone) || '',
+    inviteeReason: (inv && inv.note) || '',
+    bookedByAccountEmail: user ? user.email || '' : '',
+    bookedByDisplayName: user ? user.displayName || '' : ''
   };
 
   firebase.firestore().collection('doctor_bookings').add(bookingData)
     .then((docRef) => {
       sessionStorage.removeItem('selectedDoctor');
+      try {
+        sessionStorage.removeItem(AQIRAA_DOCTOR_INVITEE_KEY);
+      } catch (e) {}
 
-      // Notify Aqiraa admin via EmailJS
+      // Notify Aqiraa admin via EmailJS (invitee = patient/parent, not the staff browser session)
       if (typeof emailjs !== 'undefined') {
-        emailjs.send("service_zdtmdad", "template_0ljis7t", {
-          name: bookingData.userName || 'User',
-          email: bookingData.userEmail || 'N/A',
-          phone: 'N/A',
-          message: `NEW DOCTOR BOOKING ALERT\n\nDoctor: ${doctor.name}\nAmount: ${INR_SIGN}${doctor.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
-        }).catch(err => console.error('Admin email notification failed:', err));
+        var phoneLine = bookingData.userPhone ? '+91 ' + bookingData.userPhone : 'N/A';
+        var staffLine =
+          bookingData.bookedByAccountEmail && bookingData.userEmail !== bookingData.bookedByAccountEmail
+            ? `\nLogged-in staff account (for audit): ${bookingData.bookedByDisplayName || '—'} <${bookingData.bookedByAccountEmail}>`
+            : '';
+        emailjs
+          .send('service_zdtmdad', 'template_0ljis7t', {
+            name: bookingData.userName || 'User',
+            email: bookingData.userEmail || 'N/A',
+            phone: phoneLine,
+            message: `NEW DOCTOR BOOKING\n\nDoctor: ${doctor.name}\nAmount: ${formatDoctorFeePlain(doctor)}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\n\nInvitee (patient/parent):\n  Name: ${bookingData.userName || 'N/A'}\n  Email: ${bookingData.userEmail || 'N/A'}\n  Mobile: ${phoneLine}\n  Reason/notes: ${bookingData.inviteeReason || '—'}${staffLine}\n\nStatus: Confirmed`
+          })
+          .catch(err => console.error('Admin email notification failed:', err));
       }
 
-      alert(`✓ Booking Confirmed!\n\nYou have successfully booked a consultation with ${doctor.name}.\n\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\n\nYou will receive a confirmation email shortly.`);
-      window.location.href = 'index.html';
+      function afterDoctorBookingUi() {
+        alert(
+          `✓ Booking Confirmed!\n\nYou have successfully booked a consultation with ${doctor.name}.\n\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\n\nYou will receive a confirmation email shortly.`
+        );
+        var p = (typeof location !== 'undefined' && location.pathname) || '';
+        if (p === '/' || p === '' || /index\.html$/i.test(p)) {
+          window.location.hash = 'doctor-booking';
+          return;
+        }
+        window.location.href = 'index.html#doctor-booking';
+      }
+
+      if (typeof window.aqiraaFirePurchaseConversion === 'function') {
+        var amt = parseFloat(doctor.price);
+        window.aqiraaFirePurchaseConversion(
+          Number.isFinite(amt) ? amt : 0,
+          'INR',
+          paymentResponse.razorpay_payment_id,
+          afterDoctorBookingUi
+        );
+      } else {
+        afterDoctorBookingUi();
+      }
     })
     .catch((error) => {
       console.error('Error saving booking:', error);

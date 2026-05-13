@@ -75,6 +75,157 @@ function waitForRazorpayReady(timeoutMs) {
   });
 }
 
+function escapeHtmlForAttr(text) {
+  if (text == null) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;');
+}
+
+/** Digits only; keeps last 10 for Indian +91 style input. */
+function normalizePhoneDigits(raw) {
+  var d = String(raw || '').replace(/\D/g, '');
+  if (d.length >= 12 && d.slice(0, 2) === '91') {
+    d = d.slice(-10);
+  }
+  if (d.length > 10 && d.slice(0, 1) === '0') {
+    d = d.replace(/^0+/, '');
+  }
+  return d;
+}
+
+function isValidEmail(s) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || '').trim());
+}
+
+/**
+ * Collect buyer contact details before Razorpay (same fields as site inquiry flow).
+ * Pre-fills from Firebase Auth when the user is signed in.
+ */
+function showPackageBuyerModal(packageType, packageDetails, onConfirm) {
+  var existing = document.getElementById('package-buyer-modal-overlay');
+  if (existing) existing.remove();
+
+  var user = typeof firebase !== 'undefined' && firebase.auth ? firebase.auth().currentUser : null;
+  var defName = user && user.displayName ? String(user.displayName).trim() : '';
+  var defEmail = user && user.email ? String(user.email).trim() : '';
+
+  var pkgTitle = escapeHtmlForAttr(packageDetails.name);
+  var priceStr = escapeHtmlForAttr(String(packageDetails.price));
+
+  var html =
+    '<div id="package-buyer-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">' +
+    '<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;padding:28px 24px 22px;box-shadow:0 20px 50px rgba(0,0,0,0.25);position:relative;">' +
+    '<button type="button" id="package-buyer-modal-close" aria-label="Close" style="position:absolute;top:14px;right:14px;width:36px;height:36px;border:none;border-radius:50%;background:#f1f5f9;color:#64748b;font-size:20px;line-height:1;cursor:pointer;">×</button>' +
+    '<h3 style="margin:0 0 6px;font-size:20px;color:#1e293b;font-weight:800;">Your details</h3>' +
+    '<p style="margin:0 0 18px;font-size:14px;color:#64748b;line-height:1.5;">We need this to confirm your booking and reach you. You will pay <strong class="inr-money">' +
+    INR_SIGN +
+    priceStr +
+    '</strong> for <strong>' +
+    pkgTitle +
+    '</strong>.</p>' +
+    '<label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">Full name *</label>' +
+    '<input id="pkg-buyer-name" type="text" autocomplete="name" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:14px;font-size:15px;" />' +
+    '<label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">Email *</label>' +
+    '<input id="pkg-buyer-email" type="email" autocomplete="email" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:14px;font-size:15px;" />' +
+    '<label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;">Mobile *</label>' +
+    '<input id="pkg-buyer-phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:20px;font-size:15px;" />' +
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+    '<button type="button" id="pkg-buyer-cancel" style="flex:1;min-width:120px;padding:14px;border-radius:14px;border:2px solid #e2e8f0;background:#fff;color:#475569;font-weight:700;cursor:pointer;font-size:15px;">Cancel</button>' +
+    '<button type="button" id="pkg-buyer-continue" style="flex:1;min-width:120px;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#f41192,#9e0ff1);color:#fff !important;-webkit-text-fill-color:#fff;font-weight:700;cursor:pointer;font-size:15px;box-shadow:0 4px 14px rgba(244,17,146,0.35);">Continue to pay</button>' +
+    '</div></div></div>';
+
+  document.body.insertAdjacentHTML('beforeend', html);
+  var nameEl = document.getElementById('pkg-buyer-name');
+  var emailEl = document.getElementById('pkg-buyer-email');
+  var phoneEl = document.getElementById('pkg-buyer-phone');
+  if (nameEl) nameEl.value = defName;
+  if (emailEl) emailEl.value = defEmail;
+
+  function closeModal() {
+    var el = document.getElementById('package-buyer-modal-overlay');
+    if (el) el.remove();
+  }
+
+  function submit() {
+    var name = nameEl ? nameEl.value.trim() : '';
+    var email = emailEl ? emailEl.value.trim() : '';
+    var phoneDigits = normalizePhoneDigits(phoneEl ? phoneEl.value : '');
+    if (name.length < 2) {
+      alert('Please enter your full name.');
+      return;
+    }
+    if (!isValidEmail(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+    if (phoneDigits.length !== 10) {
+      alert('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    closeModal();
+    onConfirm({ name: name, email: email, phone: phoneDigits });
+  }
+
+  document.getElementById('pkg-buyer-continue').addEventListener('click', submit);
+  document.getElementById('pkg-buyer-cancel').addEventListener('click', closeModal);
+  document.getElementById('package-buyer-modal-close').addEventListener('click', closeModal);
+}
+
+function openRazorpayForPackage(packageType, packageDetails, buyer) {
+  var discPs = Number.isFinite(Number(packageDetails.discPs))
+    ? Number(packageDetails.discPs)
+    : Math.round(packageDetails.price / Math.max(1, packageDetails.sessions));
+
+  var detailedDescription =
+    packageDetails.name + ' - ' + packageDetails.sessions + ' Sessions, ' + (packageDetails.duration || 'Duration n/a');
+
+  var options = {
+    key: RAZORPAY_KEY_ID,
+    amount: packageDetails.price * 100,
+    currency: 'INR',
+    name: 'Aqiraa',
+    description: detailedDescription,
+    image: 'https://child-consultant.web.app/images/logo-razorpay.png',
+    prefill: {
+      name: buyer.name,
+      email: buyer.email,
+      contact: buyer.phone
+    },
+    notes: {
+      package_name: packageDetails.name,
+      package_type: packageType,
+      total_sessions: packageDetails.sessions,
+      duration_period: packageDetails.duration,
+      original_price: INR_SIGN + packageDetails.originalPrice,
+      discounted_price: INR_SIGN + packageDetails.price,
+      price_per_session: INR_SIGN + discPs,
+      buyer_name: buyer.name,
+      buyer_email: buyer.email,
+      buyer_phone: buyer.phone
+    },
+    theme: {
+      color: '#f41192'
+    },
+    handler: function (response) {
+      handlePaymentSuccess(response, packageType, packageDetails, buyer);
+    },
+    modal: {
+      ondismiss: function () {
+        console.log('Payment cancelled by user');
+      }
+    }
+  };
+
+  var razorpayInstance = new Razorpay(options);
+  razorpayInstance.on('payment.failed', function (response) {
+    handlePaymentFailure(response);
+  });
+  razorpayInstance.open();
+}
+
 // Handle Razorpay Payment — attached to window immediately so package buttons never see a missing handler.
 window.initiateRazorpayPayment = async function initiateRazorpayPayment(packageType) {
   // Check if Firebase is initialized
@@ -103,9 +254,6 @@ window.initiateRazorpayPayment = async function initiateRazorpayPayment(packageT
     const listPrice = Number(pkgData.price);
     const payPrice = Number(pkgData.discountedPrice != null ? pkgData.discountedPrice : pkgData.price);
     const priceNum = Number.isFinite(payPrice) && payPrice > 0 ? payPrice : (Number.isFinite(listPrice) ? listPrice : 0);
-    const origPs = Number.isFinite(Number(pkgData.originalPricePerSession))
-      ? Number(pkgData.originalPricePerSession)
-      : Math.round((Number.isFinite(listPrice) ? listPrice : priceNum) / sessions);
     const discPs = Number.isFinite(Number(pkgData.discountedPricePerSession))
       ? Number(pkgData.discountedPricePerSession)
       : Math.round(priceNum / sessions);
@@ -122,60 +270,13 @@ window.initiateRazorpayPayment = async function initiateRazorpayPayment(packageT
       sessions,
       duration: durationLabel,
       description: [sessions ? `${sessions} Sessions` : '', durationLabel, 'Customized counselling'].filter(Boolean).join(' • '),
-      expiryDate: calculateExpiryDateFromPackage(pkgData)
+      expiryDate: calculateExpiryDateFromPackage(pkgData),
+      discPs: discPs
     };
 
-    // Get current user (if logged in)
-    const user = firebase.auth().currentUser;
-    const userEmail = user ? user.email : '';
-    const userName = user ? user.displayName || '' : '';
-
-    // Create detailed description for payment (single line for better visibility)
-    const detailedDescription = `${packageDetails.name} - ${packageDetails.sessions} Sessions, ${packageDetails.duration || 'Duration n/a'}`;
-
-    // Razorpay options
-    const options = {
-      key: RAZORPAY_KEY_ID,
-      amount: packageDetails.price * 100, // Amount in paise (multiply by 100)
-      currency: 'INR',
-      name: 'Aqiraa',
-      description: detailedDescription,
-      image: 'https://child-consultant.web.app/images/logo-razorpay.png',
-      prefill: {
-        name: userName,
-        email: userEmail,
-        contact: ''
-      },
-      notes: {
-        package_name: packageDetails.name,
-        package_type: packageType,
-        total_sessions: packageDetails.sessions,
-        duration_period: packageDetails.duration,
-        original_price: `${INR_SIGN}${packageDetails.originalPrice}`,
-        discounted_price: `${INR_SIGN}${packageDetails.price}`,
-        price_per_session: `${INR_SIGN}${discPs}`
-      },
-      theme: {
-        color: '#f41192'
-      },
-      handler: function(response) {
-        // Payment successful
-        handlePaymentSuccess(response, packageType, packageDetails);
-      },
-      modal: {
-        ondismiss: function() {
-          console.log('Payment cancelled by user');
-        }
-      }
-    };
-
-    const razorpayInstance = new Razorpay(options);
-
-    razorpayInstance.on('payment.failed', function(response) {
-      handlePaymentFailure(response);
+    showPackageBuyerModal(packageType, packageDetails, function (buyer) {
+      openRazorpayForPackage(packageType, packageDetails, buyer);
     });
-
-    razorpayInstance.open();
   } catch (error) {
     console.error('Error fetching package details:', error);
     alert('Failed to initialize payment. Please try again.');
@@ -183,13 +284,17 @@ window.initiateRazorpayPayment = async function initiateRazorpayPayment(packageT
 }
 
 // Handle successful payment
-function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
+function handlePaymentSuccess(paymentResponse, packageType, packageDetails, buyer) {
   console.log('Payment successful:', paymentResponse);
 
   // Get current user
   const user = firebase.auth().currentUser;
+  const b = buyer && typeof buyer === 'object' ? buyer : {};
+  const contactName = (b.name || '').trim() || (user && user.displayName) || '';
+  const contactEmail = (b.email || '').trim() || (user && user.email) || '';
+  const contactPhone = (b.phone || '').trim() || '';
 
-  // Prepare booking data
+  // Prepare booking data (contact fields are what the customer entered before checkout)
   const bookingData = {
     paymentId: paymentResponse.razorpay_payment_id,
     orderId: paymentResponse.razorpay_order_id || '',
@@ -203,8 +308,9 @@ function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
     paymentStatus: 'success',
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     userId: user ? user.uid : 'guest',
-    userEmail: user ? user.email : '',
-    userName: user ? user.displayName || '' : '',
+    userEmail: contactEmail,
+    userName: contactName,
+    userPhone: contactPhone,
     sessionsRemaining: packageDetails.sessions,
     expiryDate: packageDetails.expiryDate
   };
@@ -214,13 +320,18 @@ function handlePaymentSuccess(paymentResponse, packageType, packageDetails) {
     .then((docRef) => {
       console.log('Booking saved with ID:', docRef.id);
 
-      // Notify Aqiraa admin via EmailJS
+      if (typeof window.aqiraaFirePurchaseConversion === 'function') {
+        window.aqiraaFirePurchaseConversion(packageDetails.price, 'INR', paymentResponse.razorpay_payment_id);
+      }
+
+      // Notify Aqiraa admin via EmailJS (same template fields as the contact inquiry form)
       if (typeof emailjs !== 'undefined') {
+        var phoneDisplay = contactPhone ? '+91 ' + contactPhone : 'N/A';
         emailjs.send("service_zdtmdad", "template_0ljis7t", {
-          name: bookingData.userName || 'User',
-          email: bookingData.userEmail || 'N/A',
-          phone: 'N/A',
-          message: `NEW PACKAGE BOOKING ALERT\n\nPackage: ${packageDetails.name}\nSessions: ${packageDetails.sessions}\nDuration: ${packageDetails.duration}\nAmount: ${INR_SIGN}${packageDetails.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nUser: ${bookingData.userName || 'N/A'} (${bookingData.userEmail || 'N/A'})\nStatus: Confirmed`
+          name: contactName || 'Package buyer',
+          email: contactEmail || 'N/A',
+          phone: phoneDisplay,
+          message: `NEW PACKAGE BOOKING\n\nPackage: ${packageDetails.name}\nSessions: ${packageDetails.sessions}\nDuration: ${packageDetails.duration}\nAmount: ${INR_SIGN}${packageDetails.price}\nBooking ID: ${docRef.id}\nPayment ID: ${paymentResponse.razorpay_payment_id}\nContact: ${contactName || 'N/A'}\nEmail: ${contactEmail || 'N/A'}\nMobile: ${phoneDisplay}\nFirebase user: ${user ? user.uid : 'guest'}\nStatus: Confirmed`
         }).catch(err => console.error('Admin email notification failed:', err));
       }
 

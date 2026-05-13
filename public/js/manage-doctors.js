@@ -19,6 +19,43 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const INR_SIGN = '\u20B9';
 
+/** Admin table: show 1st time offer label when effective price is ₹1. */
+function formatAdminDoctorPriceCell(doctor) {
+  var sp = Number(doctor.sessionPrice);
+  var dp = doctor.discountedPrice != null ? Number(doctor.discountedPrice) : sp;
+  var listP = Number.isFinite(sp) ? sp : 0;
+  var payP = Number.isFinite(dp) ? dp : listP;
+  var active = payP < listP ? payP : listP;
+  var hasDisc = payP < listP;
+  var offer = '<br><span style="font-size:11px;color:#f41192;font-weight:700;">1st time offer</span>';
+  if (active === 1 && Number.isFinite(active)) {
+    if (hasDisc && listP > 1) {
+      return (
+        '<span style="text-decoration: line-through; color: #999; font-size: 12px;">' +
+        INR_SIGN +
+        listP +
+        '</span><br><span style="color: #f41192; font-weight: bold;">' +
+        INR_SIGN +
+        '1</span>' +
+        offer
+      );
+    }
+    return '<span style="color: #f41192; font-weight: bold;">' + INR_SIGN + '1</span>' + offer;
+  }
+  if (hasDisc) {
+    return (
+      '<span style="text-decoration: line-through; color: #999; font-size: 12px;">' +
+      INR_SIGN +
+      listP +
+      '</span><br><span style="color: #f41192; font-weight: bold;">' +
+      INR_SIGN +
+      payP +
+      '</span>'
+    );
+  }
+  return INR_SIGN + listP;
+}
+
 // Global variables
 let allDoctors = [];
 let expertiseArray = [];
@@ -153,11 +190,7 @@ function renderDoctorsTable(doctors) {
             </td>
             <td>${doctor.experience || doctor.experienceYears + ' Years'}</td>
             <td>
-              <span class="inr-money">${
-                doctor.discountedPrice && doctor.discountedPrice < doctor.sessionPrice 
-                  ? `<span style="text-decoration: line-through; color: #999; font-size: 12px;">${INR_SIGN}${doctor.sessionPrice}</span><br><span style="color: #f41192; font-weight: bold;">${INR_SIGN}${doctor.discountedPrice}</span>` 
-                  : `${INR_SIGN}${doctor.sessionPrice}`
-              }</span>
+              <span class="inr-money">${formatAdminDoctorPriceCell(doctor)}</span>
             </td>
             <td>
               <div style="display: flex; align-items: center; gap: 5px;">
@@ -659,6 +692,11 @@ function renderPackagesTable(packages) {
           const displayName = pkg.id === 'standard' && (!rawName || rawName.toLowerCase() === 'standard')
             ? 'Pro'
             : (rawName || pkg.id);
+          const pkgPay = Number(pkg.discountedPrice != null ? pkg.discountedPrice : pkg.price) || 0;
+          const pkgFirstOffer =
+            pkgPay === 1
+              ? '<div style="font-size:11px;font-weight:700;color:#f41192;margin-top:4px;">1st time offer</div>'
+              : '';
           return `
           <tr>
             <td>
@@ -669,6 +707,7 @@ function renderPackagesTable(packages) {
               <span class="inr-money">
               <span style="text-decoration: line-through; color: #999; font-size: 12px;">${INR_SIGN}${pkg.price.toLocaleString('en-IN')}</span><br>
               <span style="color: #f41192; font-weight: bold; font-size: 16px;">${INR_SIGN}${(pkg.discountedPrice || pkg.price).toLocaleString('en-IN')}</span>
+              ${pkgFirstOffer}
               <div style="font-size: 11px; color: #888; margin-top: 4px;">${INR_SIGN}${ops.toLocaleString('en-IN')} list / ${INR_SIGN}${dps.toLocaleString('en-IN')} pay per session</div>
               </span>
             </td>
